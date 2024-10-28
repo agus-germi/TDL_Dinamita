@@ -1,5 +1,16 @@
 # TDL_Dinamita
 
+### TODO
+
+- Validar que el ingreso de la password no sea mayor a 72 bytes (ya que el hasheo con bycrypt solo acepta strings menores o iguales a 72 bytes).
+    > GenerateFromPassword does not accept passwords longer than 72 bytes.
+
+- Create UserSession inside `entity` module. This struct will replace `models.User struct`.
+
+- Migrate from sqlx to pgxpool
+
+
+## Built information
 Primera linea a ejecutar al crear el proyecto en go:
 ```
 go mod init github.com/agus-germi/TDL_Dinamita
@@ -89,16 +100,6 @@ docker-compose up --build
 ```
 
 
-### TODO
-
-- Validar que el ingreso de la password no sea mayor a 72 bytes (ya que el hasheo con bycrypt solo acepta strings menores o iguales a 72 bytes).
-    > GenerateFromPassword does not accept passwords longer than 72 bytes.
-
-- Al momento de desplegar la app en produccion deberiamos considerar usar herramientas de gestion de secretos (Docker secrets).
-    > Para entornos de producción, considera usar Docker Secrets o herramientas de gestión de secretos, como AWS Secrets Manager o HashiCorp Vault, para manejar información sensible de manera más segura.
-
-
-
 ## Theoretical concepts
 - [Pool de conexiones](https://chatgpt.com/share/671f899c-bc00-8004-acf7-133575a8e903)
     > Para configurar de forma mas precisa el pool de conexiones podemos migrar de `sqlx` a `pgxpool` 
@@ -108,3 +109,10 @@ docker-compose up --build
 - [Middlewares](https://chatgpt.com/share/671fcfb4-23d4-8004-b223-6c34afdc5cf0)
 
 - [Frameworks HTTP en Go](https://chatgpt.com/share/671fd0ea-363c-8004-9700-e3298ce46e8c)
+
+- [Goose]() --> INVESTIGAR: go get github.com/pressly/goose/v3
+
+
+## To keep in mind
+- Al momento de desplegar la app en produccion deberiamos considerar usar herramientas de gestion de secretos (Docker secrets).
+    > Para entornos de producción, considera usar Docker Secrets o herramientas de gestión de secretos, como AWS Secrets Manager o HashiCorp Vault, para manejar información sensible de manera más segura.
