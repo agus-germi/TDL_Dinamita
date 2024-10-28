@@ -4,14 +4,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-func New(ctx context.Context) (*sqlx.DB, error) {
-	err := godotenv.Load()
+// This function creates a new connection to the database
+func CreateConnection(ctx context.Context) (*sqlx.DB, error) {
+	err := godotenv.Load("/usr/src/app/.env")
 	if err != nil {
 		return nil, err
 	}
@@ -22,6 +24,10 @@ func New(ctx context.Context) (*sqlx.DB, error) {
 	}
 
 	port, err := getEnv("DB_PORT")
+	if err != nil {
+		return nil, err
+	}
+	iPort, err := strconv.Atoi(port)
 	if err != nil {
 		return nil, err
 	}
@@ -36,23 +42,20 @@ func New(ctx context.Context) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	dbname, err := getEnv("DB_NAME")
+	dbName, err := getEnv("DB_NAME")
 	if err != nil {
 		return nil, err
 	}
 
-	sslmode, err := getEnv("DB_SSLMODE")
+	sslMode, err := getEnv("DB_SSLMODE")
 	if err != nil {
 		return nil, err
 	}
 
-	connStr := "host=" + host + " port=" + port + " user=" + user + " password=" + password + " dbname=" + dbname + " sslmode=" + sslmode
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		user, password, host, iPort, dbName, sslMode)
 	db, err := sqlx.ConnectContext(ctx, "postgres", connStr)
 	if err != nil {
-		return nil, err
-	}
-
-	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 
@@ -66,3 +69,59 @@ func getEnv(key string) (string, error) {
 	}
 	return value, nil
 }
+
+/*
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+
+    "github.com/jackc/pgx/v5/pgxpool"
+)
+
+func New() {
+    // Contexto para gestionar la conexión
+    ctx := context.Background()
+
+    // Configurar el pool usando Config
+    connStr := "postgres://admin:1234@localhost:5432/mi_base?sslmode=disable"
+    config, err := pgxpool.ParseConfig(connStr)
+    if err != nil {
+        log.Fatalf("Error al parsear la configuración del pool: %v", err)
+    }
+
+    // Configuración del pool
+    config.MaxConns = 10                      // Máximo de conexiones abiertas
+    config.MinConns = 2                       // Mínimo de conexiones abiertas
+    config.MaxConnIdleTime = 5 * time.Minute  // Tiempo máximo de inactividad de una conexión
+    config.MaxConnLifetime = 30 * time.Minute // Tiempo máximo de vida de una conexión
+    config.HealthCheckPeriod = 1 * time.Minute // Frecuencia de las verificaciones de salud
+
+    // Crear el pool de conexiones
+    pool, err := pgxpool.NewWithConfig(ctx, config)
+    if err != nil {
+        log.Fatalf("No se pudo crear el pool: %v", err)
+    }
+    defer pool.Close() // Asegurarse de cerrar el pool al final
+
+    // Verificar la conexión con un simple query
+    if err := testConnection(ctx, pool); err != nil {
+        log.Fatalf("Conexión fallida: %v", err)
+    }
+
+    fmt.Println("Conexión establecida exitosamente con el pool de pgxpool")
+}
+
+// Función para probar la conexión con un query
+func testConnection(ctx context.Context, pool *pgxpool.Pool) error {
+    var now time.Time
+    err := pool.QueryRow(ctx, "SELECT NOW()").Scan(&now)
+    if err != nil {
+        return err
+    }
+    fmt.Printf("Hora actual de la base de datos: %s\n", now)
+    return nil
+}
+
+*/

@@ -6,8 +6,6 @@ services:
       context: .
     container_name: rest-server
     hostname: rest-server
-    # networks:
-    #   - dinamita_network
     depends_on:
       - db
     environment:
@@ -18,8 +16,13 @@ services:
       - PGNAME=${DB_NAME:-tdl_dinamita}
     ports:
       - 8080:8080
+    volumes:
+      -  ./.env:/usr/src/app/.env  # Montar el archivo .env en el contenedor
     # En vez de este comando podriamos configurar docker-compose con healthschecks (investigar mas)
-    command: ["sh", "-c", "echo 'Waiting for database...'; timeout 60 sh -c 'until pg_isready -h tdl_dinamita -p 5432; do sleep 1; done'; exec /restaurant_system"]
+    command: ["sh", "-c",
+               "echo 'Waiting for database...';
+               timeout 60 sh -c 'until pg_isready -h db -p 5432; do sleep 1; done';
+               exec /usr/local/bin/restaurant_system"]
     # deploy:
     #   restart_policy:
     #     condition: on-failure
@@ -27,12 +30,10 @@ services:
   db:
     image: postgres:15-alpine
     container_name: postgres-db
-    hostname: database
-    # networks:
-    #   - dinamita_network
+    hostname: db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres  # sets the superuser password for PostgreSQL. This env variable is necesary to use the postgres image.
+      POSTGRES_PASSWORD: postgres  # sets the superuser password for PostgreSQL. This env variable is necessary to use the postgres image.
       #POSTGRES_DB: postgres
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -41,7 +42,3 @@ services:
 
 volumes:
   postgres-data:
-
-# networks:
-#   dinamita_network:
-#     driver: bridge

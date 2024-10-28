@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.23
+FROM golang:1.23 AS builder
 
 # Set destination for COPY
 WORKDIR /usr/src/app
@@ -16,6 +16,24 @@ COPY . .
 # Build
 RUN CGO_ENABLED=0 GOOS=linux go build -o /restaurant_system
 
+# Compilation for Linux
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /output/linux/restaurant_system
+
+# Compilation for Windows
+# RUN CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /output/windows/restaurant_system.exe
+
+# Compilation for macOS
+# RUN CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /output/macos/restaurant_system
+
+# Final image based on alpine
+FROM alpine:latest AS final
+
+# IPostgreSQL client installation
+RUN apk add --no-cache postgresql-client
+
+# Copy binary file from build stage
+COPY --from=builder /output/linux/restaurant_system /usr/local/bin/restaurant_system
+
 # Optional:
 # To bind to a TCP port, runtime parameters must be supplied to the docker command.
 # But we can document in the Dockerfile what ports
@@ -23,5 +41,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /restaurant_system
 # https://docs.docker.com/reference/dockerfile/#expose
 EXPOSE 8080
 
-# Run
-CMD ["/restaurant_system"]
+# Run app
+CMD ["/usr/local/bin/restaurant_system"]
