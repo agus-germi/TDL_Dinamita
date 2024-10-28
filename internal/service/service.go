@@ -13,12 +13,14 @@ import (
 type Service interface {
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
+	AddUserRole(ctx context.Context, userID, roleID int64) error
+	RemoveUserRole(ctx context.Context, userID, roleID int64) error
 }
 
-type Serv struct {
+type serv struct {
 	repo repository.Repository
 }
 
 func New(repo repository.Repository) Service {
-	return &Serv{repo: repo}
+	return &serv{repo: repo}
 }

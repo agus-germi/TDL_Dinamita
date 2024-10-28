@@ -14,14 +14,20 @@ const (
 	qryGetUserByEmail = `SELECT id, name, password, email 
 						FROM users
 						WHERE email=$1`
+
+	qryInsertUserRole = `INSERT INTO user_roles (user_id, role_id)
+						VALUES ($1, $2)`
+
+	qryRemoveUserRole = `DELETE FROM user_roles
+						WHERE user_id=$1 AND role_id=$2`
 )
 
-func (r *Repo) SaveUser(ctx context.Context, name, password, email string) error {
+func (r *repo) SaveUser(ctx context.Context, name, password, email string) error {
 	_, err := r.db.ExecContext(ctx, qryInsertUser, name, password, email)
 	return err
 }
 
-func (r *Repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	usr := &entity.User{}
 
 	err := r.db.GetContext(ctx, usr, qryGetUserByEmail, email)
@@ -30,4 +36,14 @@ func (r *Repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, 
 	}
 
 	return usr, nil
+}
+
+func (r *repo) SaveUserRole(ctx context.Context, userID, roleID int64) error {
+	_, err := r.db.ExecContext(ctx, qryInsertUserRole, userID, roleID)
+	return err
+}
+
+func (r *repo) RemoveUserRole(ctx context.Context, userID, roleID int64) error {
+	_, err := r.db.ExecContext(ctx, qryRemoveUserRole, userID, roleID)
+	return err
 }

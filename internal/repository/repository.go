@@ -13,12 +13,15 @@ import (
 type Repository interface {
 	SaveUser(ctx context.Context, name, passwd, email string) error
 	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
+
+	SaveUserRole(ctx context.Context, userID, roleID int64) error
+	RemoveUserRole(ctx context.Context, userID, roleID int64) error
 }
 
-type Repo struct {
+type repo struct {
 	db *sqlx.DB
 }
 
 func New(db *sqlx.DB) Repository {
-	return &Repo{db: db}
+	return &repo{db: db}
 }

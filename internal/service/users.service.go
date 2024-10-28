@@ -14,7 +14,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
-func (s *Serv) RegisterUser(ctx context.Context, name, password, email string) error {
+func (s *serv) RegisterUser(ctx context.Context, name, password, email string) error {
 
 	usr, _ := s.repo.GetUserByEmail(ctx, email)
 	if usr != nil {
@@ -29,7 +29,7 @@ func (s *Serv) RegisterUser(ctx context.Context, name, password, email string) e
 	return s.repo.SaveUser(ctx, name, hashedPassword, email)
 }
 
-func (s *Serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
+func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
 	usr, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
@@ -52,4 +52,12 @@ func (s *Serv) LoginUser(ctx context.Context, email, password string) (*models.U
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
+}
+
+func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64) error {
+	return nil
+}
+
+func (s *serv) RemoveUserRole(ctx context.Context, userID, roleID int64) error {
+	return nil
 }

@@ -33,3 +33,6 @@ CREATE TABLE IF NOT EXISTS user_roles (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
+
+INSERT INTO roles (name) VALUES ("admin")
+INSERT INTO roles (name) VALUES ("customer")  -- or client
