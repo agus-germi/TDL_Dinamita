@@ -1,13 +1,22 @@
 # TDL_Dinamita
 
+## Run the following command in to execute the application:
+```
+docker-compose up --build
+```
+
 ### TODO
 
 - Validar que el ingreso de la password no sea mayor a 72 bytes (ya que el hasheo con bycrypt solo acepta strings menores o iguales a 72 bytes).
     > GenerateFromPassword does not accept passwords longer than 72 bytes.
 
-- Create UserSession inside `entity` module. This struct will replace `models.User struct`.
+- Create UserSession inside `entity` module. This struct will replace `dtos.User struct`.
 
 - Migrate from sqlx to pgxpool
+
+- **Reestructuracion**: No seria mala idea tener un servicio y un repositorio para cada entidad que forma parte de nuestro modelo de negocios. --> Consultar con el profe.
+    > De esta forma encapsulariamos responsabilidades y cambios de requirimientos frente a cada entidad en particular.
+    La desventaja es que aumenta bastante la complejidad de nuestro proyecto.
 
 
 ## Built information
@@ -94,10 +103,7 @@ Para generar los mocks:
     ```
 
 
-## Ejecutar docker-compose
-```
-docker-compose up --build
-```
+
 
 
 ## Theoretical concepts
