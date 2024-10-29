@@ -6,7 +6,7 @@ import (
 	entity "github.com/agus-germi/TDL_Dinamita/internal/entity"
 )
 
-func (r *repo) SaveTable(ctx context.Context, seats int64, location string, isAvailable bool) error {
+func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
 	return nil
 }
 
