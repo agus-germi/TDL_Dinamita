@@ -1,3 +1,5 @@
+--CREATE DATABASE tdl_dinamita;  Esta linea solo se deberia ejecutar una única vez.
+
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -17,8 +19,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     table_id INT NOT NULL,
     reserved_by INT NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,   --Si quisieramos que tenga en cuenta la zona horaria tendriamos que usar el tipo de dato TIMESTAMPTZ
-    FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE,  -- Esto sirve si eliminamos una mesa
-    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE -- Esto va a servir si deseamos eliminar una cuenta (un usuario)
+    FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE,
+    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS roles (
@@ -28,11 +30,12 @@ CREATE TABLE IF NOT EXISTS roles (
 
 CREATE TABLE IF NOT EXISTS user_roles (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,  -- Cada user solo puede estar vinculado a un único rol, por eso debe aparecer una única vez en la tabla user_roles
     role_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (role_id) REFERENCES roles(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE  --Creo que tiene sentido que si se elimina un rol de la tabla roles,
+                                                                -- entonces se debe eliminar todas las filas de la tabla users_roles que presenten el rol que se elimino.
 );
 
-INSERT INTO roles (name) VALUES ("admin")
+INSERT INTO roles (name) VALUES ("admin")     -- Al ingresar los roles de esta forma: admin-->role_id=1 y customer-->role_id=2
 INSERT INTO roles (name) VALUES ("customer")  -- or client

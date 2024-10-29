@@ -19,7 +19,11 @@ const (
 						VALUES ($1, $2)`
 
 	qryRemoveUserRole = `DELETE FROM user_roles
-						WHERE user_id=$1 AND role_id=$2`
+						WHERE user_id=$1`
+
+	qryGetUserRoleByUserID = `SELECT userID, roleID
+							 FROM user_roles
+							 WHERE user_id=$1`
 )
 
 func (r *repo) SaveUser(ctx context.Context, name, password, email string) error {
@@ -43,7 +47,18 @@ func (r *repo) SaveUserRole(ctx context.Context, userID, roleID int64) error {
 	return err
 }
 
-func (r *repo) RemoveUserRole(ctx context.Context, userID, roleID int64) error {
-	_, err := r.db.ExecContext(ctx, qryRemoveUserRole, userID, roleID)
+func (r *repo) RemoveUserRole(ctx context.Context, userID int64) error {
+	_, err := r.db.ExecContext(ctx, qryRemoveUserRole, userID)
 	return err
+}
+
+func (r *repo) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error) {
+	usr_role := &entity.UserRole{}
+
+	err := r.db.GetContext(ctx, usr_role, qryGetUserRoleByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return usr_role, nil
 }
