@@ -9,11 +9,11 @@ services:
     depends_on:
       - db
     environment:
-      - PGUSER=${DB_USER}
-      - PGPASSWORD=${DB_PASSWORD}
-      - PGHOST=${DB_HOST}
-      - PGPORT=${DB_PORT}
-      - PGNAME=${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      PGHOST: ${DB_HOST}
+      PGPORT: ${DB_PORT}
+      PGNAME: ${DB_NAME}
     ports:
       - 8080:8080
     volumes:
