@@ -17,6 +17,8 @@ docker-compose up --build
 - **Reestructuracion**: No seria mala idea tener un servicio y un repositorio para cada entidad que forma parte de nuestro modelo de negocios. --> Consultar con el profe.
     > De esta forma encapsulariamos responsabilidades y cambios de requirimientos frente a cada entidad en particular.
     La desventaja es que aumenta bastante la complejidad de nuestro proyecto.
+    > Hasta ahora lo que plantie quizas que es trampa pq simplemente cree archivos diferentes para las funciones que estan
+    dirijidas a cada entidad en particular pero dichas funciones las implementa la misma estructura (repo struct)
 
 
 ## Built information
