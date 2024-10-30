@@ -21,6 +21,12 @@ docker-compose up --build
     dirijidas a cada entidad en particular pero dichas funciones las implementa la misma estructura (repo struct)
 
 
+## Useful Go commands:
+- ```go mod tidy```
+    > Ejecutarlo regularmente para actualizar las dependencias y eliminar aquellas que son innecesarias.
+- ```go clean -modcache```
+    > Se usa en casos especiales para limpiar la cache de Go
+
 ## Built information
 Primera linea a ejecutar al crear el proyecto en go:
 ```
@@ -93,6 +99,7 @@ Para instalarse Mockery y que se cree de forma automatica los mocks de las inter
 ```
 go install github.com/vektra/mockery/v2@latest
 ```
+
 Para generar los mocks:
 1. comentar arriba de la interfaz que se quiere mockear con: 
     >//go:generate mockery --name=<Interface_name> --output=<interface_name> --inpackage
@@ -103,6 +110,13 @@ Para generar los mocks:
     ```
     go generate ./...
     ```
+
+## To send request and tests if the endpoints are working execute:
+
+- ```curl.exe -v localhost:8080```
+    > This command is useful for Windows OS. If your host OS is Linux or MacOS run `curl` instead of `curl.exe`.
+    Note: `-v` is a tag use to print a bunch of info about the request.
+
 
 
 
