@@ -14,7 +14,7 @@ const (
 	qryRemoveUser = `DELETE FROM users
 					WHERE email=$1`
 
-	qryGetUserByEmail = `SELECT id, name, password, email 
+	qryGetUserByEmail = `SELECT id, name, password, email
 						FROM users
 						WHERE email=$1`
 

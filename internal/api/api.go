@@ -14,5 +14,6 @@ func New(serv service.Service) *API {
 }
 
 func (a *API) Start(e *echo.Echo, address string) error {
+	a.SetRoutes(e)
 	return e.Start(address)
 }

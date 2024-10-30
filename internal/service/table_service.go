@@ -7,7 +7,7 @@ import (
 
 var (
 	ErrTableAlreadyExists = errors.New("table already exists")
-	ErrRemovingTable      = errors.New("Something went wrong trying to remove a table")
+	ErrRemovingTable      = errors.New("something went wrong trying to remove a table")
 )
 
 func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string) error {

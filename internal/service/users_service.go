@@ -18,7 +18,6 @@ var (
 )
 
 func (s *serv) RegisterUser(ctx context.Context, name, password, email string) error {
-
 	usr, _ := s.repo.GetUserByEmail(ctx, email)
 	if usr != nil {
 		return ErrUserAlreadyExists

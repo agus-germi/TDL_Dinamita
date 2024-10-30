@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     table_number INT NOT NULL,
     -- booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, --> Deseamos que haya un campo que indique el momento en que se realizo la reserva?
     reservation_date TIMESTAMP NOT NULL,   --Si quisieramos que tenga en cuenta la zona horaria tendriamos que usar el tipo de dato TIMESTAMPTZ
-    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE
-    FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE,
+    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE cascade,
+    FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS roles (
@@ -39,5 +39,5 @@ CREATE TABLE IF NOT EXISTS user_roles (
                                                                 -- entonces se debe eliminar todas las filas de la tabla users_roles que presenten el rol que se elimino.
 );
 
-INSERT INTO roles (name) VALUES ("admin")     -- Al ingresar los roles de esta forma: admin-->role_id=1 y customer-->role_id=2
-INSERT INTO roles (name) VALUES ("customer")  -- or client
+INSERT INTO roles (name) VALUES ('admin');     -- Al ingresar los roles de esta forma: admin-->role_id=1 y customer-->role_id=2
+INSERT INTO roles (name) VALUES ('customer');  -- or client

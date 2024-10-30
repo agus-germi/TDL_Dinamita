@@ -8,7 +8,7 @@ import (
 
 var (
 	ErrReservationAlreadyExists = errors.New("reservation already exists")
-	ErrRemovingReservation      = errors.New("Something went wrong trying to remove a reservation")
+	ErrRemovingReservation      = errors.New("something went wrong trying to remove a reservation")
 )
 
 func (s *serv) ReserveTable(ctx context.Context, userID, tableNumber int64, date time.Time) error {
