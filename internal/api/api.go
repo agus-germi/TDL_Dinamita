@@ -13,6 +13,6 @@ func New(serv service.Service) *API {
 	return &API{serv: serv}
 }
 
-func (api *API) Start(e *echo.Echo, address string) error {
+func (a *API) Start(e *echo.Echo, address string) error {
 	return e.Start(address)
 }

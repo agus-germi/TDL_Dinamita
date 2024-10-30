@@ -40,7 +40,7 @@ func configureLifeCycleHooks(lc fx.Lifecycle, api *api.API, e *echo.Echo) {
 			},
 
 			OnStop: func(ctx context.Context) error {
-				fmt.Println("Shuting down application...")
+				fmt.Println("Shutting down application...")
 				return nil
 			},
 		},

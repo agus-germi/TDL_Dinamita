@@ -124,7 +124,7 @@ Para generar los mocks:
 
 ## Theoretical concepts
 - [Pool de conexiones](https://chatgpt.com/share/671f899c-bc00-8004-acf7-133575a8e903)
-    > Para configurar de forma mas precisa el pool de conexiones podemos migrar de `sqlx` a `pgxpool` 
+    > Para configurar de forma mas precisa el pool de conexiones podemos migrar de `sqlx` a `pgxpool`
 
 - [REDIS](https://chatgpt.com/share/671fcb41-b638-8004-8635-137baf717321)
 
