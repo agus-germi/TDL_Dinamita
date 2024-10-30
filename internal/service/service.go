@@ -16,8 +16,8 @@ type Service interface {
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*dtos.User, error)
 	RemoveUser(ctx context.Context, email string) error
-	ReserveTable(ctx context.Context, tableNumber, userID int64, date time.Time) error
-	RemoveReservation(ctx context.Context, userID int64) error // quizas que podriamos permitir que la eliminacion de una reserva sea mas especifica, enviando por parametro la mesa y el dia de la reserva.
+	ReserveTable(ctx context.Context, userID, tableNumber int64, date time.Time) error
+	RemoveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
 
 	// Admin features
 	AddUserRole(ctx context.Context, userID, roleID int64) error // Deberiamos usar el email en vez de userID?

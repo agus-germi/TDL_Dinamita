@@ -28,8 +28,9 @@ type Repository interface {
 	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
 
 	// Reservation
-	SaveReservation(ctx context.Context, tableNumber, userID int64, date time.Time) error
-	RemoveReservation(ctx context.Context, userID int64) error
+	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
+	RemoveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
+	GetReservation(ctx context.Context, userID, tableNumber int64, date time.Time) (*entity.Reservation, error)
 }
 
 type repo struct {
