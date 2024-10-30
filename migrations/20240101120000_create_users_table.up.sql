@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS tables (
     id SERIAL PRIMARY KEY,
+    number INT UNIQUE,
     seats INT NOT NULL,
     location VARCHAR(255),
     is_available BOOLEAN DEFAULT TRUE NOT NULL
@@ -16,10 +17,10 @@ CREATE TABLE IF NOT EXISTS tables (
 
 CREATE TABLE IF NOT EXISTS reservations (
     id SERIAL PRIMARY KEY,
-    table_id INT NOT NULL,
+    table_number INT NOT NULL,
     reserved_by INT NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,   --Si quisieramos que tenga en cuenta la zona horaria tendriamos que usar el tipo de dato TIMESTAMPTZ
-    FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE,
+    FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE,
     FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE
 );
 

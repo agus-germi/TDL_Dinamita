@@ -11,6 +11,7 @@ import (
 var (
 	ErrUserAlreadyExists     = errors.New("user already exists")
 	ErrUserNotFound          = errors.New("user not found")
+	ErrRemovingUser          = errors.New("something went wrong trying to remove a user")
 	ErrInvalidCredentials    = errors.New("invalid credentials")
 	ErrUserRoleAlreadyExists = errors.New("user role already exists")
 	ErrRemovingUserRole      = errors.New("something went wrong trying to remove a user role")
@@ -49,6 +50,15 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*dtos.Use
 		ID:    usr.ID,
 		Name:  usr.Name,
 		Email: usr.Email}, nil
+}
+
+func (s *serv) RemoveUser(ctx context.Context, email string) error {
+	err := s.repo.RemoveUser(ctx, email)
+	if err != nil {
+		return ErrRemovingUser
+	}
+
+	return nil
 }
 
 func HashPassword(password string) (string, error) {
