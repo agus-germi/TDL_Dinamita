@@ -1,9 +1,23 @@
 # TDL_Dinamita
 
-## Run the following command in to execute the application:
-```
-docker-compose up --build
-```
+## Built information
+
+- Run the following command to execute the application (including PostgreSQL DB):
+    ```sh
+    docker-compose up --build
+    ```
+
+- To run ***only the rest server***
+    1. Build a docker image from the Dockerfile
+        ```sh
+        docker build --tag restaurant-system:1.0.0 .
+        ```
+    2. Run the image inside the container:
+        ```sh
+        docker run restaurant-system:1.0.0
+        ```
+    > **Aclaracion**: Esto es por el momento. A medida que vamos completando versiones del server, nos conviene contruir una imagen para cada version e ir subiendolas a un repositorio en docker hub. De esta forma cualquier persona puede hacer `docker pull <namespace:tag>` y se descarga localmente la imagen, para luego correrla en un contenedor. De esa forma nos aseguramos de que este usando una version valida del server.
+
 
 ### TODO
 
@@ -21,37 +35,81 @@ docker-compose up --build
     dirijidas a cada entidad en particular pero dichas funciones las implementa la misma estructura (repo struct)
 
 
-## Useful Go commands:
-- ```go mod tidy```
-    > Ejecutarlo regularmente para actualizar las dependencias y eliminar aquellas que son innecesarias.
-- ```go clean -modcache```
-    > Se usa en casos especiales para limpiar la cache de Go
+## Useful *Go commands*:
 
-## Built information
-Primera linea a ejecutar al crear el proyecto en go:
-```
-go mod init github.com/agus-germi/TDL_Dinamita
-```
+- First command to execute in a Go project:
+    ```sh
+    go mod init github.com/agus-germi/TDL_Dinamita
+    ```
+    It creats the `go.mod` file that have all the dependencies which need our project.
 
-Para levantar el servidor:
-```
-go run ./cmd/server
-```
+- Update the dependecies, deleting those that are no longer needed by our project:
+    ```sh
+    go mod tidy
+    ```
+    It's a good practice to execute it often during the development phase.
 
-Crear la imagen del contenedor.
-```
-docker build --tag restaurant_system
-```
+- Clean the Go cache.
+    ```sh
+    go clean -modcache
+    ```
+    Only execute it in specific cases. Suggestion: Investigate when it's necessary.
 
-To see the list of images:
-```
-docker images
-```
 
-To run the image inside of a container:
-```
-docker run restaurant_system
-```
+## Useful *Docker commands*
+
+- Build a docker image from a Dockerfile
+    ```sh
+    docker build --tag <tag-name:version> .
+    ```
+    El `.` indica que el `Dockerfile` se encuentra en el directorio actual donde se esta ejecuntando el comando desde la terminal. `--tag` puede ser reemplazado por `-t`.
+    
+- List all the docker images
+    ```sh
+    docker images
+    ```
+
+- Delete an especific image `IMAGE_ID`
+    ```sh
+    docker rmi IMAGE_ID
+    ```
+    If you need to force the deletion add `-f` to the command, as follows:
+    ```sh
+    docker rmi -f IMAGE_ID
+    ```
+
+- To delete all the `dangling docker images`.
+    ```sh
+    docker image prune
+    ```
+    A *dangling image* has neither `name` nor `tag`. It has both as `<none>`.
+    
+    `-f` tag is added to force the deletion without any need for confirmation:
+    ```sh
+    docker image prune -f
+    ```
+
+- Delete all the images:
+    ```sh
+    docker rmi $(docker images -q)
+    ```
+    If any image if already used by a container, add `-f`:
+    ```sh
+    docker rmi -f $(docker images -q)
+    ```
+
+- To run an especific image inside of a container:
+    ```sh
+    docker run <image_tag>
+    ```
+    You can run the last image executing:
+    ```sh
+    docker run
+    ```
+
+
+
+## Miscellaneous information
 
 Para hacer mas liviana la imagen de docker --> Multi-stage Dockerfile builds.
 
@@ -116,10 +174,6 @@ Para generar los mocks:
 - ```curl.exe -v localhost:8080```
     > This command is useful for Windows OS. If your host OS is Linux or MacOS run `curl` instead of `curl.exe`.
     Note: `-v` is a tag use to print a bunch of info about the request.
-
-
-
-
 
 
 ## Theoretical concepts
