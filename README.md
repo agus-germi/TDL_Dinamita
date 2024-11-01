@@ -6,7 +6,14 @@
     ```sh
     docker-compose up --build
     ```
-
+- Add -d to run it on the background:
+     ```sh
+    docker-compose up -d --build
+    ```
+- To shut down the server and the DB engine:
+     ```sh
+    docker-compose down
+    ```
 - To run ***only the rest server***
     1. Build a docker image from the Dockerfile
         ```sh

@@ -34,6 +34,8 @@ func configureLifeCycleHooks(lc fx.Lifecycle, api *api.API, e *echo.Echo) {
 			OnStart: func(ctx context.Context) error {
 				fmt.Println("Starting application...")
 				// El valor de "address" podemos leerlo de la variable de entorno API_PORT
+				api.SetStaticFiles(e)
+				api.SetRoutes(e)
 				go api.Start(e, ":8080") // api.Start(e, address)
 
 				return nil
