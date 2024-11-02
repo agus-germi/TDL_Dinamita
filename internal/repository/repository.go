@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 	"github.com/jmoiron/sqlx"
@@ -28,9 +27,9 @@ type Repository interface {
 	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
 
 	// Reservation
-	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
-	RemoveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
-	GetReservation(ctx context.Context, userID, tableNumber int64, date time.Time) (*entity.Reservation, error)
+	SaveReservation(ctx context.Context, userID, tableNumber int64) error
+	RemoveReservation(ctx context.Context, userID, tableNumber int64) error
+	GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error)
 }
 
 type repo struct {

@@ -14,6 +14,9 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
 
+	reservations := e.Group("/reservations")
+	reservations.POST("/register", a.RegisterReservation)
+
 	// Set static files
 	//a.setStaticFiles(e)
 }

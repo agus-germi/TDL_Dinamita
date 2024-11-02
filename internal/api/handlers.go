@@ -37,3 +37,32 @@ func (a *API) RegisterUser(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "User registered successfully"})
 }
+
+func (a *API) RegisterReservation(c echo.Context) error {
+
+	ctx := c.Request().Context() // obtengo el contexto del objeto Request que viene con la petición HTTP
+
+	params := dtos.RegisterReservationDTO{} //creo una instancia de RegisterReservationDTO
+
+	//Linkeo la request con la instancia de RegisterReservationDTO
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	//Valido los datos
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	err = a.serv.RegisterReservation(ctx, params.UserID, params.Name, params.Password, params.Email, params.TableNumber)
+	if err != nil {
+		if err == service.ErrUserAlreadyExists {
+			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		}
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "User registered successfully"})
+}

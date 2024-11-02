@@ -23,24 +23,20 @@ const (
 // When we show the reservation date to the user we have to convert
 // the date according to the local location.
 // Keep in mind that the date saved in the DB is according to UTC location.
-func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
-	formattedDate := r.FormatDate(date)
-	_, err := r.db.ExecContext(ctx, qryInsertReservation, userID, tableNumber, formattedDate)
+func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64) error {
+	_, err := r.db.ExecContext(ctx, qryInsertReservation, userID, tableNumber)
 	return err
 }
 
-func (r *repo) RemoveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
-	formattedDate := r.FormatDate(date)
-	_, err := r.db.ExecContext(ctx, qryRemoveReservation, userID, tableNumber, formattedDate)
+func (r *repo) RemoveReservation(ctx context.Context, userID, tableNumber int64) error {
+	_, err := r.db.ExecContext(ctx, qryRemoveReservation, userID, tableNumber)
 	return err
 }
 
-func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64, date time.Time) (*entity.Reservation, error) {
+func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error) {
 	rsv := &entity.Reservation{}
 
-	formattedDate := r.FormatDate(date)
-
-	err := r.db.GetContext(ctx, rsv, qryGetReservation, userID, tableNumber, formattedDate)
+	err := r.db.GetContext(ctx, rsv, qryGetReservation, userID, tableNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +44,7 @@ func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64, da
 	return rsv, nil
 }
 
+// TODO: sacar esto
 // Format date to ISO 8601 (complying PostgreSQL date format)
 // YYYY-MM-DD HH:MI:SS[.MS] [TZ]
 // Example: '2024-10-29 21:45:30 UTC'
