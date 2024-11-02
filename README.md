@@ -31,7 +31,7 @@
 - Validar que el ingreso de la password no sea mayor a 72 bytes (ya que el hasheo con bycrypt solo acepta strings menores o iguales a 72 bytes).
     > GenerateFromPassword does not accept passwords longer than 72 bytes.
 
-- Create UserSession inside `entity` module. This struct will replace `dtos.User struct`.
+- Create UserSession inside `entity` module. This struct will replace `models.User struct`.
 
 - Migrate from sqlx to pgxpool
 
