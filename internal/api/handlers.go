@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
@@ -61,6 +62,7 @@ func (a *API) RegisterReservation(c echo.Context) error {
 		if err == service.ErrUserAlreadyExists {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
 		}
+		log.Println("Error during registration:", err)
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 

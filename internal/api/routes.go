@@ -17,6 +17,11 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
 
+	// Handle GET requests to the root path
+	//e.GET("/*", func(c echo.Context) error {
+	//	return c.File("static/index.html")
+	//})
+
 	// Set static files
 	//a.setStaticFiles(e)
 }
