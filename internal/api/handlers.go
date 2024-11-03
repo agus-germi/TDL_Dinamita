@@ -57,7 +57,7 @@ func (a *API) RegisterReservation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RegisterReservation(ctx, params.UserID, params.Name, params.Password, params.Email, params.TableNumber)
+	err = a.serv.RegisterReservation(ctx, params.UserID, params.Name, params.Password, params.Email, params.TableNumber, params.ReservationDate)
 	if err != nil {
 		if err == service.ErrReservationAlreadyExists {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})

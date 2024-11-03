@@ -41,3 +41,5 @@ CREATE TABLE IF NOT EXISTS user_roles (
 
 INSERT INTO roles (name) VALUES ('admin');     -- Al ingresar los roles de esta forma: admin-->role_id=1 y customer-->role_id=2
 INSERT INTO roles (name) VALUES ('customer');  -- or client
+INSERT INTO tables (number, seats, location, is_available) VALUES (1, 3, 'balcon', true);
+

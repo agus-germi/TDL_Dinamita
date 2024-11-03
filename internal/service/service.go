@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	time "time"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
@@ -15,7 +16,7 @@ type Service interface {
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
 	RemoveUser(ctx context.Context, email string) error
-	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64) error
+	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error
 	RemoveReservation(ctx context.Context, userID, tableNumber int64) error
 
 	// Admin features
