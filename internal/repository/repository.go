@@ -30,7 +30,7 @@ type Repository interface {
 
 	// Reservation
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
-	RemoveReservation(ctx context.Context, userID, tableNumber int64) error // Considerar remover una reserva usando su ID.
+	RemoveReservation(ctx context.Context, userID int64) error
 	GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error)
 }
 

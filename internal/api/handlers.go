@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
@@ -66,4 +67,29 @@ func (a *API) RegisterReservation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Reservation registered successfully"})
+}
+
+func (a *API) RemoveReservation(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	// Obtengo el ID de la reserva de los parametros
+	reservationID := c.QueryParam("user_id")
+	if reservationID == "" {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Reservation ID is required"})
+	}
+
+	reservationIDInt, err := strconv.ParseInt(reservationID, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid reservation ID"})
+	}
+	err = a.serv.RemoveReservation(ctx, reservationIDInt)
+	if err != nil {
+		if err == service.ErrReservationNotFound {
+			return c.JSON(http.StatusNotFound, responseMessage{Message: "Reservation not found"})
+		}
+		log.Println("Error removing reservation:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Reservation removed successfully"})
 }

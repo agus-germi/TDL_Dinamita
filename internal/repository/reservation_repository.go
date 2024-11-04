@@ -17,7 +17,7 @@ const (
 						 WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
 
 	qryRemoveReservation = `DELETE FROM reservations
-							WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
+							WHERE reserved_by=$1`
 )
 
 // When we show the reservation date to the user we have to convert
@@ -29,8 +29,8 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 	return err
 }
 
-func (r *repo) RemoveReservation(ctx context.Context, userID, tableNumber int64) error {
-	_, err := r.db.ExecContext(ctx, qryRemoveReservation, userID, tableNumber)
+func (r *repo) RemoveReservation(ctx context.Context, userID int64) error {
+	_, err := r.db.ExecContext(ctx, qryRemoveReservation, userID)
 	return err
 }
 
