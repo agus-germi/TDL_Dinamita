@@ -26,6 +26,7 @@ type Repository interface {
 	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error
 	RemoveTable(ctx context.Context, tableNumber int64) error
 	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
+	CheckTableAvailability(ctx context.Context, tableNumber int, reservationDate time.Time) (bool, error)
 
 	// Reservation
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
