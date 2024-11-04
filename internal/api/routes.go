@@ -23,15 +23,15 @@ func (a *API) SetRoutes(e *echo.Echo) {
 // que con setear los StaticFiles como 'e.Static("/users", "static/users")'
 // la busqueda se haga automatica.
 func (a *API) SetStaticFiles(e *echo.Echo) {
-	// Determina la ruta absoluta al directorio "public"
-	publicDir := filepath.Join("frontend", "public")
-
-	// Serve all static assets (CSS, JS, etc.) from "/static" prefix
-	e.Static("/", publicDir)
+	//publicDir := "frontend" // Just use the folder name since it will be relative to the working directory
 
 	// Serve the index.html at the root
-	e.File("/", filepath.Join(publicDir, "index.html"))
+	e.File("/", "index.html")
+
+	// Serve all static assets (CSS, JS, etc.) from "/static" prefix
+	e.Static("/", "frontend") // This serves the frontend directory at the /static path
 }
+
 
 func (a *API) SetMiddlewares(e *echo.Echo) {
 	e.Use(middleware.Logger())
