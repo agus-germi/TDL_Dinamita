@@ -4,7 +4,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
-    fetch('http://localhost:8080/login', {
+    fetch('http://localhost:8080/users/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         document.getElementById('loginMessage').innerText = data.message; // Suponiendo que el mensaje está en el objeto data
         localStorage.setItem('username', username); // Guardar en localStorage
         console.log('storage' + localStorage.getItem('username'));
-        window.location.href = 'main.html'; // Redirigir a la página principal
+        window.location.href = '../html/main.html'; // Redirigir a la página principal
     })
     .catch(error => {
         document.getElementById('loginMessage').innerText = error.message;
