@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/agus-germi/TDL_Dinamita/internal/dtos"
+	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -31,7 +31,7 @@ func (s *serv) RegisterUser(ctx context.Context, name, password, email string) e
 	return s.repo.SaveUser(ctx, name, hashedPassword, email)
 }
 
-func (s *serv) LoginUser(ctx context.Context, email, password string) (*dtos.User, error) {
+func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
 	usr, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*dtos.Use
 		return nil, ErrInvalidCredentials
 	}
 
-	return &dtos.User{
+	return &models.User{
 		ID:    usr.ID,
 		Name:  usr.Name,
 		Email: usr.Email}, nil

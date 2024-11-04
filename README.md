@@ -6,7 +6,14 @@
     ```sh
     docker-compose up --build
     ```
-
+- Add -d to run it on the background:
+     ```sh
+    docker-compose up -d --build
+    ```
+- To shut down the server and the DB engine:
+     ```sh
+    docker-compose down
+    ```
 - To run ***only the rest server***
     1. Build a docker image from the Dockerfile
         ```sh
@@ -24,7 +31,7 @@
 - Validar que el ingreso de la password no sea mayor a 72 bytes (ya que el hasheo con bycrypt solo acepta strings menores o iguales a 72 bytes).
     > GenerateFromPassword does not accept passwords longer than 72 bytes.
 
-- Create UserSession inside `entity` module. This struct will replace `dtos.User struct`.
+- Create UserSession inside `entity` module. This struct will replace `models.User struct`.
 
 - Migrate from sqlx to pgxpool
 

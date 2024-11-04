@@ -5,7 +5,7 @@ package service
 import (
 	context "context"
 
-	dtos "github.com/agus-germi/TDL_Dinamita/internal/dtos"
+	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	mock "github.com/stretchr/testify/mock"
 
 	time "time"
@@ -53,23 +53,23 @@ func (_m *MockService) AddUserRole(ctx context.Context, userID int64, roleID int
 }
 
 // LoginUser provides a mock function with given fields: ctx, email, password
-func (_m *MockService) LoginUser(ctx context.Context, email string, password string) (*dtos.User, error) {
+func (_m *MockService) LoginUser(ctx context.Context, email string, password string) (*models.User, error) {
 	ret := _m.Called(ctx, email, password)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoginUser")
 	}
 
-	var r0 *dtos.User
+	var r0 *models.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*dtos.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*models.User, error)); ok {
 		return rf(ctx, email, password)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) *dtos.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.User); ok {
 		r0 = rf(ctx, email, password)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dtos.User)
+			r0 = ret.Get(0).(*models.User)
 		}
 	}
 
