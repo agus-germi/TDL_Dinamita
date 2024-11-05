@@ -1,0 +1,61 @@
+# Configuración básica de Air
+
+# El directorio donde se encuentra el código fuente
+root = "."
+
+# Configuración de las carpetas a monitorear
+[[watch]]
+    # Directorios a monitorear
+    dir = "."
+
+    # Extensiones de archivos a monitorear
+    include = ["**/*.go", "**/*.html", "**/*.css", "**/*.js"]  # Monitorea todos los archivos Go y los archivos de frontend
+
+    # Archivos ignorados
+    exclude = ["migrations/**/*"]
+
+    # Configuración del reinicio automático
+    restart = true
+
+# Comandos a ejecutar antes de compilar
+[build]
+    # Comando de compilacion archivo tmp necesario para air y Comando de compilación de nuestra app para Linux
+    cmd = """
+        mkdir -p ./tmp &&
+        go build -o ./tmp/main . && 
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /usr/local/bin/restaurant_system .
+        """
+
+[log]
+    # silence all logs produced by air
+    silent = false
+
+[color]
+    # Customize each part's color. If no color found, use the raw app log.
+    main = "magenta"
+    watcher = "cyan"
+    build = "yellow"
+    runner = "green"
+
+[proxy]
+    # Enable live-reloading on the browser.
+    enabled = true
+    proxy_port = 8090
+    app_port = 8080
+
+# Comandos a ejecutar para correr tu aplicación
+[run]
+    # Comando para esperar que la base de datos esté lista
+    cmd = """
+          sh -c 'echo "Waiting for database..."; 
+          timeout 60 sh -c "until pg_isready -h db -p 5432; do sleep 1; done"; 
+          exec /usr/local/bin/restaurant_system'
+          """
+
+# Configuración del entorno
+[env]
+    # Variables de entorno que necesitas
+    PORT = "8080"
+    
+    # Seteamos a air en modo verbose (para que de mas informacion en sus logs)
+    AIR_WATCH_VERBOSE = "true"

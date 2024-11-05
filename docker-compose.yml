@@ -2,6 +2,8 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile  # We could have Dockerfile.dev & Dockerfile.prod (with builder and final), instead of one Dockerfile multistage
+      target: dev
     container_name: rest-server
     hostname: rest-server
     depends_on:
@@ -10,12 +12,16 @@ services:
     ports:
       - 8080:8080
     volumes:
+      - ./:/usr/src/app  # Monta el código fuente de tu proyecto en el contenedor
       -  ./.env:/usr/src/app/.env  # Montar el archivo .env en el contenedor
+    
+    # Si en "target" ponemos "final" en vez de "dev", entonces hay que descomentar la linea del "command"
     # En vez de este comando podriamos configurar docker-compose con healthschecks (investigar mas)
-    command: ["sh", "-c",
-               "echo 'Waiting for database...';
-               timeout 60 sh -c 'until pg_isready -h db -p 5432; do sleep 1; done';
-               exec /usr/local/bin/restaurant_system"]
+    # command: ["sh", "-c",
+    #            "echo 'Waiting for database...';
+    #            timeout 60 sh -c 'until pg_isready -h db -p 5432; do sleep 1; done';
+    #            exec /usr/local/bin/restaurant_system"]
+    
     # deploy:
     #   restart_policy:
     #     condition: on-failure

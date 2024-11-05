@@ -22,6 +22,17 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	//	return c.File("static/index.html")
 	//})
 
+	e.GET("/users/register", func(c echo.Context) error {
+		html := "<hmtl>"
+		html += "<body>"
+		html += "<h1>Hola gente!</h1>"
+		html += "</body>"
+		html += "</hmtl>"
+
+		_, err := c.Response().Writer.Write([]byte(html))
+		return err
+	})
+
 	// Set static files
 	//a.setStaticFiles(e)
 }
