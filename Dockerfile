@@ -1,34 +1,5 @@
 # syntax=docker/dockerfile:1
 
-# ------------ Development stage ------------ #
-FROM golang:1.23 AS dev
-
-# Establish GOPATH environment variable
-ENV GOPATH /go
-
-# Add bin directory of GOPATH to PATH
-ENV PATH $GOPATH/bin:$PATH
-
-# PostgreSQL client installation
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
-
-# Air installation for hot reload
-RUN go install github.com/air-verse/air@latest
-
-# Create workspace directory
-WORKDIR /usr/src/app
-
-# Download Go modules
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
-
-# Copy the source code
-COPY . .
-
-# Run air in the development environment
-CMD ["air"]
-
-
 # ------------ Build stage ------------ #
 FROM golang:1.23 AS builder
 

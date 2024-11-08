@@ -2,8 +2,8 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile  # We could have Dockerfile.dev & Dockerfile.prod (with builder and final), instead of one Dockerfile multistage
-      target: dev
+      dockerfile: Dockerfile.dev  # We could have Dockerfile.dev & Dockerfile.prod (with builder and final), instead of one Dockerfile multistage
+      #target: dev
     container_name: rest-server
     hostname: rest-server
     depends_on:
