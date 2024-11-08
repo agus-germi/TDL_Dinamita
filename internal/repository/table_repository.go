@@ -18,22 +18,19 @@ const (
 	qryGetTable = `SELECT number, seats, location, is_available
 				   FROM tables
 				   WHERE number=$1`
-	qryCheckAvailability = `SELECT COUNT(*) 
-							FROM tables 
-							WHERE number = $1 `
+	qryCheckAvailability = `SELECT * 
+							FROM tables
+							WHERE number=$1 and is_available=$2`
 )
 
-func (r *repo) CheckTableAvailability(ctx context.Context, tableNumber int, reservationDate time.Time) (bool, error) {
-	var count int
-	err := r.db.QueryRowContext(ctx, qryCheckAvailability, tableNumber).Scan(&count)
+func (r *repo) CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error) {
+	table, err := r.GetTableByNumber(ctx, tableNumber)
 	if err != nil {
-		log.Println("ERRRRORR:", err)
 		return false, err
 	}
 
-	is_available := count == 0 // si a cuenta da cero => no hay matches por ende esta libre la mesa para esa fecha
-
-	return is_available, nil
+	log.Println("table.IsAvailable:", table.IsAvailable)
+	return table.IsAvailable, nil
 }
 
 func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
@@ -51,6 +48,7 @@ func (r *repo) GetTableByNumber(ctx context.Context, tableNumber int64) (*entity
 
 	err := r.db.GetContext(ctx, table, qryGetTable, tableNumber)
 	if err != nil {
+		log.Println("ERROR:", err)
 		return nil, err
 	}
 

@@ -15,11 +15,11 @@ var (
 )
 
 func (s *serv) RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error {
-	is_available, err := s.repo.CheckTableAvailability(ctx, int(tableNumber), date)
+	is_available, err := s.repo.CheckTableAvailability(ctx, tableNumber, date)
 	if err != nil {
 		return ErrCheckingAvailability
-
 	}
+
 	if !is_available {
 		log.Println("Availability: ", is_available)
 		return ErrTableNotAvailable
