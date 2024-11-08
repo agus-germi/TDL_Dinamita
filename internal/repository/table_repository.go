@@ -3,7 +3,6 @@ package repository
 import (
 	context "context"
 	"log"
-	time "time"
 
 	entity "github.com/agus-germi/TDL_Dinamita/internal/entity"
 )
@@ -18,20 +17,7 @@ const (
 	qryGetTable = `SELECT number, seats, location, is_available
 				   FROM tables
 				   WHERE number=$1`
-	qryCheckAvailability = `SELECT * 
-							FROM tables
-							WHERE number=$1 and is_available=$2`
 )
-
-func (r *repo) CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error) {
-	table, err := r.GetTableByNumber(ctx, tableNumber)
-	if err != nil {
-		return false, err
-	}
-
-	log.Println("table.IsAvailable:", table.IsAvailable)
-	return table.IsAvailable, nil
-}
 
 func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
 	_, err := r.db.ExecContext(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)

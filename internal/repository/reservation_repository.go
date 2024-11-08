@@ -2,7 +2,7 @@ package repository
 
 import (
 	context "context"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
@@ -18,13 +18,22 @@ const (
 
 	qryRemoveReservation = `DELETE FROM reservations
 							WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
+
+	qryGetReservationByTableNumberAndDate = `SELECT reserved_by, table_number, reservation_date
+											FROM reservations
+											WHERE table_number=$1 AND reservation_date=$2`
 )
 
 // When we show the reservation date to the user we have to convert
-// the date according to the local location.
+// the date according to the local time zone.
 // Keep in mind that the date saved in the DB is according to UTC location.
 func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
-	formattedDate := r.FormatDate(date)
+	// El formato RFC3339 es una forma estándar de representar
+	// fechas y horas, que es casi equivalente al formato ISO 8601.
+	// El estándar RFC 3339 es compatible con ISO 8601, y se utiliza
+	// ampliamente en la web, por lo que es una representación adecuada
+	// para el formato ISO 8601.
+	formattedDate := date.Format(time.RFC3339)
 	_, err := r.db.ExecContext(ctx, qryInsertReservation, userID, tableNumber, formattedDate)
 	return err
 }
@@ -45,13 +54,17 @@ func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*
 	return rsv, nil
 }
 
-// Format date to ISO 8601 (complying PostgreSQL date format)
-// YYYY-MM-DD HH:MI:SS[.MS] [TZ]
-// Example: '2024-10-29 21:45:30 UTC'
-func (r *repo) FormatDate(date time.Time) string {
-	year, month, day := date.UTC().Date()
-	hour := date.UTC().Hour()
-	min := date.UTC().Minute()
-	sec := date.UTC().Second()
-	return fmt.Sprintf("%d-%d-%d %d:%d:%d UTC", year, month, day, hour, min, sec)
+// No estamos teniendo en cuenta la zona horaria.
+// Quizas estaria bueno incluir esta info --> Zona horaria de America/Argentina/Buenos_Aires
+func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
+	rsv := &entity.Reservation{}
+	formattedDate := date.Format(time.RFC3339)
+
+	err := r.db.GetContext(ctx, rsv, qryGetReservationByTableNumberAndDate, tableNumber, formattedDate)
+	if err != nil {
+		log.Println("Error trying to get a reservation by number and date")
+		return nil, err
+	}
+
+	return rsv, nil
 }

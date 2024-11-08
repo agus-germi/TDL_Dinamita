@@ -14,6 +14,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
 
+	// Group routes for /reservations
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
 
@@ -32,9 +33,6 @@ func (a *API) SetRoutes(e *echo.Echo) {
 		_, err := c.Response().Writer.Write([]byte(html))
 		return err
 	})
-
-	// Set static files
-	//a.setStaticFiles(e)
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".
