@@ -56,12 +56,14 @@ func (a *API) RegisterReservation(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
+
 	err = a.serv.RegisterReservation(ctx, params.UserID, params.Name, params.Password, params.Email, params.TableNumber, params.ReservationDate)
 	if err != nil {
-		if err == service.ErrReservationAlreadyExists {
+		if err == service.ErrTableNotAvailable {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
 		}
-		log.Println("Error during registration:", err)
+
+		log.Println("Error during reservation registration:", err)
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 

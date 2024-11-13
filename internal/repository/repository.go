@@ -26,12 +26,13 @@ type Repository interface {
 	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error
 	RemoveTable(ctx context.Context, tableNumber int64) error
 	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
-	CheckTableAvailability(ctx context.Context, tableNumber int, reservationDate time.Time) (bool, error)
 
 	// Reservation
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
 	RemoveReservation(ctx context.Context, userID, tableNumber int64) error // Considerar remover una reserva usando su ID.
 	GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error)
+	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error)
+	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
 }
 
 type repo struct {
