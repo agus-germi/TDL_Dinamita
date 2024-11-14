@@ -10,7 +10,7 @@
   "reservation_date": "2024-11-15T19:00:00Z"
 }
 ```
-## Endpoint remove_table
+## Endpoint remove_reservation
 # TODO :
  - Eliminar mediante un "reservation ID"
 
@@ -19,5 +19,14 @@ DELETE > localhost:8080/reservations/remove
 ```
 {
   "user_id": 9
+}
+```
+## Endpoint add_table
+POST > localhost:8080/tables/register
+```
+{
+  "number": 9,
+  "seats": 4,
+  "location": "hall"
 }
 ```
