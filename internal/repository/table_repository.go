@@ -34,7 +34,7 @@ func (r *repo) GetTableByNumber(ctx context.Context, tableNumber int64) (*entity
 
 	err := r.db.GetContext(ctx, table, qryGetTable, tableNumber)
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Println("Error:", err)
 		return nil, err
 	}
 
