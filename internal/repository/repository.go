@@ -31,6 +31,7 @@ type Repository interface {
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
 	RemoveReservation(ctx context.Context, userID int64) error
 	GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error)
+	GetReservationByID(ctx context.Context, userID int64) (*entity.Reservation, error)
 	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error)
 	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
 }

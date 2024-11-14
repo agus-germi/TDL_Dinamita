@@ -23,10 +23,10 @@ func (s *serv) RegisterReservation(ctx context.Context, userID int64, name, pass
 }
 
 func (s *serv) RemoveReservation(ctx context.Context, userID int64) error {
-	err := s.repo.RemoveReservation(ctx, userID)
-	if err != nil {
-		return ErrRemovingReservation
+	rsv, _ := s.repo.GetReservationByID(ctx, userID)
+	if rsv == nil {
+		return ErrReservationNotFound
 	}
 
-	return nil
+	return s.repo.RemoveReservation(ctx, userID)
 }

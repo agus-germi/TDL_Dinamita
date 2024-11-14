@@ -5,8 +5,12 @@ import (
 	"log"
 	"time"
 
+	"errors"
+
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 )
+
+var ErrReservationNotFound = errors.New("reservation not found")
 
 const (
 	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, reservation_date) 
@@ -16,8 +20,12 @@ const (
 						 FROM reservations
 						 WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
 
+	qryGetReservationByID = `SELECT reserved_by, table_number, reservation_date
+							FROM reservations
+							WHERE reserved_by=$1`
+
 	qryRemoveReservation = `DELETE FROM reservations
-							WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
+							WHERE reserved_by=$1`
 
 	qryGetReservationByTableNumberAndDate = `SELECT reserved_by, table_number, reservation_date
 											FROM reservations
@@ -39,8 +47,23 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 }
 
 func (r *repo) RemoveReservation(ctx context.Context, userID int64) error {
-	_, err := r.db.ExecContext(ctx, qryRemoveReservation, userID)
-	return err
+	result, err := r.db.ExecContext(ctx, qryRemoveReservation, userID)
+	if err != nil {
+		return err // Return the error from the query
+	}
+
+	// Check the number of rows affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error in checking the number of rows affected")
+		return err // Error when determining rows affected
+	}
+
+	if rowsAffected == 0 {
+		log.Println("Rows affected = 0")
+		return ErrReservationNotFound // Custom error if no rows were deleted
+	}
+	return nil
 }
 
 func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error) {
@@ -53,9 +76,18 @@ func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*
 
 	return rsv, nil
 }
+func (r *repo) GetReservationByID(ctx context.Context, userID int64) (*entity.Reservation, error) {
+	rsv := &entity.Reservation{}
 
-// No estamos teniendo en cuenta la zona horaria.
-// Quizas estaria bueno incluir esta info --> Zona horaria de America/Argentina/Buenos_Aires
+	err := r.db.GetContext(ctx, rsv, qryGetReservationByID, userID)
+	if err != nil {
+		log.Println("Error trying to get a reservation by ID")
+		return nil, err
+	}
+
+	return rsv, nil
+}
+
 func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
 	rsv := &entity.Reservation{}
 	formattedDate := date.Format(time.RFC3339)

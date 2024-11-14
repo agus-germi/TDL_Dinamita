@@ -16,7 +16,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
-	reservations.DELETE("", a.RemoveReservation)
+	reservations.DELETE("/remove", a.RemoveReservation)
 
 	// Handle GET requests to the root path
 	//e.GET("/*", func(c echo.Context) error {
