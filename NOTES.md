@@ -11,4 +11,13 @@
 }
 ```
 ## Endpoint remove_table
-- Quiza no es necesario el nro de mesa para eliminar una reserva
+# TODO :
+ - Eliminar mediante un "reservation ID"
+
+Por ahora funciona mediante: 
+DELETE > localhost:8080/reservations/remove
+```
+{
+  "user_id": 9
+}
+```
