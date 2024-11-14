@@ -22,11 +22,12 @@ DELETE > localhost:8080/reservations/remove
 }
 ```
 ## Endpoint add_table
+Simpre que se agrega una mesa se deja como "available"
 POST > localhost:8080/tables/register
 ```
 {
   "number": 9,
   "seats": 4,
-  "location": "hall"
+  "location": "eg de location"
 }
 ```
