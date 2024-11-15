@@ -130,3 +130,32 @@ func (a *API) AddTable(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Table added successfully"})
 }
+
+func (a *API) RemoveTable(c echo.Context) error {
+
+	ctx := c.Request().Context()
+
+	params := dtos.RemoveTableDTO{}
+
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+	err = a.serv.RemoveTable(ctx, params.Number)
+	if err != nil {
+		if err == service.ErrRemovingTable {
+			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		}
+
+		log.Println("Error while removing table:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Table removed successfully"})
+
+}

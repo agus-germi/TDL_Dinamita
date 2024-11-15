@@ -1,3 +1,7 @@
+# TODO:
+- Sacar logica repetida de los handlers
+
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```
