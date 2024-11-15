@@ -35,3 +35,7 @@ POST > localhost:8080/tables/register
   "location": "eg de location"
 }
 ```
+## Endpoint remove_user
+ ### TODO:
+ - ver que se deberia de eliminar de ambas tablas 
+ - comprobar quese elimine por id

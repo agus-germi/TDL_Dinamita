@@ -13,7 +13,7 @@ const (
 					 VALUES ($1, $2, $3)`
 
 	qryRemoveUser = `DELETE FROM users
-					WHERE user_id=$1`
+					WHERE id=$1`
 
 	qryGetUserByEmail = `SELECT id, name, password, email
 						FROM users
