@@ -13,6 +13,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	// Group routes for /users
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
+	users.DELETE("/remove", a.RemoveUser)
 
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)

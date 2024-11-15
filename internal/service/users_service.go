@@ -51,8 +51,8 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		Email: usr.Email}, nil
 }
 
-func (s *serv) RemoveUser(ctx context.Context, email string) error {
-	err := s.repo.RemoveUser(ctx, email)
+func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
+	err := s.repo.RemoveUser(ctx, userID)
 	if err != nil {
 		return ErrRemovingUser
 	}

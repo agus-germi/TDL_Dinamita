@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 )
@@ -12,7 +13,7 @@ const (
 					 VALUES ($1, $2, $3)`
 
 	qryRemoveUser = `DELETE FROM users
-					WHERE email=$1`
+					WHERE user_id=$1`
 
 	qryGetUserByEmail = `SELECT id, name, password, email
 						FROM users
@@ -34,9 +35,24 @@ func (r *repo) SaveUser(ctx context.Context, name, password, email string) error
 	return err
 }
 
-func (r *repo) RemoveUser(ctx context.Context, email string) error {
-	_, err := r.db.ExecContext(ctx, qryRemoveUser, email)
-	return err
+func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
+	result, err := r.db.ExecContext(ctx, qryRemoveUser, userID)
+	if err != nil {
+		return err // Return the error from the query
+	}
+
+	// Check the number of rows affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error in checking the number of rows affected")
+		return err // Error when determining rows affected
+	}
+
+	if rowsAffected == 0 {
+		log.Println("Rows affected = 0")
+		return err // No user was found
+	}
+	return nil
 }
 
 func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
