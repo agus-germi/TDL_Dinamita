@@ -34,8 +34,9 @@ RUN apk add --no-cache postgresql-client
 # Copy binary file from build stage
 COPY --from=builder /output/linux/restaurant_system /usr/local/bin/restaurant_system
 
-# Copy the HTML file to the app directory in the container
-COPY index.html /usr/src/app/index.html
+# Copiar toda la carpeta frontend, incluyendo index.html
+COPY frontend /usr/src/app/frontend
+
 
 # Set the working directory
 WORKDIR /usr/src/app

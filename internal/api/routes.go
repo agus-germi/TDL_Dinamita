@@ -1,7 +1,7 @@
 package api
 
 import (
-	"path/filepath"
+	//"path/filepath"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,13 +23,11 @@ func (a *API) SetRoutes(e *echo.Echo) {
 // que con setear los StaticFiles como 'e.Static("/users", "static/users")'
 // la busqueda se haga automatica.
 func (a *API) SetStaticFiles(e *echo.Echo) {
-	//publicDir := "frontend" // Just use the folder name since it will be relative to the working directory
+	// Sirve todos los archivos estáticos desde el prefijo /static
+	e.Static("/static", "frontend")
 
-	// Serve the index.html at the root
-	e.File("/", "index.html")
-
-	// Serve all static assets (CSS, JS, etc.) from "/static" prefix
-	e.Static("/", "frontend") // This serves the frontend directory at the /static path
+	// Sirve el archivo index.html en la raíz
+	e.File("/", "frontend/index.html")
 }
 
 

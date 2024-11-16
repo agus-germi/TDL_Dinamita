@@ -32,7 +32,7 @@ form {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     width: 300px;
     display: flex;
-    flex-direction: column; /* Asegurarse de que los elementos estén en columna */
+    flex-direction: column; /* Organizar los elementos en columna */
     align-items: center;
 }
 
@@ -48,7 +48,8 @@ label {
 
 /* Campos de entrada */
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="email"] {
     width: 100%;
     padding: 12px;
     margin-bottom: 20px;
@@ -61,7 +62,8 @@ input[type="password"] {
 
 /* Focus en los campos de entrada */
 input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus,
+input[type="email"]:focus {
     border-color: #4d90fe;
     outline: none;
 }
@@ -84,13 +86,13 @@ button:hover {
 }
 
 /* Mensaje de error */
-#loginMessage {
+#registerMessage {
     margin-top: 15px;
     color: #e74c3c;
     font-size: 1rem;
 }
 
-/* Enlace de registro */
+/* Enlace de redirección */
 p {
     margin-top: 20px;
     font-size: 1rem;
