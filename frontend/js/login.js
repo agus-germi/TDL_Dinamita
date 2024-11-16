@@ -1,7 +1,7 @@
 document.getElementById('loginForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Evita el envío del formulario
 
-    const username = document.getElementById('loginUsername').value;
+    const name = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
     fetch('http://localhost:8080/users/login', {
@@ -9,7 +9,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ name, password }),
     })
     .then(response => {
         if (!response.ok) {
@@ -19,9 +19,9 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     })
     .then(data => {
         document.getElementById('loginMessage').innerText = data.message; // Suponiendo que el mensaje está en el objeto data
-        localStorage.setItem('username', username); // Guardar en localStorage
+        localStorage.setItem('username', name); // Guardar en localStorage
         console.log('storage' + localStorage.getItem('username'));
-        window.location.href = '../html/main.html'; // Redirigir a la página principal
+        window.location.href = '/static/html/main.html'; // Redirigir a la página principal
     })
     .catch(error => {
         document.getElementById('loginMessage').innerText = error.message;
