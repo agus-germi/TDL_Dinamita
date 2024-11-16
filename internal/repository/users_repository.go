@@ -18,7 +18,9 @@ const (
 	qryGetUserByEmail = `SELECT id, name, password, email
 						FROM users
 						WHERE email=$1`
-
+	qryGetUserByID = `SELECT id, name, password, email
+						FROM users
+						WHERE id=$1`
 	qryInsertUserRole = `INSERT INTO user_roles (user_id, role_id)
 						VALUES ($1, $2)`
 
@@ -85,4 +87,15 @@ func (r *repo) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole,
 	}
 
 	return usr_role, nil
+}
+
+func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, error) {
+	usr := &entity.User{}
+
+	err := r.db.GetContext(ctx, usr, qryGetUserByID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return usr, nil
 }

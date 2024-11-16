@@ -37,5 +37,10 @@ POST > localhost:8080/tables/register
 ```
 ## Endpoint remove_user
  ### TODO:
- - ver que se deberia de eliminar de ambas tablas 
- - comprobar quese elimine por id
+ - ver que se deberia de eliminar de ambas tablas > Users y User Role
+DELETE > localhost:8080/users/remove
+```
+{
+  "user_id": 9
+}
+```
