@@ -2,6 +2,7 @@ package repository
 
 import (
 	context "context"
+	"log"
 
 	entity "github.com/agus-germi/TDL_Dinamita/internal/entity"
 )
@@ -33,6 +34,7 @@ func (r *repo) GetTableByNumber(ctx context.Context, tableNumber int64) (*entity
 
 	err := r.db.GetContext(ctx, table, qryGetTable, tableNumber)
 	if err != nil {
+		log.Println("ERROR:", err)
 		return nil, err
 	}
 

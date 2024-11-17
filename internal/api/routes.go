@@ -14,6 +14,15 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
 
+	reservations := e.Group("/reservations")
+	reservations.POST("/register", a.RegisterReservation)
+	reservations.DELETE("/remove", a.RemoveReservation)
+
+	// Handle GET requests to the root path
+	//e.GET("/*", func(c echo.Context) error {
+	//	return c.File("static/index.html")
+	//})
+
 	// Set static files
 	//a.setStaticFiles(e)
 }

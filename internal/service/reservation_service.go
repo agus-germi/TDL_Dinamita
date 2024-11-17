@@ -3,28 +3,30 @@ package service
 import (
 	context "context"
 	"errors"
-	"time"
+	time "time"
 )
 
 var (
-	ErrReservationAlreadyExists = errors.New("reservation already exists")
-	ErrRemovingReservation      = errors.New("something went wrong trying to remove a reservation")
+	ErrTableNotAvailable    = errors.New("table is not available")
+	ErrRemovingReservation  = errors.New("something went wrong trying to remove a reservation")
+	ErrCheckingAvailability = errors.New("error checking table availability")
+	ErrReservationNotFound  = errors.New("reservation was not found")
 )
 
-func (s *serv) ReserveTable(ctx context.Context, userID, tableNumber int64, date time.Time) error {
-	rsv, _ := s.repo.GetReservation(ctx, userID, tableNumber, date)
+func (s *serv) RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error {
+	rsv, _ := s.repo.GetReservationByTableNumberAndDate(ctx, tableNumber, date)
 	if rsv != nil {
-		return ErrReservationAlreadyExists
+		return ErrTableNotAvailable
 	}
 
 	return s.repo.SaveReservation(ctx, userID, tableNumber, date)
 }
 
-func (s *serv) RemoveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
-	err := s.repo.RemoveReservation(ctx, userID, tableNumber, date)
-	if err != nil {
-		return ErrRemovingReservation
+func (s *serv) RemoveReservation(ctx context.Context, reservationID int64) error {
+	rsv, _ := s.repo.GetReservationByID(ctx, reservationID)
+	if rsv == nil {
+		return ErrReservationNotFound
 	}
 
-	return nil
+	return s.repo.RemoveReservation(ctx, reservationID)
 }
