@@ -29,9 +29,9 @@ type Repository interface {
 
 	// Reservation
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
-	RemoveReservation(ctx context.Context, userID int64) error
-	GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error)
-	GetReservationByID(ctx context.Context, userID int64) (*entity.Reservation, error)
+	RemoveReservation(ctx context.Context, reservationID int64) error
+	GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error) // This should be GetReservationByUserID, so we can get all the reservations made by a particular user and show it to them in the screen.
+	GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error)
 	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error)
 	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
 }
