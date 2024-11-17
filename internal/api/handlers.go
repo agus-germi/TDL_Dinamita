@@ -99,3 +99,34 @@ func (a *API) RemoveReservation(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Reservation removed successfully"})
 }
+
+func (a *API) AddTable(c echo.Context) error {
+
+	ctx := c.Request().Context()
+
+	params := dtos.AddTableDTO{}
+
+	//Linkeo la request con la instancia de RegisterReservationDTO
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	//Valido los datos
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
+	if err != nil {
+		if err == service.ErrAddingTable {
+			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		}
+
+		log.Println("Error while adding a table:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Table added successfully"})
+}

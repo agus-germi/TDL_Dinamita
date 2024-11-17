@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrTableAlreadyExists = errors.New("table already exists")
+	ErrAddingTable        = errors.New("something went wrong trying to add a table")
 	ErrRemovingTable      = errors.New("something went wrong trying to remove a table")
 )
 

@@ -18,6 +18,9 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	reservations.POST("/register", a.RegisterReservation)
 	reservations.DELETE("/remove", a.RemoveReservation)
 
+	tables := e.Group("/tables")
+	tables.POST("/register", a.AddTable)
+
 	// Handle GET requests to the root path
 	//e.GET("/*", func(c echo.Context) error {
 	//	return c.File("static/index.html")
@@ -38,7 +41,6 @@ func (a *API) SetStaticFiles(e *echo.Echo) {
 	// Sirve el archivo index.html en la raíz
 	e.File("/", "frontend/index.html")
 }
-
 
 func (a *API) SetMiddlewares(e *echo.Echo) {
 	e.Use(middleware.Logger())
