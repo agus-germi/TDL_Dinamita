@@ -51,13 +51,12 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		Email: usr.Email}, nil
 }
 
-func (s *serv) RemoveUser(ctx context.Context, email string) error {
-	err := s.repo.RemoveUser(ctx, email)
-	if err != nil {
-		return ErrRemovingUser
+func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
+	usr, _ := s.repo.GetUserByID(ctx, userID)
+	if usr == nil {
+		return ErrUserNotFound
 	}
-
-	return nil
+	return s.repo.RemoveUser(ctx, userID)
 }
 
 func HashPassword(password string) (string, error) {

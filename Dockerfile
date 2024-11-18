@@ -39,11 +39,14 @@ RUN apk add --no-cache postgresql-client
 # Copy binary file from build stage
 COPY --from=builder /output/linux/restaurant_system /usr/local/bin/restaurant_system
 
-# Optional:
-# To bind to a TCP port, runtime parameters must be supplied to the docker command.
-# But we can document in the Dockerfile what ports
-# the application is going to listen on by default.
-# https://docs.docker.com/reference/dockerfile/#expose
+# Copiar toda la carpeta frontend, incluyendo index.html
+COPY frontend /usr/src/app/frontend
+
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Expose port 8080
 EXPOSE 8080
 
 # Run app

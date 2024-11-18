@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     table_number INT NOT NULL,
     -- booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, --> Deseamos que haya un campo que indique el momento en que se realizo la reserva?
     reservation_date TIMESTAMPTZ NOT NULL,   --Si quisieramos que tenga en cuenta la zona horaria tendriamos que usar el tipo de dato TIMESTAMPTZ
-    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE cascade,
+    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE
 );
 

@@ -1,0 +1,107 @@
+/* Resetear márgenes y relleno */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fondo y configuración general */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column; /* Organizar todo de manera vertical */
+    text-align: center;
+}
+
+/* Estilo del título */
+h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Formulario */
+form {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    display: flex;
+    flex-direction: column; /* Asegurarse de que los elementos estén en columna */
+    align-items: center;
+}
+
+/* Etiquetas */
+label {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: #333;
+    text-align: left; /* Alinea las etiquetas a la izquierda */
+    width: 100%;
+}
+
+/* Campos de entrada */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+/* Focus en los campos de entrada */
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #4d90fe;
+    outline: none;
+}
+
+/* Estilo del botón */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4d90fe;
+    color: white;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #357ae8;
+}
+
+/* Mensaje de error */
+#loginMessage {
+    margin-top: 15px;
+    color: #e74c3c;
+    font-size: 1rem;
+}
+
+/* Enlace de registro */
+p {
+    margin-top: 20px;
+    font-size: 1rem;
+    color: #555;
+}
+
+a {
+    color: #4d90fe;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"path/filepath"
+	//"path/filepath"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,10 +13,16 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	// Group routes for /users
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
+	users.DELETE("/remove", a.RemoveUser)
 
 	// Group routes for /reservations
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
+	reservations.DELETE("/remove", a.RemoveReservation)
+
+	tables := e.Group("/tables")
+	tables.POST("/register", a.AddTable)
+	tables.DELETE("/remove", a.RemoveTable)
 
 	// Handle GET requests to the root path
 	//e.GET("/*", func(c echo.Context) error {
@@ -40,14 +46,11 @@ func (a *API) SetRoutes(e *echo.Echo) {
 // que con setear los StaticFiles como 'e.Static("/users", "static/users")'
 // la busqueda se haga automatica.
 func (a *API) SetStaticFiles(e *echo.Echo) {
-	// Determina la ruta absoluta al directorio "public"
-	publicDir := filepath.Join("frontend", "public")
+	// Sirve todos los archivos estáticos desde el prefijo /static
+	e.Static("/static", "frontend")
 
-	// Serve all static assets (CSS, JS, etc.) from "/static" prefix
-	e.Static("/", publicDir)
-
-	// Serve the index.html at the root
-	e.File("/", filepath.Join(publicDir, "index.html"))
+	// Sirve el archivo index.html en la raíz
+	e.File("/", "frontend/index.html")
 }
 
 func (a *API) SetMiddlewares(e *echo.Echo) {

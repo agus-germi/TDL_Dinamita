@@ -15,9 +15,9 @@ type Service interface {
 	// Customer features
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
-	RemoveUser(ctx context.Context, email string) error
+	RemoveUser(ctx context.Context, userID int64) error
 	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error
-	RemoveReservation(ctx context.Context, userID, tableNumber int64) error
+	RemoveReservation(ctx context.Context, reservationID int64) error
 
 	// Admin features
 	AddUserRole(ctx context.Context, userID, roleID int64) error // Deberiamos usar el email en vez de userID?
