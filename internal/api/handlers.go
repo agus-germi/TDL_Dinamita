@@ -120,7 +120,7 @@ func (a *API) AddTable(c echo.Context) error {
 
 	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
 	if err != nil {
-		if err == service.ErrAddingTable {
+		if err == service.ErrTableAlreadyExists {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
 		}
 

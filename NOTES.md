@@ -1,5 +1,8 @@
 # TODO:
 - Sacar logica repetida de los handlers
+- Por algun motivo la asignacion de id para una reserva esta vinculada con la asignacion de id para mesas:
+    > O sea, si creo una mesa la base de datos le asigna un id (digamos 1), y a continuacion, cuando hago una reserva nueva
+      la base de datos le asigna, a la reserva, un id siguiente al que esta en la tabla "tables" (en este ejemplo: id=2)
 
 
 # Testing Endpoints with Postman
