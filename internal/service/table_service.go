@@ -26,6 +26,7 @@ func (s *serv) RemoveTable(ctx context.Context, tableNumber int64) error {
 	if table == nil {
 		return ErrTableNotFound
 	}
+
 	err := s.repo.RemoveTable(ctx, tableNumber)
 	if err != nil {
 		return ErrRemovingTable

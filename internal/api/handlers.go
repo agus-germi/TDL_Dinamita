@@ -148,7 +148,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 	}
 	err = a.serv.RemoveTable(ctx, params.Number)
 	if err != nil {
-		if err == service.ErrRemovingTable {
+		if err == service.ErrTableNotFound {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
 		}
 
@@ -157,5 +157,4 @@ func (a *API) RemoveTable(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Table removed successfully"})
-
 }
