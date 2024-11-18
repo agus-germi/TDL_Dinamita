@@ -20,12 +20,12 @@ const (
 						 FROM reservations
 						 WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
 
-	qryGetReservationByID = `SELECT reserved_by, table_number, reservation_date
+	qryGetReservationByID = `SELECT id, reserved_by, table_number, reservation_date
 							FROM reservations
-							WHERE reserved_by=$1`
+							WHERE id=$1`
 
 	qryRemoveReservation = `DELETE FROM reservations
-							WHERE reserved_by=$1`
+							WHERE id=$1`
 
 	qryGetReservationByTableNumberAndDate = `SELECT reserved_by, table_number, reservation_date
 											FROM reservations
@@ -46,8 +46,8 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 	return err
 }
 
-func (r *repo) RemoveReservation(ctx context.Context, userID int64) error {
-	result, err := r.db.ExecContext(ctx, qryRemoveReservation, userID)
+func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error {
+	result, err := r.db.ExecContext(ctx, qryRemoveReservation, reservationID)
 	if err != nil {
 		return err // Return the error from the query
 	}
@@ -61,8 +61,9 @@ func (r *repo) RemoveReservation(ctx context.Context, userID int64) error {
 
 	if rowsAffected == 0 {
 		log.Println("Rows affected = 0")
-		return ErrReservationNotFound // Custom error if no rows were deleted
+		return ErrReservationNotFound // Custom error if no rows were deleted (maybe it could be "reservation doesn't exist")
 	}
+
 	return nil
 }
 
@@ -76,10 +77,11 @@ func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*
 
 	return rsv, nil
 }
-func (r *repo) GetReservationByID(ctx context.Context, userID int64) (*entity.Reservation, error) {
+
+func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error) {
 	rsv := &entity.Reservation{}
 
-	err := r.db.GetContext(ctx, rsv, qryGetReservationByID, userID)
+	err := r.db.GetContext(ctx, rsv, qryGetReservationByID, reservationID)
 	if err != nil {
 		log.Println("Error trying to get a reservation by ID")
 		return nil, err

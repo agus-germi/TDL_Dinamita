@@ -22,11 +22,11 @@ func (s *serv) RegisterReservation(ctx context.Context, userID int64, name, pass
 	return s.repo.SaveReservation(ctx, userID, tableNumber, date)
 }
 
-func (s *serv) RemoveReservation(ctx context.Context, userID int64) error {
-	rsv, _ := s.repo.GetReservationByID(ctx, userID)
+func (s *serv) RemoveReservation(ctx context.Context, reservationID int64) error {
+	rsv, _ := s.repo.GetReservationByID(ctx, reservationID)
 	if rsv == nil {
 		return ErrReservationNotFound
 	}
 
-	return s.repo.RemoveReservation(ctx, userID)
+	return s.repo.RemoveReservation(ctx, reservationID)
 }

@@ -6,7 +6,7 @@
     ```sh
     docker-compose up --build
     ```
-- Add -d to run it on the background:
+- Add `-d` to run it on the background:
      ```sh
     docker-compose up -d --build
     ```

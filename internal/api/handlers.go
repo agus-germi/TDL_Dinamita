@@ -87,7 +87,7 @@ func (a *API) RemoveReservation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RemoveReservation(ctx, params.UserID)
+	err = a.serv.RemoveReservation(ctx, params.ID)
 	if err != nil {
 		if err == service.ErrReservationNotFound {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
