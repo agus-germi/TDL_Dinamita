@@ -13,6 +13,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	// Group routes for /users
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
+	users.DELETE("/remove", a.RemoveUser)
 
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
@@ -20,6 +21,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 
 	tables := e.Group("/tables")
 	tables.POST("/register", a.AddTable)
+	tables.DELETE("/remove", a.RemoveTable)
 
 	// Handle GET requests to the root path
 	//e.GET("/*", func(c echo.Context) error {

@@ -14,8 +14,9 @@ import (
 type Repository interface {
 	// User
 	SaveUser(ctx context.Context, name, passwd, email string) error
-	RemoveUser(ctx context.Context, email string) error
+	RemoveUser(ctx context.Context, userID int64) error
 	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
+	GetUserByID(ctx context.Context, userID int64) (*entity.User, error)
 
 	// UserRole
 	SaveUserRole(ctx context.Context, userID, roleID int64) error

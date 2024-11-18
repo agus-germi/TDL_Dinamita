@@ -1,3 +1,7 @@
+# TODO:
+- Sacar logica repetida de los handlers
+
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```
@@ -29,5 +33,14 @@ POST > localhost:8080/tables/register
   "number": 9,
   "seats": 4,
   "location": "eg de location"
+}
+```
+## Endpoint remove_user
+ ### TODO:
+ - ver que se deberia de eliminar de ambas tablas > Users y User Role
+DELETE > localhost:8080/users/remove
+```
+{
+  "user_id": 9
 }
 ```
