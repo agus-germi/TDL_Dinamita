@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 )
 
-// Si por algun motivo llegase a fallar las querys, probar poniendo ";" al final de cada query.
+var ErrUserNotFound = errors.New("user not found")
+
 const (
 	qryInsertUser = `INSERT INTO users (name, password, email)
 					 VALUES ($1, $2, $3)`
@@ -52,8 +54,9 @@ func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
 
 	if rowsAffected == 0 {
 		log.Println("Rows affected = 0")
-		return err // No user was found
+		return ErrUserNotFound
 	}
+
 	return nil
 }
 

@@ -15,7 +15,7 @@ type Service interface {
 	// Customer features
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
-	RemoveUser(ctx context.Context, userID int64) error // me parece mas logico eliminar por ID dado que es unico para cada usuario
+	RemoveUser(ctx context.Context, userID int64) error
 	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error
 	RemoveReservation(ctx context.Context, userID int64) error //Para mi con el id de la reservacion ya es suficiente para borrarla
 

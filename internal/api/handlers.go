@@ -178,7 +178,7 @@ func (a *API) RemoveUser(c echo.Context) error {
 
 	err = a.serv.RemoveUser(ctx, params.UserID)
 	if err != nil {
-		if err == service.ErrReservationNotFound {
+		if err == service.ErrUserNotFound {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
 		}
 
