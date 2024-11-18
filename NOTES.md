@@ -35,6 +35,15 @@ POST > localhost:8080/tables/register
   "location": "eg de location"
 }
 ```
+## Endpoint remove_user
+ ### TODO:
+ - ver que se deberia de eliminar de ambas tablas > Users y User Role
+DELETE > localhost:8080/users/remove
+```
+{
+  "user_id": 9
+}
+```
 ## Endpoint remove_table
 Simpre que se agrega una mesa se deja como "available"
 DELETE > localhost:8080/tables/remove

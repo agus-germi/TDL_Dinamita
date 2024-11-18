@@ -87,7 +87,7 @@ func (a *API) RemoveReservation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RemoveReservation(ctx, params.UserID)
+	err = a.serv.RemoveReservation(ctx, params.ID)
 	if err != nil {
 		if err == service.ErrReservationNotFound {
 			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
@@ -157,4 +157,33 @@ func (a *API) RemoveTable(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Table removed successfully"})
+}
+
+func (a *API) RemoveUser(c echo.Context) error {
+
+	ctx := c.Request().Context()
+
+	params := dtos.RemoveUserDTO{}
+
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	err = a.serv.RemoveUser(ctx, params.UserID)
+	if err != nil {
+		if err == service.ErrUserNotFound {
+			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		}
+
+		log.Println("Error while removing user:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "User removed successfully"})
 }

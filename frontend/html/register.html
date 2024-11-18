@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style_register.css">
+    <title>Registro de Usuario</title>
+</head>
+<body>
+    <h1>Registro de Usuario</h1>
+    <form id="registerForm">
+        <label for="registerUsername">Usuario:</label>
+        <input type="text" id="registerUsername" name="username" required>
+        
+        <label for="registerPassword">Contraseña:</label>
+        <input type="password" id="registerPassword" name="password" required>
+        
+        <label for="registerEmail">Correo Electrónico:</label>
+        <input type="email" id="registerEmail" name="email" required>
+
+        <button type="submit">Registrarse</button>
+    </form>
+
+    <div id="registerMessage"></div>
+
+    <p>¿Ya tienes cuenta?<a href="/static/index.html">Volver al Login</a></p>
+
+    <script src="../js/register.js"></script>
+</body>
+</html>
