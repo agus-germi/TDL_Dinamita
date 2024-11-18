@@ -78,10 +78,6 @@ func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*
 	return rsv, nil
 }
 
-<<<<<<< HEAD
-// No estamos teniendo en cuenta la zona horaria.
-// Quizas estaria bueno incluir esta info --> Zona horaria de America/Argentina/Buenos_Aires
-=======
 func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error) {
 	rsv := &entity.Reservation{}
 
@@ -94,7 +90,6 @@ func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*en
 	return rsv, nil
 }
 
->>>>>>> 38f5ac2ef8c7cb52b4beb7ee43c632c3919484c7
 func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
 	rsv := &entity.Reservation{}
 	formattedDate := date.Format(time.RFC3339)
