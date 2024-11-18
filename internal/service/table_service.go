@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrTableAlreadyExists = errors.New("table already exists")
+	ErrTableNotFound      = errors.New("table not found")
 	ErrAddingTable        = errors.New("something went wrong trying to add a table")
 	ErrRemovingTable      = errors.New("something went wrong trying to remove a table")
 )
@@ -21,6 +22,11 @@ func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location 
 }
 
 func (s *serv) RemoveTable(ctx context.Context, tableNumber int64) error {
+	table, _ := s.repo.GetTableByNumber(ctx, tableNumber)
+	if table == nil {
+		return ErrTableNotFound
+	}
+
 	err := s.repo.RemoveTable(ctx, tableNumber)
 	if err != nil {
 		return ErrRemovingTable
