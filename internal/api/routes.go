@@ -14,6 +14,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users := e.Group("/users")
 	users.POST("/register", a.RegisterUser)
 	users.DELETE("/remove", a.RemoveUser)
+	users.POST("/roles", a.AddUserRole)
 
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
