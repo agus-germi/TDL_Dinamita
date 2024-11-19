@@ -20,7 +20,7 @@ type Service interface {
 	RemoveReservation(ctx context.Context, reservationID int64) error
 
 	// Admin features
-	AddUserRole(ctx context.Context, userID, roleID int64) error // Deberiamos usar el email en vez de userID?
+	AddUserRole(ctx context.Context, userID, roleID int64) error
 	RemoveUserRole(ctx context.Context, userID int64) error
 	AddTable(ctx context.Context, tableNumber, seats int64, location string) error //All tables are added being available
 	RemoveTable(ctx context.Context, tableNumber int64) error

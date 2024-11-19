@@ -9,12 +9,15 @@ import (
 )
 
 var (
-	ErrUserAlreadyExists     = errors.New("user already exists")
-	ErrUserNotFound          = errors.New("user not found")
-	ErrRemovingUser          = errors.New("something went wrong trying to remove a user")
-	ErrInvalidCredentials    = errors.New("invalid credentials")
-	ErrUserRoleAlreadyExists = errors.New("user role already exists")
-	ErrRemovingUserRole      = errors.New("something went wrong trying to remove a user role")
+	// User messages errors
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrRemovingUser       = errors.New("something went wrong trying to remove a user")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	// User role messages errors
+	ErrUserRoleAlreadyAdded = errors.New("role was already added for this user")
+	ErrRemovingUserRole     = errors.New("something went wrong trying to remove a user role")
+	ErrUserRoleNotFound     = errors.New("this user has any role")
 )
 
 func (s *serv) RegisterUser(ctx context.Context, name, password, email string) error {
@@ -37,7 +40,7 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		return nil, err
 	}
 	if usr == nil {
-		return nil, ErrUserNotFound // Podemos cambiar este error por ErrInvalidCredentials (y borramos ErrUserNotFound)
+		return nil, ErrUserNotFound // Podemos cambiar este error por ErrInvalidCredentials
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
@@ -70,13 +73,18 @@ func HashPassword(password string) (string, error) {
 func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64) error {
 	usr_role, _ := s.repo.GetUserRole(ctx, userID)
 	if usr_role != nil {
-		return ErrUserRoleAlreadyExists
+		return ErrUserRoleAlreadyAdded
 	}
 
 	return s.repo.SaveUserRole(ctx, userID, roleID)
 }
 
 func (s *serv) RemoveUserRole(ctx context.Context, userID int64) error {
+	usr_role, _ := s.repo.GetUserRole(ctx, userID)
+	if usr_role == nil {
+		return ErrUserRoleNotFound
+	}
+
 	err := s.repo.RemoveUserRole(ctx, userID)
 	if err != nil {
 		return ErrRemovingUserRole

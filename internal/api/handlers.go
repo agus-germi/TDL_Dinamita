@@ -187,3 +187,34 @@ func (a *API) RemoveUser(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "User removed successfully"})
 }
+
+func (a *API) AddUserRole(c echo.Context) error {
+
+	ctx := c.Request().Context()
+
+	params := dtos.UserRoleDTO{}
+
+	// Linkeo la request con la instancia de UserRoleDTO
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	//Valido los datos
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	err = a.serv.AddUserRole(ctx, params.UserID, params.RoleID)
+	if err != nil {
+		if err == service.ErrUserRoleAlreadyAdded || err == service.ErrUserNotFound {
+			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		}
+
+		log.Println("Error while assigning a role to the user:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Role assigned to the user successfully"})
+}
