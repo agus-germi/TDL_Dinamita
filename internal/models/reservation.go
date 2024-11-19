@@ -1,4 +1,4 @@
-package dtos
+package models
 
 type Reservation struct {
 	UserID          int64  `json:"reserved_by"`      // User  User   `json:"reserved_by"`  --> Quizas es mejor utilizar el email del user en vez de su ID.

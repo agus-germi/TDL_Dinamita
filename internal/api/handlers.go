@@ -6,6 +6,7 @@ import (
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
+	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -217,4 +218,34 @@ func (a *API) AddUserRole(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Role assigned to the user successfully"})
+}
+
+func (a *API) LoginUser(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	params := dtos.LoginUserDTO{}
+
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"}) // otra opcion--> Message: err.Error()
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	usr, err := a.serv.LoginUser(ctx, params.Email, params.Password)
+	if err != nil {
+		log.Println("Error trying to login:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	token, err := jwt.SignedLoginToken(usr)
+	if err != nil {
+		log.Println("Error trying to create a jwt:", err)
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "User registered successfully"})
 }
