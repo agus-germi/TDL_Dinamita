@@ -6,6 +6,7 @@ import (
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
+	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -156,7 +157,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
-	return c.JSON(http.StatusCreated, responseMessage{Message: "Table removed successfully"})
+	return c.JSON(http.StatusOK, responseMessage{Message: "Table removed successfully"})
 }
 
 func (a *API) RemoveUser(c echo.Context) error {
@@ -220,11 +221,6 @@ func (a *API) AddUserRole(c echo.Context) error {
 }
 
 func (a *API) LoginUser(c echo.Context) error {
-	return nil
-}
-
-/*
-func (a *API) LoginUser(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	params := dtos.LoginUserDTO{}
@@ -251,6 +247,7 @@ func (a *API) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
-	return c.JSON(http.StatusCreated, responseMessage{Message: "User registered successfully"})
+	// TODO: Implement cookie to increase security (we send the token inside the cookie)
+
+	return c.JSON(http.StatusOK, map[string]string{"success": token})
 }
-*/
