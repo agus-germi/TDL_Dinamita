@@ -1,4 +1,4 @@
-package dtos
+package models
 
 type UserRole struct {
 	UserID int64 `json:"user_id"`

@@ -1,4 +1,4 @@
-package dtos
+package models
 
 type Table struct {
 	Number      int64  `json:"number"`

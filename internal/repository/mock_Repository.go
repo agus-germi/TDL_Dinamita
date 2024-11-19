@@ -16,9 +16,9 @@ type MockRepository struct {
 	mock.Mock
 }
 
-// GetReservation provides a mock function with given fields: ctx, userID, tableNumber, date
-func (_m *MockRepository) GetReservation(ctx context.Context, userID int64, tableNumber int64, date time.Time) (*entity.Reservation, error) {
-	ret := _m.Called(ctx, userID, tableNumber, date)
+// GetReservation provides a mock function with given fields: ctx, userID, tableNumber
+func (_m *MockRepository) GetReservation(ctx context.Context, userID int64, tableNumber int64) (*entity.Reservation, error) {
+	ret := _m.Called(ctx, userID, tableNumber)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetReservation")
@@ -26,19 +26,79 @@ func (_m *MockRepository) GetReservation(ctx context.Context, userID int64, tabl
 
 	var r0 *entity.Reservation
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, time.Time) (*entity.Reservation, error)); ok {
-		return rf(ctx, userID, tableNumber, date)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) (*entity.Reservation, error)); ok {
+		return rf(ctx, userID, tableNumber)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, time.Time) *entity.Reservation); ok {
-		r0 = rf(ctx, userID, tableNumber, date)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) *entity.Reservation); ok {
+		r0 = rf(ctx, userID, tableNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*entity.Reservation)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int64, int64, time.Time) error); ok {
-		r1 = rf(ctx, userID, tableNumber, date)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int64) error); ok {
+		r1 = rf(ctx, userID, tableNumber)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetReservationByID provides a mock function with given fields: ctx, reservationID
+func (_m *MockRepository) GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error) {
+	ret := _m.Called(ctx, reservationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetReservationByID")
+	}
+
+	var r0 *entity.Reservation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*entity.Reservation, error)); ok {
+		return rf(ctx, reservationID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *entity.Reservation); ok {
+		r0 = rf(ctx, reservationID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.Reservation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, reservationID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetReservationByTableNumberAndDate provides a mock function with given fields: ctx, tableNumber, date
+func (_m *MockRepository) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
+	ret := _m.Called(ctx, tableNumber, date)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetReservationByTableNumberAndDate")
+	}
+
+	var r0 *entity.Reservation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, time.Time) (*entity.Reservation, error)); ok {
+		return rf(ctx, tableNumber, date)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, time.Time) *entity.Reservation); ok {
+		r0 = rf(ctx, tableNumber, date)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.Reservation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, time.Time) error); ok {
+		r1 = rf(ctx, tableNumber, date)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -106,6 +166,36 @@ func (_m *MockRepository) GetUserByEmail(ctx context.Context, email string) (*en
 	return r0, r1
 }
 
+// GetUserByID provides a mock function with given fields: ctx, userID
+func (_m *MockRepository) GetUserByID(ctx context.Context, userID int64) (*entity.User, error) {
+	ret := _m.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserByID")
+	}
+
+	var r0 *entity.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*entity.User, error)); ok {
+		return rf(ctx, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *entity.User); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUserRole provides a mock function with given fields: ctx, userID
 func (_m *MockRepository) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error) {
 	ret := _m.Called(ctx, userID)
@@ -136,17 +226,17 @@ func (_m *MockRepository) GetUserRole(ctx context.Context, userID int64) (*entit
 	return r0, r1
 }
 
-// RemoveReservation provides a mock function with given fields: ctx, userID, tableNumber, date
-func (_m *MockRepository) RemoveReservation(ctx context.Context, userID int64, tableNumber int64, date time.Time) error {
-	ret := _m.Called(ctx, userID, tableNumber, date)
+// RemoveReservation provides a mock function with given fields: ctx, reservationID
+func (_m *MockRepository) RemoveReservation(ctx context.Context, reservationID int64) error {
+	ret := _m.Called(ctx, reservationID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveReservation")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, time.Time) error); ok {
-		r0 = rf(ctx, userID, tableNumber, date)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, reservationID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -172,17 +262,17 @@ func (_m *MockRepository) RemoveTable(ctx context.Context, tableNumber int64) er
 	return r0
 }
 
-// RemoveUser provides a mock function with given fields: ctx, email
-func (_m *MockRepository) RemoveUser(ctx context.Context, email string) error {
-	ret := _m.Called(ctx, email)
+// RemoveUser provides a mock function with given fields: ctx, userID
+func (_m *MockRepository) RemoveUser(ctx context.Context, userID int64) error {
+	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveUser")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, email)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, userID)
 	} else {
 		r0 = ret.Error(0)
 	}

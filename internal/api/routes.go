@@ -15,6 +15,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users.POST("/register", a.RegisterUser)
 	users.DELETE("/remove", a.RemoveUser)
 	users.POST("/roles", a.AddUserRole)
+	users.POST("/login", a.LoginUser)
 
 	reservations := e.Group("/reservations")
 	reservations.POST("/register", a.RegisterReservation)
@@ -48,4 +49,10 @@ func (a *API) SetStaticFiles(e *echo.Echo) {
 func (a *API) SetMiddlewares(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:8080"},          // Origen que permitimos que se conecte a nuestra API.
+		AllowMethods:     []string{echo.GET, echo.POST, echo.DELETE}, // A medida que agreguemos mas metodos hay que permitirlos aqui.
+		AllowCredentials: true,
+		// AllowHeaders: []string{echo.HeaderContentType},  // Analizar si queremos restringir los tipos de headers.
+	}))
 }
