@@ -6,7 +6,6 @@ import (
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
-	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -221,6 +220,11 @@ func (a *API) AddUserRole(c echo.Context) error {
 }
 
 func (a *API) LoginUser(c echo.Context) error {
+	return nil
+}
+
+/*
+func (a *API) LoginUser(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	params := dtos.LoginUserDTO{}
@@ -249,3 +253,4 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "User registered successfully"})
 }
+*/
