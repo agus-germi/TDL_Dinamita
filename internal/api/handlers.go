@@ -254,6 +254,7 @@ func (a *API) LoginUser(c echo.Context) error {
 		SameSite: http.SameSiteNoneMode,
 		Secure:   true, // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
 		HttpOnly: true, // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
+		Path:     "/",  // Hacemos accesible la cookie para todos los endpointsde la aplicacion.
 	}
 
 	c.SetCookie(cookie)
