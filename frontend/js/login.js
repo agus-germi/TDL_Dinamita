@@ -1,26 +1,36 @@
 document.getElementById('loginForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Evita el envío del formulario
 
-    const name = document.getElementById('loginUsername').value;
+    const email = document.getElementById('loginEmail').value; // Cambiar loginUsername a loginEmail
     const password = document.getElementById('loginPassword').value;
+
+    if (!email) {
+        document.getElementById('loginMessage').innerText = 'El email es obligatorio.';
+        return;
+    }
+    
+    if (!password) {
+        document.getElementById('loginMessage').innerText = 'La contraseña es obligatoria.';
+        return;
+    }
 
     fetch('http://localhost:8080/users/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ email, password }), // Enviar email en lugar de name
     })
     .then(response => {
         if (!response.ok) {
             throw new Error('Error en el inicio de sesión');
         }
-        return response.text(); // Cambiar a JSON si el servidor responde con un objeto JSON
+        return response.json(); // Asegúrate de que el backend responde con JSON
     })
     .then(data => {
-        document.getElementById('loginMessage').innerText = data.message; // Suponiendo que el mensaje está en el objeto data
-        localStorage.setItem('username', name); // Guardar en localStorage
-        console.log('storage' + localStorage.getItem('username'));
+        document.getElementById('loginMessage').innerText = "Inicio de sesión exitoso";
+        localStorage.setItem('username', data.name); // Guardar nombre de usuario en localStorage
+        console.log('Usuario en storage: ' + localStorage.getItem('username'));
         window.location.href = '/static/html/main.html'; // Redirigir a la página principal
     })
     .catch(error => {

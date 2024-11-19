@@ -15,6 +15,7 @@ body {
     height: 100vh;
     flex-direction: column; /* Organizar todo de manera vertical */
     text-align: center;
+    padding: 20px; /* Agrega un margen interno para pantallas pequeñas */
 }
 
 /* Estilo del título */
@@ -30,9 +31,10 @@ form {
     border-radius: 8px;
     padding: 30px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: 100%;
+    max-width: 400px; /* Asegura que no se extienda demasiado en pantallas grandes */
     display: flex;
-    flex-direction: column; /* Asegurarse de que los elementos estén en columna */
+    flex-direction: column;
     align-items: center;
 }
 
@@ -42,27 +44,28 @@ label {
     font-size: 1.1rem;
     margin-bottom: 5px;
     color: #333;
-    text-align: left; /* Alinea las etiquetas a la izquierda */
+    text-align: left;
     width: 100%;
 }
 
 /* Campos de entrada */
-input[type="text"],
+input[type="email"],
 input[type="password"] {
     width: 100%;
     padding: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
     color: #333;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Focus en los campos de entrada */
-input[type="text"]:focus,
+input[type="email"]:focus,
 input[type="password"]:focus {
     border-color: #4d90fe;
+    box-shadow: 0 0 5px rgba(77, 144, 254, 0.5);
     outline: none;
 }
 
@@ -76,11 +79,12 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 button:hover {
     background-color: #357ae8;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Mensaje de error */
@@ -88,6 +92,8 @@ button:hover {
     margin-top: 15px;
     color: #e74c3c;
     font-size: 1rem;
+    text-align: center;
+    width: 100%; /* Asegura que ocupe todo el ancho del formulario */
 }
 
 /* Enlace de registro */
