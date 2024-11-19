@@ -20,16 +20,18 @@ const (
 	qryGetUserByEmail = `SELECT id, name, password, email
 						FROM users
 						WHERE email=$1`
+
 	qryGetUserByID = `SELECT id, name, password, email
 						FROM users
 						WHERE id=$1`
+
 	qryInsertUserRole = `INSERT INTO user_roles (user_id, role_id)
 						VALUES ($1, $2)`
 
 	qryRemoveUserRole = `DELETE FROM user_roles
 						WHERE user_id=$1`
 
-	qryGetUserRoleByUserID = `SELECT userID, roleID
+	qryGetUserRoleByUserID = `SELECT user_id, role_id
 							 FROM user_roles
 							 WHERE user_id=$1`
 )
@@ -72,7 +74,13 @@ func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, 
 }
 
 func (r *repo) SaveUserRole(ctx context.Context, userID, roleID int64) error {
+	usr, _ := r.GetUserByID(ctx, userID)
+	if usr == nil {
+		return ErrUserNotFound
+	}
+
 	_, err := r.db.ExecContext(ctx, qryInsertUserRole, userID, roleID)
+
 	return err
 }
 

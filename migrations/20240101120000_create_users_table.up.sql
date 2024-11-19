@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS user_roles (
                                                                 -- entonces se debe eliminar todas las filas de la tabla users_roles que presenten el rol que se elimino.
 );
 
-INSERT INTO roles (name) VALUES ('admin');     -- Al ingresar los roles de esta forma: admin-->role_id=1 y customer-->role_id=2
-INSERT INTO roles (name) VALUES ('customer');  -- or client
+INSERT INTO roles (id, name) VALUES (1, 'admin'); -- Por mas que el id sea autoincrementable, lo especificamos para asegurarnos.
+INSERT INTO roles (id, name) VALUES (2, 'customer');  -- or client
 
 INSERT INTO tables (number, seats, location, is_available) VALUES (1, 3, 'balcon', true);
 INSERT INTO tables (number, seats, location, is_available) VALUES (2, 7, 'interior', true);
