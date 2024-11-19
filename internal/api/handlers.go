@@ -10,6 +10,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var errorResponses = map[error]int{
+	service.ErrInvalidCredentials:   http.StatusBadRequest,
+	service.ErrUserNotFound:         http.StatusNotFound,
+	service.ErrUserAlreadyExists:    http.StatusConflict,
+	service.ErrReservationNotFound:  http.StatusNotFound,
+	service.ErrTableAlreadyExists:   http.StatusConflict,
+	service.ErrTableNotAvailable:    http.StatusConflict,
+	service.ErrTableNotFound:        http.StatusNotFound,
+	service.ErrUserRoleAlreadyAdded: http.StatusConflict,
+}
+
 type responseMessage struct {
 	Message string `json:"message"`
 }
@@ -31,9 +42,10 @@ func (a *API) RegisterUser(c echo.Context) error {
 
 	err = a.serv.RegisterUser(ctx, params.Name, params.Password, params.Email)
 	if err != nil {
-		if err == service.ErrUserAlreadyExists {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
+
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
@@ -60,8 +72,8 @@ func (a *API) RegisterReservation(c echo.Context) error {
 
 	err = a.serv.RegisterReservation(ctx, params.UserID, params.Name, params.Password, params.Email, params.TableNumber, params.ReservationDate)
 	if err != nil {
-		if err == service.ErrTableNotAvailable {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
 
 		log.Println("Error during reservation registration:", err)
@@ -90,8 +102,8 @@ func (a *API) RemoveReservation(c echo.Context) error {
 
 	err = a.serv.RemoveReservation(ctx, params.ID)
 	if err != nil {
-		if err == service.ErrReservationNotFound {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
 
 		log.Println("Error while removing registration:", err)
@@ -121,8 +133,8 @@ func (a *API) AddTable(c echo.Context) error {
 
 	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
 	if err != nil {
-		if err == service.ErrTableAlreadyExists {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
 
 		log.Println("Error while adding a table:", err)
@@ -147,10 +159,11 @@ func (a *API) RemoveTable(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
+
 	err = a.serv.RemoveTable(ctx, params.Number)
 	if err != nil {
-		if err == service.ErrTableNotFound {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
 
 		log.Println("Error while removing table:", err)
@@ -178,8 +191,8 @@ func (a *API) RemoveUser(c echo.Context) error {
 
 	err = a.serv.RemoveUser(ctx, params.UserID)
 	if err != nil {
-		if err == service.ErrUserNotFound {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
 
 		log.Println("Error while removing user:", err)
@@ -209,8 +222,8 @@ func (a *API) AddUserRole(c echo.Context) error {
 
 	err = a.serv.AddUserRole(ctx, params.UserID, params.RoleID)
 	if err != nil {
-		if err == service.ErrUserRoleAlreadyAdded || err == service.ErrUserNotFound {
-			return c.JSON(http.StatusConflict, responseMessage{Message: err.Error()})
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
 
 		log.Println("Error while assigning a role to the user:", err)
@@ -227,7 +240,7 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	err := c.Bind(&params)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"}) // otra opcion--> Message: err.Error()
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
 
 	err = a.dataValidator.Struct(params)
@@ -237,6 +250,10 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	usr, err := a.serv.LoginUser(ctx, params.Email, params.Password)
 	if err != nil {
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
+		}
+
 		log.Println("Error trying to login:", err)
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
