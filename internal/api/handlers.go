@@ -248,6 +248,15 @@ func (a *API) LoginUser(c echo.Context) error {
 	}
 
 	// TODO: Implement cookie to increase security (we send the token inside the cookie)
+	cookie := &http.Cookie{
+		Name:     "Authorization",
+		Value:    token,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true, // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
+		HttpOnly: true, // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
+	}
 
-	return c.JSON(http.StatusOK, map[string]string{"success": token})
+	c.SetCookie(cookie)
+
+	return c.JSON(http.StatusOK, map[string]string{"success": "true"})
 }
