@@ -120,3 +120,108 @@ footer {
 .logout-button:hover {
     background-color: #c82333;
 }
+
+/* Estilo del botón para agregar reservas */
+#add-reservation {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+    display: block;
+}
+
+#add-reservation:hover {
+    background-color: #218838;
+}
+
+/* Estilo del formulario */
+#reservation-form {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+#reservation-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#reservation-form input,
+#reservation-form select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Estilo de la grilla de reservas */
+#reservation-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#reservation-list th,
+#reservation-list td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+#reservation-list th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+#reservation-list tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Botones de acción en la grilla */
+.action-button {
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+}
+
+.action-button.add {
+    background-color: #28a745;
+}
+
+.action-button.add:hover {
+    background-color: #218838;
+}
+
+.action-button.delete {
+    background-color: #dc3545;
+}
+
+.action-button.delete:hover {
+    background-color: #c82333;
+}
+
+/* Mensaje de confirmación */
+#confirmation {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    color: #28a745;
+}

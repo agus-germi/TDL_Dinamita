@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css">
+    <title>Gestión de Reservas</title>
+</head>
+<body>
+    <header>
+        <h1>Bienvenido al Sistema de Reserva de Mesas</h1>
+        <nav>
+            <a href="/static/html/main.html">Inicio</a>
+            <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
+            <a href="/menu">Menú Digital</a>
+            <a href="/promotions">Promociones</a>
+            <a href="/reviews">Opiniones</a>
+        </nav>
+        
+        <div class="user-info">
+            <!-- <input type="text" id="user-name" readonly> -->
+            <button onclick="toggleDropdown()">⋮</button>
+            <div class="dropdown" id="dropdownMenu">
+                <a href="/logout">Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Gestión de Reservas</h2>
+  
+        <!-- Botón para agregar una nueva reserva -->
+        <button id="add-reservation" class="logout-button" onclick="toggleReservationForm()">Reservar</button>
+  
+        <!-- Formulario de reserva -->
+        <form id="reservation-form" style="display: none; margin-top: 20px;">
+            <div>
+                <label for="date">Fecha:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <div>
+                <label for="time">Hora:</label>
+                <select id="time" name="time" required></select>
+            </div>
+            <div>
+                <label for="table">Mesa:</label>
+                <select id="table" name="table" required></select>
+            </div>
+            <button type="submit" class="logout-button">Reservar</button>
+        </form>
+  
+        <!-- Confirmación -->
+        <div id="confirmation" style="display: none; margin-top: 20px; color: green;">
+            ¡Reserva realizada con éxito!
+        </div>
+  
+        <!-- Grilla de reservas -->
+        <h3>Tus Reservas</h3>
+        <table id="reservation-list" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Mesa</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las reservas se cargarán aquí dinámicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function toggleReservationForm() {
+            const form = document.getElementById('reservation-form');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const userName = localStorage.getItem('username'); 
+            console.log('hola ' + userName);
+            //document.getElementById('user-name').value = userName;
+        });
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Cerrar el menú si se hace clic fuera de él
+        window.onclick = function(event) {
+            if (!event.target.matches('.user-info button')) {
+                const dropdowns = document.getElementsByClassName("dropdown");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.style.display === 'block') {
+                        openDropdown.style.display = 'none';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
