@@ -16,9 +16,9 @@ const (
 	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, reservation_date) 
 							VALUES ($1, $2, $3)`
 
-	qryGetReservation = `SELECT reserved_by, table_number, reservation_date
+	qryGetReservationsByUserID = `SELECT id, reserved_by, table_number, reservation_date
 						 FROM reservations
-						 WHERE reserved_by=$1 AND table_number=$2 AND reservation_date=$3`
+						 WHERE reserved_by=$1`
 
 	qryGetReservationByID = `SELECT id, reserved_by, table_number, reservation_date
 							FROM reservations
@@ -67,15 +67,16 @@ func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error
 	return nil
 }
 
-func (r *repo) GetReservation(ctx context.Context, userID, tableNumber int64) (*entity.Reservation, error) {
-	rsv := &entity.Reservation{}
+func (r *repo) GetReservationsByUserID(ctx context.Context, userID int64) (*[]entity.Reservation, error) {
+	reservations := &[]entity.Reservation{}
 
-	err := r.db.GetContext(ctx, rsv, qryGetReservation, userID, tableNumber)
+	err := r.db.SelectContext(ctx, reservations, qryGetReservationsByUserID, userID)
 	if err != nil {
+		log.Println("Error fetching reservations of a user:", err)
 		return nil, err
 	}
 
-	return rsv, nil
+	return reservations, nil
 }
 
 func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error) {
@@ -90,6 +91,7 @@ func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*en
 	return rsv, nil
 }
 
+// ACLARACION: El metodo que hay que usar para obtener todas las apariciones en una tabla deberia ser SelectContext (en vez de GetContext)
 func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
 	rsv := &entity.Reservation{}
 	formattedDate := date.Format(time.RFC3339)

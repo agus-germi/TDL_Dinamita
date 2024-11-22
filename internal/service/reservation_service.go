@@ -3,7 +3,10 @@ package service
 import (
 	context "context"
 	"errors"
+	"log"
 	time "time"
+
+	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 )
 
 var (
@@ -29,4 +32,37 @@ func (s *serv) RemoveReservation(ctx context.Context, reservationID int64) error
 	}
 
 	return s.repo.RemoveReservation(ctx, reservationID)
+}
+
+func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error) {
+	usr, err := s.repo.GetUserByID(ctx, userID)
+	if usr == nil {
+		log.Println(ErrUserNotFound)
+		return nil, ErrUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	entityReservations, err := s.repo.GetReservationsByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if entityReservations == nil {
+		return &[]models.Reservation{}, nil
+	}
+
+	// Conversion de *[]entity.Reservation a *[]models.Reservation
+	modelReservations := make([]models.Reservation, len(*entityReservations))
+	for i, entityReservation := range *entityReservations {
+		modelReservations[i] = models.Reservation{
+			ID:              entityReservation.ID,
+			UserID:          entityReservation.UserID,
+			TableNumber:     entityReservation.TableNumber,
+			ReservationDate: entityReservation.ReservationDate.Format("2006-01-02 15:04:05"),
+		}
+	}
+
+	return &modelReservations, nil
 }
