@@ -18,6 +18,7 @@ type Service interface {
 	RemoveUser(ctx context.Context, userID int64) error
 	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error
 	RemoveReservation(ctx context.Context, reservationID int64) error
+	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 
 	// Admin features
 	AddUserRole(ctx context.Context, userID, roleID int64) error

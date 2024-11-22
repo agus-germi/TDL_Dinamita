@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
+	"github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
 	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
@@ -277,4 +278,50 @@ func (a *API) LoginUser(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, map[string]string{"success": "true"})
+}
+
+func (a *API) GetAllReservationsOfUser(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	params := dtos.GetReservationsDTO{}
+
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	reservations, err := a.serv.GetReservationsByUserID(ctx, params.UserID)
+	if err != nil {
+		if statusCode, ok := errorResponses[err]; ok {
+			return c.JSON(statusCode, responseMessage{Message: err.Error()})
+		}
+
+		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	}
+
+	dtoReservations := convertReservationsToDTO(reservations)
+
+	return c.JSON(http.StatusOK, dtoReservations)
+}
+
+func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.ReservationDTO {
+	if reservations == nil {
+		return &[]dtos.ReservationDTO{}
+	}
+
+	dtoReservations := make([]dtos.ReservationDTO, len(*reservations))
+	for i, reservation := range *reservations {
+		dtoReservations[i] = dtos.ReservationDTO{
+			ID:              reservation.ID,
+			UserID:          reservation.UserID,
+			TableNumber:     reservation.TableNumber,
+			ReservationDate: reservation.ReservationDate,
+		}
+	}
+	return &dtoReservations
 }
