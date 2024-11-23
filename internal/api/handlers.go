@@ -9,6 +9,7 @@ import (
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
 	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
+	"strconv"
 )
 
 var errorResponses = map[error]int{
@@ -283,12 +284,15 @@ func (a *API) LoginUser(c echo.Context) error {
 func (a *API) GetAllReservationsOfUser(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	params := dtos.GetReservationsDTO{}
+	base := 10
+	bitSize := 64
 
-	err := c.Bind(&params)
+	userID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
+
+	params := dtos.GetReservationsDTO{UserID: userID}
 
 	err = a.dataValidator.Struct(params)
 	if err != nil {

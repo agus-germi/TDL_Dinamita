@@ -43,7 +43,7 @@ document.getElementById('registerForm').addEventListener('submit', function(even
     .then(data => {
         document.getElementById('registerMessage').innerText = data.message; // Suponiendo que el mensaje está en el objeto data
         localStorage.setItem('username', name); // Guardar en localStorage
-        window.location.href = '/static/html/main.html'; // Redirigir a la página principal
+        window.location.href = '/static/index.html'; // Redirigir a la página principal
     })
     .catch(error => {
         document.getElementById('registerMessage').innerText = error.message;
