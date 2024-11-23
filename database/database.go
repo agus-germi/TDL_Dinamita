@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
@@ -18,26 +18,22 @@ func CreateConnection(ctx context.Context) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	host, err := getEnv("DB_HOST")
+	dbHost, err := getEnv("DB_HOST")
 	if err != nil {
 		return nil, err
 	}
 
-	port, err := getEnv("DB_PORT")
-	if err != nil {
-		return nil, err
-	}
-	iPort, err := strconv.Atoi(port)
+	dbPort, err := getEnv("DB_PORT")
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := getEnv("DB_USER")
+	dbUser, err := getEnv("DB_USER")
 	if err != nil {
 		return nil, err
 	}
 
-	password, err := getEnv("DB_PASSWORD")
+	dbPasswd, err := getEnv("DB_PASSWORD")
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +48,19 @@ func CreateConnection(ctx context.Context) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		user, password, host, iPort, dbName, sslMode)
-	db, err := sqlx.ConnectContext(ctx, "postgres", connStr)
+	dbURL, err := getEnv("DB_URL")
+	if err != nil {
+		return nil, err
+	}
+
+	dbURL = strings.ReplaceAll(dbURL, "${DB_USER}", dbUser)
+	dbURL = strings.ReplaceAll(dbURL, "${DB_PASS}", dbPasswd)
+	dbURL = strings.ReplaceAll(dbURL, "${DB_HOST}", dbHost)
+	dbURL = strings.ReplaceAll(dbURL, "${DB_PORT}", dbPort)
+	dbURL = strings.ReplaceAll(dbURL, "${DB_NAME}", dbName)
+	dbURL = strings.ReplaceAll(dbURL, "${DB_SSLMODE}", sslMode)
+
+	db, err := sqlx.ConnectContext(ctx, "postgres", dbURL)
 	if err != nil {
 		return nil, err
 	}
