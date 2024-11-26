@@ -25,14 +25,6 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	tables := e.Group("/tables")
 	tables.POST("/register", a.AddTable)
 	tables.DELETE("/remove", a.RemoveTable)
-
-	// Handle GET requests to the root path
-	//e.GET("/*", func(c echo.Context) error {
-	//	return c.File("static/index.html")
-	//})
-
-	// Set static files
-	//a.setStaticFiles(e)
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".

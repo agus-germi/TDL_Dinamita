@@ -32,6 +32,9 @@
   > Simular múltiples solicitudes concurrentes para asegurarte de que el sistema maneja adecuadamente los bloqueos y evita inconsistencias.
   wrk -t4 -c100 -d10s http://localhost:8080/api/reservations
 
+  > Utiliza herramientas como ab (Apache Benchmark), wrk o k6 para simular múltiples solicitudes concurrentes y verificar el rendimiento de tu API.
+
+- Implementar limite de tiempo para las queries a la base de datos (utilizando context)
 
 
 # Testing Endpoints with Postman

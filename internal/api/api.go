@@ -19,8 +19,8 @@ func New(serv service.Service) *API {
 }
 
 func (a *API) Start(e *echo.Echo, address string) error {
-	// a.SetMiddlewares(e)
-	// a.SetStaticFiles(e)
+	a.SetMiddlewares(e)
+	a.SetStaticFiles(e)
 	a.SetRoutes(e)
 	return e.Start(address)
 }
