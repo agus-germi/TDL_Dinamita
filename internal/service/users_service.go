@@ -71,24 +71,25 @@ func HashPassword(password string) (string, error) {
 // Si la respuesta es sí, tenemos que modificar este código. (aunque en nuestro caso no tiene mucho sentido este feature)
 // En realidad, pensandolo bien, ya tenemos el feature implementado--> Removemos el rol y despues le agregamos uno nuevo :)
 func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64) error {
-	usr_role, _ := s.repo.GetUserRole(ctx, userID)
-	if usr_role != nil {
-		return ErrUserRoleAlreadyAdded
-	}
+	// usr_role, _ := s.repo.GetUserRole(ctx, userID)
+	// if usr_role != nil {
+	// 	return ErrUserRoleAlreadyAdded
+	// }
 
-	return s.repo.SaveUserRole(ctx, userID, roleID)
+	// return s.repo.SaveUserRole(ctx, userID, roleID)
+	return nil
 }
 
 func (s *serv) RemoveUserRole(ctx context.Context, userID int64) error {
-	usr_role, _ := s.repo.GetUserRole(ctx, userID)
-	if usr_role == nil {
-		return ErrUserRoleNotFound
-	}
+	// usr_role, _ := s.repo.GetUserRole(ctx, userID)
+	// if usr_role == nil {
+	// 	return ErrUserRoleNotFound
+	// }
 
-	err := s.repo.RemoveUserRole(ctx, userID)
-	if err != nil {
-		return ErrRemovingUserRole
-	}
+	// err := s.repo.RemoveUserRole(ctx, userID)
+	// if err != nil {
+	// 	return ErrRemovingUserRole
+	// }
 
 	return nil
 }

@@ -3,18 +3,23 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 // This function creates a new connection to the database
-func CreateConnection(ctx context.Context) (*sqlx.DB, error) {
+// CreatePoolConnection
+func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
 	err := godotenv.Load("/usr/src/app/.env")
 	if err != nil {
+		log.Println("Error: .env file couldn't be loaded.")
 		return nil, err
 	}
 
@@ -60,12 +65,46 @@ func CreateConnection(ctx context.Context) (*sqlx.DB, error) {
 	dbURL = strings.ReplaceAll(dbURL, "${DB_NAME}", dbName)
 	dbURL = strings.ReplaceAll(dbURL, "${DB_SSLMODE}", sslMode)
 
-	db, err := sqlx.ConnectContext(ctx, "postgres", dbURL)
+	maxConns_str, err := getEnv("MAX_CONNS")
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	minConns_str, err := getEnv("MIN_CONNS")
+	if err != nil {
+		return nil, err
+	}
+
+	idleTime_str, err := getEnv("MAX_CONN_IDLE_TIME")
+	if err != nil {
+		return nil, err
+	}
+
+	maxConns, _ := strconv.Atoi(maxConns_str)
+	minConns, _ := strconv.Atoi(os.Getenv(minConns_str))
+	idleTime, _ := time.ParseDuration(os.Getenv(idleTime_str))
+
+	// Pool Configuration
+	config, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		log.Fatalf("Error trying parse dbURL to create pool configuration: %v", err)
+	}
+	config.MaxConns = int32(maxConns)
+	config.MinConns = int32(minConns)
+	config.MaxConnIdleTime = idleTime // Tiempo máximo que una conexión puede estar inactiva antes de ser cerrada
+	//config.MaxConnLifetime = 30 * time.Minute // Tiempo máximo de vida de una conexión (sin importar si está en uso o inactiva)
+	//config.HealthCheckPeriod = 1 * time.Minute // Frecuencia de las verificaciones de salud
+
+	dbPool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		log.Fatalf("Error trying to create the connections pool: %v", err)
+	}
+
+	if err := verifyDatabaseConnection(ctx, dbPool); err != nil {
+		log.Fatalf("Error trying to verify the db connection: %v", err)
+	}
+
+	return dbPool, nil
 }
 
 func getEnv(key string) (string, error) {
@@ -76,58 +115,18 @@ func getEnv(key string) (string, error) {
 	return value, nil
 }
 
-/*
-import (
-    "context"
-    "fmt"
-    "log"
-    "time"
+func verifyDatabaseConnection(ctx context.Context, pool *pgxpool.Pool) error {
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
 
-    "github.com/jackc/pgx/v5/pgxpool"
-)
+	// Verificar que la conexión esté funcionando
+	if err := conn.Conn().Ping(ctx); err != nil {
+		return err
+	}
 
-func New() {
-    // Contexto para gestionar la conexión
-    ctx := context.Background()
-
-    // Configurar el pool usando Config
-    connStr := "postgres://admin:1234@localhost:5432/mi_base?sslmode=disable"
-    config, err := pgxpool.ParseConfig(connStr)
-    if err != nil {
-        log.Fatalf("Error al parsear la configuración del pool: %v", err)
-    }
-
-    // Configuración del pool
-    config.MaxConns = 10                      // Máximo de conexiones abiertas
-    config.MinConns = 2                       // Mínimo de conexiones abiertas
-    config.MaxConnIdleTime = 5 * time.Minute  // Tiempo máximo de inactividad de una conexión
-    config.MaxConnLifetime = 30 * time.Minute // Tiempo máximo de vida de una conexión
-    config.HealthCheckPeriod = 1 * time.Minute // Frecuencia de las verificaciones de salud
-
-    // Crear el pool de conexiones
-    pool, err := pgxpool.NewWithConfig(ctx, config)
-    if err != nil {
-        log.Fatalf("No se pudo crear el pool: %v", err)
-    }
-    defer pool.Close() // Asegurarse de cerrar el pool al final
-
-    // Verificar la conexión con un simple query
-    if err := testConnection(ctx, pool); err != nil {
-        log.Fatalf("Conexión fallida: %v", err)
-    }
-
-    fmt.Println("Conexión establecida exitosamente con el pool de pgxpool")
+	log.Println("Verification of db connection successfully done.")
+	return nil
 }
-
-// Función para probar la conexión con un query
-func testConnection(ctx context.Context, pool *pgxpool.Pool) error {
-    var now time.Time
-    err := pool.QueryRow(ctx, "SELECT NOW()").Scan(&now)
-    if err != nil {
-        return err
-    }
-    fmt.Printf("Hora actual de la base de datos: %s\n", now)
-    return nil
-}
-
-*/

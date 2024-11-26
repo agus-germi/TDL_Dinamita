@@ -27,6 +27,13 @@
       }
     Y acceder a los campos que necesitemos en cada caso.
 
+- Implement transactions in repository functions.
+  Luego de esto podemos:
+  > Simular múltiples solicitudes concurrentes para asegurarte de que el sistema maneja adecuadamente los bloqueos y evita inconsistencias.
+  wrk -t4 -c100 -d10s http://localhost:8080/api/reservations
+
+
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrUserNotFound = errors.New("user not found")
@@ -37,76 +38,86 @@ const (
 )
 
 func (r *repo) SaveUser(ctx context.Context, name, password, email string) error {
-	_, err := r.db.ExecContext(ctx, qryInsertUser, name, password, email)
-	return err
+	operation := func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, qryInsertUser, name, password, email)
+		if err != nil {
+			log.Printf("Failed to execute insert query: %v", err)
+			return err
+		}
+
+		log.Println("User saved successfully.")
+		return nil
+	}
+
+	return r.executeInTransaction(ctx, operation)
 }
 
 func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
-	result, err := r.db.ExecContext(ctx, qryRemoveUser, userID)
-	if err != nil {
-		return err // Return the error from the query
+	operation := func(tx pgx.Tx) error {
+		result, err := tx.Exec(ctx, qryRemoveUser, userID)
+		if err != nil {
+			log.Printf("Failed to execute delete query: %v", err)
+			return err
+		}
+
+		if result.RowsAffected() == 0 {
+			log.Println("No rows were affected by the delete query.")
+			return ErrUserNotFound
+		}
+
+		log.Println("User removed successfully.")
+		return nil
 	}
 
-	// Check the number of rows affected
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		log.Println("Error in checking the number of rows affected")
-		return err // Error when determining rows affected
-	}
-
-	if rowsAffected == 0 {
-		log.Println("Rows affected = 0")
-		return ErrUserNotFound
-	}
-
-	return nil
+	return r.executeInTransaction(ctx, operation)
 }
 
 func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
-	usr := &entity.User{}
+	usr := entity.User{}
 
-	err := r.db.GetContext(ctx, usr, qryGetUserByEmail, email)
+	err := r.db.QueryRow(ctx, qryGetUserByEmail, email).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	return usr, nil
-}
-
-func (r *repo) SaveUserRole(ctx context.Context, userID, roleID int64) error {
-	usr, _ := r.GetUserByID(ctx, userID)
-	if usr == nil {
-		return ErrUserNotFound
-	}
-
-	_, err := r.db.ExecContext(ctx, qryInsertUserRole, userID, roleID)
-
-	return err
-}
-
-func (r *repo) RemoveUserRole(ctx context.Context, userID int64) error {
-	_, err := r.db.ExecContext(ctx, qryRemoveUserRole, userID)
-	return err
-}
-
-func (r *repo) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error) {
-	usr_role := &entity.UserRole{}
-
-	err := r.db.GetContext(ctx, usr_role, qryGetUserRoleByUserID, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	return usr_role, nil
+	return &usr, nil
 }
 
 func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, error) {
-	usr := &entity.User{}
+	usr := entity.User{}
 
-	err := r.db.GetContext(ctx, usr, qryGetUserByID, userID)
+	err := r.db.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	return usr, nil
+	return &usr, nil
 }
+
+// TODO: Implement the following 3 methods after we delete the user_roles table.
+// func (r *repo) SaveUserRole(ctx context.Context, userID, roleID int64) error {
+// 	usr, _ := r.GetUserByID(ctx, userID)
+// 	if usr == nil {
+// 		return ErrUserNotFound
+// 	}
+
+// 	_, err := r.db.ExecContext(ctx, qryInsertUserRole, userID, roleID)
+
+// 	return err
+// }
+
+// func (r *repo) RemoveUserRole(ctx context.Context, userID int64) error {
+// 	_, err := r.db.ExecContext(ctx, qryRemoveUserRole, userID)
+// 	return err
+// }
+
+// func (r *repo) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error) {
+// 	usr_role := &entity.UserRole{}
+
+// 	err := r.db.GetContext(ctx, usr_role, qryGetUserRoleByUserID, userID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return usr_role, nil
+// }

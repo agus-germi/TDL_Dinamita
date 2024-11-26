@@ -6,6 +6,7 @@ import (
 	"log"
 
 	entity "github.com/agus-germi/TDL_Dinamita/internal/entity"
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrTableNotFound = errors.New("table not found")
@@ -23,39 +24,49 @@ const (
 )
 
 func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
-	_, err := r.db.ExecContext(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)
-	return err
+	operation := func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)
+		if err != nil {
+			log.Printf("Failed to insert table: %v", err)
+			return err
+		}
+
+		log.Printf("Table with number %d saved successfully", tableNumber)
+		return nil
+	}
+
+	return r.executeInTransaction(ctx, operation)
 }
 
 func (r *repo) RemoveTable(ctx context.Context, tableNumber int64) error {
-	result, err := r.db.ExecContext(ctx, qryDeleteTable, tableNumber)
-	if err != nil {
-		return err
+	operation := func(tx pgx.Tx) error {
+		result, err := r.db.Exec(ctx, qryDeleteTable, tableNumber)
+		if err != nil {
+			return err
+		}
+
+		if result.RowsAffected() == 0 {
+			log.Println("Rows affected = 0")
+			return ErrTableNotFound
+		}
+
+		log.Println("Table removed successfully.")
+		return nil
 	}
 
-	// Check the number of rows affected
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		log.Println("Error in checking the number of rows affected")
-		return err // Error when determining rows affected
-	}
-
-	if rowsAffected == 0 {
-		log.Println("Rows affected = 0")
-		return ErrTableNotFound
-	}
-
-	return nil
+	return r.executeInTransaction(ctx, operation)
 }
 
+// We really need this?
 func (r *repo) GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error) {
-	table := &entity.Table{}
+	table := entity.Table{}
 
-	err := r.db.GetContext(ctx, table, qryGetTable, tableNumber)
+	err := r.db.QueryRow(ctx, qryGetTable, tableNumber).Scan(&table.Number, &table.Seats, &table.Location, &table.IsAvailable)
 	if err != nil {
-		log.Println("Error:", err)
+		log.Printf("Failed to execute select query: %v", err)
 		return nil, err
 	}
 
-	return table, nil
+	log.Printf("Table retrieved successfully by number: %d", tableNumber)
+	return &table, nil
 }
