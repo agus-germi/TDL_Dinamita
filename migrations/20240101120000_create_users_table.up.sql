@@ -56,6 +56,14 @@ BEGIN
 END $$;
 
 
+-- Creacion de los usuarios administradores. (En nuestro caso solo sera admin y user por ende no tendremos superadmin)
+--  role 1 : Admin | role 2 : User
 
+INSERT INTO users (name, password, email, role) 
+VALUES ('Agus', '12345678', 'agerminario@fi.uba.ar', 1);
 
+INSERT INTO users (name, password, email, role) 
+VALUES ('Valen', '12345678', 'vmorenofi.uba.ar', 1);
 
+INSERT INTO users (name, password, email, role) 
+VALUES ('Seba', '12345678', 'skraglievich@fi.uba.ar', 1);
