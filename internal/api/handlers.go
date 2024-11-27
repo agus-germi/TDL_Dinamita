@@ -1,12 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
+	"github.com/agus-germi/TDL_Dinamita/internal/service/notification"
 	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
 	"strconv"
@@ -82,6 +84,14 @@ func (a *API) RegisterReservation(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
+	emailBody := fmt.Sprintf(
+		"Hello!<br><br>Your reservation for table %d on %s has been confirmed.<br>Thank you!",
+		params.TableNumber, params.ReservationDate.Format("2006-01-02 15:04"),
+	)
+	err = notification.SendReservationConfirmationEmail(params.Email, emailBody)
+	if err != nil {
+		log.Println("Failed to send confirmation email:", err)
+	}
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Reservation registered successfully"})
 }
 
