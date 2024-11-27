@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS user_roles (
                                                                 -- entonces se debe eliminar todas las filas de la tabla users_roles que presenten el rol que se elimino.
 );
 
+-- Agregamos horarios fijos de manera dinamica 
+-- Turnos desde  las 12:00 hasta las 22:00 - considerando que cada turno es de 2hs
+DO $$
+BEGIN
+    FOR hour IN 12..22 BY 2 LOOP
+        INSERT INTO time_slots (time) VALUES (MAKE_TIME(hour, 0, 0));
+    END LOOP;
+END $$;
 
 
 
