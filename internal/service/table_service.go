@@ -13,9 +13,9 @@ var (
 	ErrInvalidPermission  = errors.New("user does not have permission to execute")
 )
 
-func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string, userID int64) error {
+func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string, email string) error {
 
-	if !s.repo.HasPermission(ctx, userID) {
+	if !s.repo.HasPermission(ctx, email) {
 		return ErrInvalidPermission
 	}
 
@@ -27,9 +27,9 @@ func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location 
 	return s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
 }
 
-func (s *serv) RemoveTable(ctx context.Context, tableNumber int64, userID int64) error {
+func (s *serv) RemoveTable(ctx context.Context, tableNumber int64, email string) error {
 
-	if !s.repo.HasPermission(ctx, userID) {
+	if !s.repo.HasPermission(ctx, email) {
 		return ErrInvalidPermission
 	}
 

@@ -127,17 +127,25 @@ func (a *API) RemoveReservation(c echo.Context) error {
 }
 
 func (a *API) AddTable(c echo.Context) error {
-
+	//get auth token from cookie
+	cookie, err := c.Cookie("Authorization")
+	if err != nil {
+		log.Println("Error while getting the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
+	claims, err := jwt.ParseLoginJWT(cookie.Value)
+	if err != nil {
+		log.Println("Error while parsing the jwt:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
+	email := claims["email"].(string)
+	println("email", email)
 	ctx := c.Request().Context()
 
 	params := dtos.AddTableDTO{}
 
-	// TODO: no es asi -> modificarlo
-	userID := c.Get("userID").(int64)
-	log.Printf("User %d added table %d", userID, params.Number)
-
 	//Linkeo la request con la instancia de RegisterReservationDTO
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -148,8 +156,11 @@ func (a *API) AddTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location, userID)
+	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location, email)
 	if err != nil {
+		if err == service.ErrInvalidPermission {
+			return c.JSON(http.StatusForbidden, responseMessage{Message: "Invalid Permissions"})
+		}
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
@@ -162,16 +173,23 @@ func (a *API) AddTable(c echo.Context) error {
 }
 
 func (a *API) RemoveTable(c echo.Context) error {
+	//get auth token from cookie
+	cookie, err := c.Cookie("Authorization")
+	if err != nil {
+		log.Println("Error while getting the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
+	claims, err := jwt.ParseLoginJWT(cookie.Value)
+	if err != nil {
+		log.Println("Error while parsing the jwt:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
+	email := claims["email"].(string)
 
 	ctx := c.Request().Context()
-
 	params := dtos.RemoveTableDTO{}
 
-	//TODO: no es asi -> modificarlo
-	userID := c.Get("userID").(int64)
-	log.Printf("User %d removed table %d", userID, params.Number)
-
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -181,7 +199,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RemoveTable(ctx, params.Number, userID)
+	err = a.serv.RemoveTable(ctx, params.Number, email)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -292,10 +310,10 @@ func (a *API) LoginUser(c echo.Context) error {
 	cookie := &http.Cookie{
 		Name:     "Authorization",
 		Value:    token,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true, // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
-		HttpOnly: true, // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
-		Path:     "/",  // Hacemos accesible la cookie para todos los endpointsde la aplicacion.
+		SameSite: http.SameSiteNoneMode, // Indica que la cookie no debe ser enviada en una petición de un sitio diferente al que la generó.
+		Secure:   true,                  // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
+		HttpOnly: true,                  // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
+		Path:     "/",                   // Hacemos accesible la cookie para todos los endpointsde la aplicacion.
 	}
 
 	c.SetCookie(cookie)

@@ -22,7 +22,7 @@ type Repository interface {
 	SaveUserRole(ctx context.Context, userID, roleID int64) error
 	RemoveUserRole(ctx context.Context, userID int64) error
 	GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error)
-	HasPermission(ctx context.Context, userID int64) bool
+	HasPermission(ctx context.Context, email string) bool
 
 	// Table
 	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error

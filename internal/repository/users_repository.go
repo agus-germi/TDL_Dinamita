@@ -111,8 +111,9 @@ func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, err
 	return usr, nil
 }
 
-func (r *repo) HasPermission(ctx context.Context, userID int64) bool {
-	usr, _ := r.GetUserByID(ctx, userID)
+func (r *repo) HasPermission(ctx context.Context, email string) bool {
+	usr, _ := r.GetUserByEmail(ctx, email)
+	println("ROLE: ", usr.Role)
 	roleID := usr.Role
 	return roleID == 1
 }
