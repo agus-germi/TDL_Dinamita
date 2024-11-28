@@ -171,7 +171,6 @@ func (a *API) RemoveTable(c echo.Context) error {
 		log.Println("Error while getting the email from the cookie:", err)
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
 	}
-	println("email", email)
 
 	ctx := c.Request().Context()
 	params := dtos.RemoveTableDTO{}
@@ -231,12 +230,17 @@ func (a *API) RemoveUser(c echo.Context) error {
 
 func (a *API) AddUserRole(c echo.Context) error {
 
-	ctx := c.Request().Context()
+	email, err := getEmailFromCookie(c)
+	if err != nil {
+		log.Println("Error while getting the email from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
 
+	ctx := c.Request().Context()
 	params := dtos.UserRoleDTO{}
 
 	// Linkeo la request con la instancia de UserRoleDTO
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -247,7 +251,7 @@ func (a *API) AddUserRole(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.AddUserRole(ctx, params.UserID, params.RoleID)
+	err = a.serv.AddUserRole(ctx, params.UserID, params.RoleID, email)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
