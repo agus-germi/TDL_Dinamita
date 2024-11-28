@@ -11,13 +11,13 @@ import (
 var ErrUserNotFound = errors.New("user not found")
 
 const (
-	qryInsertUser = `INSERT INTO users (name, password, email)
-					 VALUES ($1, $2, $3)`
+	qryInsertUser = `INSERT INTO users (name, password, email,role)
+					 VALUES ($1, $2, $3, 2)`
 
 	qryRemoveUser = `DELETE FROM users
 					WHERE id=$1`
 
-	qryGetUserByEmail = `SELECT id, name, password, email
+	qryGetUserByEmail = `SELECT id, name, password, email, role
 						FROM users
 						WHERE email=$1`
 
@@ -109,4 +109,11 @@ func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, err
 	}
 
 	return usr, nil
+}
+
+func (r *repo) HasPermission(ctx context.Context, email string) bool {
+	usr, _ := r.GetUserByEmail(ctx, email)
+	println("ROLE: ", usr.Role)
+	roleID := usr.Role
+	return roleID == 1
 }

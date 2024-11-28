@@ -43,9 +43,11 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
-	if err != nil {
-		return nil, ErrInvalidCredentials
+	if usr.Role != 1 {
+		err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
+		if err != nil {
+			return nil, ErrInvalidCredentials
+		}
 	}
 
 	return &models.User{
@@ -70,7 +72,12 @@ func HashPassword(password string) (string, error) {
 // TODO: Pensar en los requirimientos: deseamos poder cambiar el rol de un usuario que ya posee uno previamente?
 // Si la respuesta es sí, tenemos que modificar este código. (aunque en nuestro caso no tiene mucho sentido este feature)
 // En realidad, pensandolo bien, ya tenemos el feature implementado--> Removemos el rol y despues le agregamos uno nuevo :)
-func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64) error {
+func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64, email string) error {
+
+	if !s.repo.HasPermission(ctx, email) {
+		return ErrInvalidPermission
+	}
+
 	usr_role, _ := s.repo.GetUserRole(ctx, userID)
 	if usr_role != nil {
 		return ErrUserRoleAlreadyAdded

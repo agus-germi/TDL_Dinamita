@@ -5,13 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	"strconv"
+
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
 	"github.com/agus-germi/TDL_Dinamita/internal/service/notification"
 	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
-	"strconv"
 )
 
 var errorResponses = map[error]int{
@@ -126,13 +127,18 @@ func (a *API) RemoveReservation(c echo.Context) error {
 }
 
 func (a *API) AddTable(c echo.Context) error {
+	email, err := getEmailFromCookie(c)
+	if err != nil {
+		log.Println("Error while getting the email from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
+	println("email", email)
 
 	ctx := c.Request().Context()
-
 	params := dtos.AddTableDTO{}
 
 	//Linkeo la request con la instancia de RegisterReservationDTO
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -143,8 +149,11 @@ func (a *API) AddTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
+	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location, email)
 	if err != nil {
+		if err == service.ErrInvalidPermission {
+			return c.JSON(http.StatusForbidden, responseMessage{Message: "Invalid Permissions"})
+		}
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
 		}
@@ -157,12 +166,16 @@ func (a *API) AddTable(c echo.Context) error {
 }
 
 func (a *API) RemoveTable(c echo.Context) error {
+	email, err := getEmailFromCookie(c)
+	if err != nil {
+		log.Println("Error while getting the email from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
 
 	ctx := c.Request().Context()
-
 	params := dtos.RemoveTableDTO{}
 
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -172,7 +185,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RemoveTable(ctx, params.Number)
+	err = a.serv.RemoveTable(ctx, params.Number, email)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -183,6 +196,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Table removed successfully"})
+
 }
 
 func (a *API) RemoveUser(c echo.Context) error {
@@ -216,12 +230,17 @@ func (a *API) RemoveUser(c echo.Context) error {
 
 func (a *API) AddUserRole(c echo.Context) error {
 
-	ctx := c.Request().Context()
+	email, err := getEmailFromCookie(c)
+	if err != nil {
+		log.Println("Error while getting the email from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+	}
 
+	ctx := c.Request().Context()
 	params := dtos.UserRoleDTO{}
 
 	// Linkeo la request con la instancia de UserRoleDTO
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -232,7 +251,7 @@ func (a *API) AddUserRole(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.AddUserRole(ctx, params.UserID, params.RoleID)
+	err = a.serv.AddUserRole(ctx, params.UserID, params.RoleID, email)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -252,11 +271,13 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	err := c.Bind(&params)
 	if err != nil {
+		log.Println(err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
 
 	err = a.dataValidator.Struct(params)
 	if err != nil {
+		log.Println(err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
@@ -276,14 +297,13 @@ func (a *API) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
-	// TODO: Implement cookie to increase security (we send the token inside the cookie)
 	cookie := &http.Cookie{
 		Name:     "Authorization",
 		Value:    token,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true, // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
-		HttpOnly: true, // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
-		Path:     "/",  // Hacemos accesible la cookie para todos los endpointsde la aplicacion.
+		SameSite: http.SameSiteNoneMode, // Indica que la cookie no debe ser enviada en una petición de un sitio diferente al que la generó.
+		Secure:   true,                  // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
+		HttpOnly: true,                  // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
+		Path:     "/",                   // Hacemos accesible la cookie para todos los endpointsde la aplicacion.
 	}
 
 	c.SetCookie(cookie)
@@ -338,4 +358,21 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 		}
 	}
 	return &dtoReservations
+}
+
+// funciones aux
+
+// getEmailFromCookie obtiene el email del usuario a partir de la cookie de autenticación
+func getEmailFromCookie(c echo.Context) (string, error) {
+
+	cookie, err := c.Cookie("Authorization")
+	if err != nil {
+		return "", err
+	}
+	claims, err := jwt.ParseLoginJWT(cookie.Value)
+	if err != nil {
+		return "", err
+	}
+	email := claims["email"].(string)
+	return email, nil
 }

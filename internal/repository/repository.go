@@ -22,6 +22,7 @@ type Repository interface {
 	SaveUserRole(ctx context.Context, userID, roleID int64) error
 	RemoveUserRole(ctx context.Context, userID int64) error
 	GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error)
+	HasPermission(ctx context.Context, email string) bool
 
 	// Table
 	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error
@@ -34,7 +35,6 @@ type Repository interface {
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]entity.Reservation, error)
 	GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error)
 	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error)
-	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
 }
 
 type repo struct {

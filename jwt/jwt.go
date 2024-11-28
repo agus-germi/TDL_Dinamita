@@ -5,13 +5,32 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const key = "01234567890123456789012345678901" // chequear si hay una mejor forma o una mejor key.
+const key = "01234567890123456789012345678901" //TODO:  chequear si hay una mejor forma o una mejor key.
 
-func SignedLoginToken(usr *models.User) (string, error) {
+// SignedLoginToken genera un token firmado con el email y el nombre del usuario
+func SignedLoginToken(u *models.User) (string, error) {
+	//HS256 > viable porque el servidor que creo que el certificado tambien lo validará
+
+	//Claims: estructura de datos que se puede firmar y validar
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": usr.Email,
-		"name":  usr.Name,
+		"email": u.Email,
+		"name":  u.Name,
 	})
+	jwt, err := token.SignedString([]byte(key))
+	if err != nil {
+		return "", err
+	}
+	println("token", jwt)
+	return jwt, nil
+}
 
-	return token.SignedString([]byte(key))
+func ParseLoginJWT(value string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(value, func(token *jwt.Token) (interface{}, error) {
+		return []byte(key), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token.Claims.(jwt.MapClaims), nil
+
 }

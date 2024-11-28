@@ -21,10 +21,10 @@ type Service interface {
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 
 	// Admin features
-	AddUserRole(ctx context.Context, userID, roleID int64) error
+	AddUserRole(ctx context.Context, userID, roleID int64, email string) error
 	RemoveUserRole(ctx context.Context, userID int64) error
-	AddTable(ctx context.Context, tableNumber, seats int64, location string) error //All tables are added being available
-	RemoveTable(ctx context.Context, tableNumber int64) error
+	AddTable(ctx context.Context, tableNumber, seats int64, location string, userEmail string) error //All tables are added being available
+	RemoveTable(ctx context.Context, tableNumber int64, userEmail string) error
 }
 
 type serv struct {
