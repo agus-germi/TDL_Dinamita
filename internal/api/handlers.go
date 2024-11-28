@@ -127,21 +127,14 @@ func (a *API) RemoveReservation(c echo.Context) error {
 }
 
 func (a *API) AddTable(c echo.Context) error {
-	//get auth token from cookie
-	cookie, err := c.Cookie("Authorization")
+	email, err := getEmailFromCookie(c)
 	if err != nil {
-		log.Println("Error while getting the cookie:", err)
+		log.Println("Error while getting the email from the cookie:", err)
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
 	}
-	claims, err := jwt.ParseLoginJWT(cookie.Value)
-	if err != nil {
-		log.Println("Error while parsing the jwt:", err)
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
-	}
-	email := claims["email"].(string)
 	println("email", email)
-	ctx := c.Request().Context()
 
+	ctx := c.Request().Context()
 	params := dtos.AddTableDTO{}
 
 	//Linkeo la request con la instancia de RegisterReservationDTO
@@ -173,18 +166,12 @@ func (a *API) AddTable(c echo.Context) error {
 }
 
 func (a *API) RemoveTable(c echo.Context) error {
-	//get auth token from cookie
-	cookie, err := c.Cookie("Authorization")
+	email, err := getEmailFromCookie(c)
 	if err != nil {
-		log.Println("Error while getting the cookie:", err)
+		log.Println("Error while getting the email from the cookie:", err)
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
 	}
-	claims, err := jwt.ParseLoginJWT(cookie.Value)
-	if err != nil {
-		log.Println("Error while parsing the jwt:", err)
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
-	}
-	email := claims["email"].(string)
+	println("email", email)
 
 	ctx := c.Request().Context()
 	params := dtos.RemoveTableDTO{}
@@ -306,7 +293,6 @@ func (a *API) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
-	// TODO: Implement cookie to increase security (we send the token inside the cookie)
 	cookie := &http.Cookie{
 		Name:     "Authorization",
 		Value:    token,
@@ -368,4 +354,21 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 		}
 	}
 	return &dtoReservations
+}
+
+// funciones aux
+
+// getEmailFromCookie obtiene el email del usuario a partir de la cookie de autenticación
+func getEmailFromCookie(c echo.Context) (string, error) {
+
+	cookie, err := c.Cookie("Authorization")
+	if err != nil {
+		return "", err
+	}
+	claims, err := jwt.ParseLoginJWT(cookie.Value)
+	if err != nil {
+		return "", err
+	}
+	email := claims["email"].(string)
+	return email, nil
 }
