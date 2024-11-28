@@ -5,4 +5,5 @@ type User struct {
 	Name     string `db:"name"`
 	Password string `db:"password"`
 	Email    string `db:"email"`
+	Role     int32  `db:"role"`
 }
