@@ -23,8 +23,8 @@ type Service interface {
 	// Admin features
 	AddUserRole(ctx context.Context, userID, roleID int64) error
 	RemoveUserRole(ctx context.Context, userID int64) error
-	AddTable(ctx context.Context, tableNumber, seats int64, location string) error //All tables are added being available
-	RemoveTable(ctx context.Context, tableNumber int64) error
+	AddTable(ctx context.Context, tableNumber, seats int64, location string, userID int64) error //All tables are added being available
+	RemoveTable(ctx context.Context, tableNumber int64, userID int64) error
 }
 
 type serv struct {

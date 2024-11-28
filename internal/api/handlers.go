@@ -5,13 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	"strconv"
+
 	"github.com/agus-germi/TDL_Dinamita/internal/api/dtos"
 	"github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/service"
 	"github.com/agus-germi/TDL_Dinamita/internal/service/notification"
 	"github.com/agus-germi/TDL_Dinamita/jwt"
 	"github.com/labstack/echo/v4"
-	"strconv"
 )
 
 var errorResponses = map[error]int{
@@ -131,6 +132,10 @@ func (a *API) AddTable(c echo.Context) error {
 
 	params := dtos.AddTableDTO{}
 
+	// TODO: no es asi -> modificarlo
+	userID := c.Get("userID").(int64)
+	log.Printf("User %d added table %d", userID, params.Number)
+
 	//Linkeo la request con la instancia de RegisterReservationDTO
 	err := c.Bind(&params)
 	if err != nil {
@@ -143,7 +148,7 @@ func (a *API) AddTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
+	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location, userID)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -162,6 +167,10 @@ func (a *API) RemoveTable(c echo.Context) error {
 
 	params := dtos.RemoveTableDTO{}
 
+	//TODO: no es asi -> modificarlo
+	userID := c.Get("userID").(int64)
+	log.Printf("User %d removed table %d", userID, params.Number)
+
 	err := c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
@@ -172,7 +181,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RemoveTable(ctx, params.Number)
+	err = a.serv.RemoveTable(ctx, params.Number, userID)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -183,6 +192,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Table removed successfully"})
+
 }
 
 func (a *API) RemoveUser(c echo.Context) error {
@@ -252,11 +262,13 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	err := c.Bind(&params)
 	if err != nil {
+		log.Println(err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
 
 	err = a.dataValidator.Struct(params)
 	if err != nil {
+		log.Println(err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 

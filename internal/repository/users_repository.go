@@ -110,3 +110,9 @@ func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, err
 
 	return usr, nil
 }
+
+func (r *repo) HasPermission(ctx context.Context, userID int64) bool {
+	usr, _ := r.GetUserByID(ctx, userID)
+	roleID := usr.Role
+	return roleID == 1
+}
