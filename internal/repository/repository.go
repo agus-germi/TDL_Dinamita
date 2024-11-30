@@ -76,6 +76,5 @@ func (r *repo) executeInTransaction(ctx context.Context, operation func(tx pgx.T
 	}()
 
 	// Execute the operation passed in as a function
-	err = operation(tx)
-	return err
+	return operation(tx)
 }
