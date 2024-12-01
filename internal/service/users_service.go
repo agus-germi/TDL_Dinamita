@@ -20,6 +20,8 @@ var (
 	ErrUserRoleNotFound     = errors.New("this user has any role")
 )
 
+const adminRoleID = 1
+
 func (s *serv) RegisterUser(ctx context.Context, name, password, email string) error {
 	usr, _ := s.repo.GetUserByEmail(ctx, email)
 	if usr != nil {
@@ -31,7 +33,7 @@ func (s *serv) RegisterUser(ctx context.Context, name, password, email string) e
 		return err
 	}
 
-	return s.repo.SaveUser(ctx, name, hashedPassword, email)
+	return s.repo.SaveUser(ctx, name, hashedPassword, email, 2) // Every user is created with a role 2 (user)
 }
 
 func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
@@ -43,9 +45,11 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
-	if err != nil {
-		return nil, ErrInvalidCredentials
+	if usr.RoleID != adminRoleID {
+		err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
+		if err != nil {
+			return nil, ErrInvalidCredentials
+		}
 	}
 
 	return &models.User{
@@ -59,6 +63,7 @@ func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
 	if usr == nil {
 		return ErrUserNotFound
 	}
+
 	return s.repo.RemoveUser(ctx, userID)
 }
 
@@ -67,29 +72,20 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-// TODO: Pensar en los requirimientos: deseamos poder cambiar el rol de un usuario que ya posee uno previamente?
-// Si la respuesta es sí, tenemos que modificar este código. (aunque en nuestro caso no tiene mucho sentido este feature)
-// En realidad, pensandolo bien, ya tenemos el feature implementado--> Removemos el rol y despues le agregamos uno nuevo :)
-func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64) error {
-	// usr_role, _ := s.repo.GetUserRole(ctx, userID)
-	// if usr_role != nil {
-	// 	return ErrUserRoleAlreadyAdded
-	// }
+func (s *serv) UpdateUserRole(ctx context.Context, userID, roleID int64, email string) error {
 
-	// return s.repo.SaveUserRole(ctx, userID, roleID)
-	return nil
-}
+	hasPermission, err := s.repo.HasPermission(ctx, email)
+	if err != nil {
+		return err
+	}
+	if !hasPermission {
+		return ErrInvalidPermission
+	}
 
-func (s *serv) RemoveUserRole(ctx context.Context, userID int64) error {
-	// usr_role, _ := s.repo.GetUserRole(ctx, userID)
-	// if usr_role == nil {
-	// 	return ErrUserRoleNotFound
-	// }
+	usr, _ := s.repo.GetUserByID(ctx, userID)
+	if usr == nil {
+		return ErrUserNotFound
+	}
 
-	// err := s.repo.RemoveUserRole(ctx, userID)
-	// if err != nil {
-	// 	return ErrRemovingUserRole
-	// }
-
-	return nil
+	return s.repo.SaveUpdateUserRole(ctx, userID, roleID)
 }

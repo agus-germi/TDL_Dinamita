@@ -16,15 +16,14 @@ type Service interface {
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
 	RemoveUser(ctx context.Context, userID int64) error
-	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error
+	RegisterReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
 	RemoveReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 
 	// Admin features
-	AddUserRole(ctx context.Context, userID, roleID int64) error
-	RemoveUserRole(ctx context.Context, userID int64) error
-	AddTable(ctx context.Context, tableNumber, seats int64, location string) error //All tables are added being available
-	RemoveTable(ctx context.Context, tableNumber int64) error
+	UpdateUserRole(ctx context.Context, userID, roleID int64, email string) error
+	AddTable(ctx context.Context, tableNumber, seats int64, location string, userEmail string) error //All tables are added being available
+	RemoveTable(ctx context.Context, tableNumber int64, userEmail string) error
 }
 
 type serv struct {

@@ -15,15 +15,15 @@ import (
 //go:generate mockery --name=Repository --output=repository --inpackage
 type Repository interface {
 	// User
-	SaveUser(ctx context.Context, name, passwd, email string) error
+	SaveUser(ctx context.Context, name, passwd, email string, roleID int64) error
 	RemoveUser(ctx context.Context, userID int64) error
 	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
 	GetUserByID(ctx context.Context, userID int64) (*entity.User, error)
 
 	// UserRole
-	// SaveUserRole(ctx context.Context, userID, roleID int64) error
-	// RemoveUserRole(ctx context.Context, userID int64) error
-	// GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error)
+	SaveUpdateUserRole(ctx context.Context, userID, roleID int64) error
+	GetUserRole(ctx context.Context, userID int64) (int64, error)
+	HasPermission(ctx context.Context, email string) (bool, error)
 
 	// Table
 	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error

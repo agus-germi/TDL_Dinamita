@@ -19,7 +19,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // Enviar email en lugar de name
+        body: JSON.stringify({ email, password }), 
     })
     .then(response => {
         if (!response.ok) {

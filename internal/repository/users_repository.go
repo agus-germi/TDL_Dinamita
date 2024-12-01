@@ -12,34 +12,33 @@ import (
 var ErrUserNotFound = errors.New("user not found")
 
 const (
-	qryInsertUser = `INSERT INTO users (name, password, email)
-					 VALUES ($1, $2, $3)`
+	invalidRole   = 0 // 0 is an invalid role
+	qryInsertUser = `INSERT INTO users (name, password, email, role_id)
+					 VALUES ($1, $2, $3, $4)`
 
 	qryRemoveUser = `DELETE FROM users
 					WHERE id=$1`
 
-	qryGetUserByEmail = `SELECT id, name, password, email
+	qryGetUserByEmail = `SELECT id, name, password, email, role_id
 						FROM users
 						WHERE email=$1`
 
-	qryGetUserByID = `SELECT id, name, password, email
+	qryGetUserByID = `SELECT id, name, password, email, role_id
 						FROM users
 						WHERE id=$1`
 
-	qryInsertUserRole = `INSERT INTO user_roles (user_id, role_id)
-						VALUES ($1, $2)`
+	qryUpdateUserRole = `UPDATE users 
+						SET role_id=$1
+						WHERE id=$2`
 
-	qryRemoveUserRole = `DELETE FROM user_roles
-						WHERE user_id=$1`
-
-	qryGetUserRoleByUserID = `SELECT user_id, role_id
-							 FROM user_roles
-							 WHERE user_id=$1`
+	qryGetUserRoleByUserID = `SELECT role_id
+							 FROM users
+							 WHERE id=$1`
 )
 
-func (r *repo) SaveUser(ctx context.Context, name, password, email string) error {
+func (r *repo) SaveUser(ctx context.Context, name, password, email string, roleID int64) error {
 	operation := func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx, qryInsertUser, name, password, email)
+		_, err := tx.Exec(ctx, qryInsertUser, name, password, email, roleID)
 		if err != nil {
 			log.Printf("Failed to execute insert query: %v", err)
 			return err
@@ -75,7 +74,7 @@ func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
 func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	usr := entity.User{}
 
-	err := r.db.QueryRow(ctx, qryGetUserByEmail, email).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email)
+	err := r.db.QueryRow(ctx, qryGetUserByEmail, email).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, 
 func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, error) {
 	usr := entity.User{}
 
-	err := r.db.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email)
+	err := r.db.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
 	if err != nil {
 		return nil, err
 	}
@@ -95,29 +94,39 @@ func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, err
 }
 
 // TODO: Implement the following 3 methods after we delete the user_roles table.
-// func (r *repo) SaveUserRole(ctx context.Context, userID, roleID int64) error {
-// 	usr, _ := r.GetUserByID(ctx, userID)
-// 	if usr == nil {
-// 		return ErrUserNotFound
-// 	}
+func (r *repo) SaveUpdateUserRole(ctx context.Context, userID, roleID int64) error {
+	operation := func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, qryUpdateUserRole, roleID, userID)
+		if err != nil {
+			log.Printf("Failed to execute update user role query: %v", err)
+			return err
+		}
 
-// 	_, err := r.db.ExecContext(ctx, qryInsertUserRole, userID, roleID)
+		log.Println("User updated successfully.")
+		return nil
+	}
 
-// 	return err
-// }
+	return r.executeInTransaction(ctx, operation)
+}
 
-// func (r *repo) RemoveUserRole(ctx context.Context, userID int64) error {
-// 	_, err := r.db.ExecContext(ctx, qryRemoveUserRole, userID)
-// 	return err
-// }
+func (r *repo) GetUserRole(ctx context.Context, userID int64) (int64, error) {
+	usr := entity.User{}
 
-// func (r *repo) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error) {
-// 	usr_role := &entity.UserRole{}
+	err := r.db.QueryRow(ctx, qryGetUserRoleByUserID, userID).Scan(&usr.RoleID)
+	if err != nil {
+		return invalidRole, err
+	}
 
-// 	err := r.db.GetContext(ctx, usr_role, qryGetUserRoleByUserID, userID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	return usr.RoleID, nil
+}
 
-// 	return usr_role, nil
-// }
+func (r *repo) HasPermission(ctx context.Context, email string) (bool, error) {
+	usr, _ := r.GetUserByEmail(ctx, email)
+	if usr == nil {
+		log.Println("User with email: %s, was not found", email)
+		return false, ErrUserNotFound
+	}
+	log.Println("ROLE: ", usr.RoleID)
+
+	return usr.RoleID == 1, nil // 1 is the admin role
+}

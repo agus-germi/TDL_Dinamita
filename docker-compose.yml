@@ -33,6 +33,14 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - ${DB_PORT}:${DB_PORT}
-
+      
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    hostname: mailhog
+    ports:
+      - 8025:8025 # Web UI for MailHog
+      - 1025:1025 # SMTP server
+      
 volumes:
   postgres-data:

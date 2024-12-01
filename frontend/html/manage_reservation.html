@@ -80,6 +80,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const userName = localStorage.getItem('username'); 
             console.log('hola ' + userName);
+
+           // const userId = localStorage.getItem('userId'); 
+            fetchReservations(35); //Cambiar por el userID que me viene del login
             //document.getElementById('user-name').value = userName;
         });
 
@@ -99,6 +102,62 @@
                     }
                 }
             }
+        }
+
+        // Obtener reservas del usuario
+        function fetchReservations(UserID) {
+            fetch(`http://localhost:8080/users/${UserID}/reservations`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
+            return response.json(); // Convierte la respuesta a JSON
+            })
+            .then(data => {
+                populateReservationTable(data); // Procesa las reservas
+            })
+            .catch(error => {
+                console.error('Error al obtener las reservas:', error);
+            });
+            }
+
+        // Llenar la tabla con las reservas
+        function populateReservationTable(reservations) {
+            const tableBody = document.querySelector('#reservation-list tbody');
+            tableBody.innerHTML = ''; // Limpiar contenido previo
+
+            reservations.forEach(reservation => {
+                const row = document.createElement('tr');
+                console.log(reservation);
+
+                const [date, time] = reservation.reservation_date.split(" ");
+                console.log(date);
+                console.log(time);
+
+
+
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td>${reservation.table_number}</td>
+                    <td>
+                        <button onclick="cancelReservation(${reservation.id})">Cancelar</button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Cancelar una reserva
+        function cancelReservation(reservationID) {
+            // Implementar cancelación aquí
+            console.log(`Cancelar reserva con ID: ${reservationID}`);
         }
     </script>
 </body>

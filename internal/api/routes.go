@@ -16,10 +16,10 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users.DELETE("/remove", a.RemoveUser)
 	users.POST("/roles", a.AddUserRole)
 	users.POST("/login", a.LoginUser)
-	users.GET("/id/reservations", a.GetAllReservationsOfUser)
+	users.GET("/:id/reservations", a.GetAllReservationsOfUser)
 
 	reservations := e.Group("/reservations")
-	reservations.POST("/register", a.RegisterReservation)
+	reservations.POST("/create", a.CreateReservation)
 	reservations.DELETE("/remove", a.RemoveReservation)
 
 	tables := e.Group("/tables")
@@ -43,9 +43,9 @@ func (a *API) SetMiddlewares(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080"},          // Origen que permitimos que se conecte a nuestra API.
-		AllowMethods:     []string{echo.GET, echo.POST, echo.DELETE}, // A medida que agreguemos mas metodos hay que permitirlos aqui.
+		AllowOrigins:     []string{"http://localhost:8080"},                    // Origen que permitimos que se conecte a nuestra API.  TODO: Usar variable de entorno para cambiar facilmente el origen entre desarrollo y produccion.
+		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE}, // A medida que agreguemos mas metodos hay que permitirlos aqui.
 		AllowCredentials: true,
-		// AllowHeaders: []string{echo.HeaderContentType},  // Analizar si queremos restringir los tipos de headers.
+		AllowHeaders:     []string{echo.HeaderContentType, echo.HeaderOrigin, echo.HeaderAccept}, //para que se puedan enviar headers de cualquier tipo
 	}))
 }

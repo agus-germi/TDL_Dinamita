@@ -16,7 +16,7 @@ var (
 	ErrReservationNotFound  = errors.New("reservation was not found")
 )
 
-func (s *serv) RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error {
+func (s *serv) RegisterReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
 	rsv, _ := s.repo.GetReservationByTableNumberAndDate(ctx, tableNumber, date)
 	if rsv != nil {
 		return ErrTableNotAvailable

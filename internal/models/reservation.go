@@ -1,8 +1,11 @@
 package models
 
+import "time"
+
 type Reservation struct {
-	ID              int64  `json:"id"`
-	UserID          int64  `json:"reserved_by"`      // User  User   `json:"reserved_by"`  --> Quizas es mejor utilizar el email del user en vez de su ID.
-	TableNumber     int64  `json:"table_number"`     // Table Table  `json:"table_number"` quizas conviene usar las estructuras Table y User dentro de Reservation.
-	ReservationDate string `json:"reservation_date"` // El formato de este date es ISO 8601
+	ID              int64     `json:"id"`
+	UserID          int64     `json:"reserved_by"`
+	TableNumber     int64     `json:"table_number"`
+	ReservationDate string    `json:"reservation_date"` // El formato de este date es ISO 8601
+	TimeSlot        time.Time `json:"time_slot"`
 }
