@@ -93,7 +93,6 @@ func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, err
 	return &usr, nil
 }
 
-// TODO: Implement the following 3 methods after we delete the user_roles table.
 func (r *repo) SaveUpdateUserRole(ctx context.Context, userID, roleID int64) error {
 	operation := func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, qryUpdateUserRole, roleID, userID)

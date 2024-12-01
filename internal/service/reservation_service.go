@@ -16,7 +16,7 @@ var (
 	ErrReservationNotFound  = errors.New("reservation was not found")
 )
 
-func (s *serv) RegisterReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
+func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
 	rsv, _ := s.repo.GetReservationByTableNumberAndDate(ctx, tableNumber, date)
 	if rsv != nil {
 		return ErrTableNotAvailable
@@ -25,12 +25,7 @@ func (s *serv) RegisterReservation(ctx context.Context, userID, tableNumber int6
 	return s.repo.SaveReservation(ctx, userID, tableNumber, date)
 }
 
-func (s *serv) RemoveReservation(ctx context.Context, reservationID int64) error {
-	rsv, _ := s.repo.GetReservationByID(ctx, reservationID)
-	if rsv == nil {
-		return ErrReservationNotFound
-	}
-
+func (s *serv) CancelReservation(ctx context.Context, reservationID int64) error {
 	return s.repo.RemoveReservation(ctx, reservationID)
 }
 
@@ -65,4 +60,23 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 	}
 
 	return &modelReservations, nil
+}
+
+func (s *serv) GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error) {
+	entityReservation, err := s.repo.GetReservationByID(ctx, reservationID)
+	if err != nil {
+		return nil, err
+	}
+	if entityReservation == nil {
+		return nil, ErrReservationNotFound
+	}
+
+	modelReservation := models.Reservation{
+		ID:              entityReservation.ID,
+		UserID:          entityReservation.UserID,
+		TableNumber:     entityReservation.TableNumber,
+		ReservationDate: entityReservation.ReservationDate,
+	}
+
+	return &modelReservation, nil
 }

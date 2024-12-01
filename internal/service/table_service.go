@@ -10,14 +10,9 @@ var (
 	ErrTableNotFound      = errors.New("table not found")
 	ErrAddingTable        = errors.New("something went wrong trying to add a table")
 	ErrRemovingTable      = errors.New("something went wrong trying to remove a table")
-	ErrInvalidPermission  = errors.New("user does not have permission to execute")
 )
 
-func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string, clientRoleID int64) error {
-	if clientRoleID != adminRoleID {
-		return ErrInvalidPermission
-	}
-
+func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string) error {
 	table, _ := s.repo.GetTableByNumber(ctx, tableNumber)
 	if table != nil {
 		return ErrTableAlreadyExists
@@ -26,17 +21,13 @@ func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location 
 	return s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
 }
 
-func (s *serv) RemoveTable(ctx context.Context, tableNumber int64, clientRoleID int64) error {
-	if clientRoleID != adminRoleID {
-		return ErrInvalidPermission
-	}
-
-	table, _ := s.repo.GetTableByNumber(ctx, tableNumber)
+func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
+	table, _ := s.repo.GetTableByID(ctx, tableID)
 	if table == nil {
 		return ErrTableNotFound
 	}
 
-	err := s.repo.RemoveTable(ctx, tableNumber)
+	err := s.repo.RemoveTable(ctx, tableID)
 	if err != nil {
 		return ErrRemovingTable
 	}

@@ -15,6 +15,8 @@
 
 - Cambiar las URIs de los endpoints para que sean mas RESTful.
 
+- Considerar agregar middlewares en echo para realizar la autenticacion con JWT (y evitar duplicar codigo en los handlers de los endpoints)
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```

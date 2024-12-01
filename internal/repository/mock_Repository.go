@@ -16,36 +16,6 @@ type MockRepository struct {
 	mock.Mock
 }
 
-// GetReservation provides a mock function with given fields: ctx, userID, tableNumber
-func (_m *MockRepository) GetReservation(ctx context.Context, userID int64, tableNumber int64) (*entity.Reservation, error) {
-	ret := _m.Called(ctx, userID, tableNumber)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetReservation")
-	}
-
-	var r0 *entity.Reservation
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) (*entity.Reservation, error)); ok {
-		return rf(ctx, userID, tableNumber)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) *entity.Reservation); ok {
-		r0 = rf(ctx, userID, tableNumber)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entity.Reservation)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, int64, int64) error); ok {
-		r1 = rf(ctx, userID, tableNumber)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetReservationByID provides a mock function with given fields: ctx, reservationID
 func (_m *MockRepository) GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error) {
 	ret := _m.Called(ctx, reservationID)
@@ -99,6 +69,66 @@ func (_m *MockRepository) GetReservationByTableNumberAndDate(ctx context.Context
 
 	if rf, ok := ret.Get(1).(func(context.Context, int64, time.Time) error); ok {
 		r1 = rf(ctx, tableNumber, date)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetReservationsByUserID provides a mock function with given fields: ctx, userID
+func (_m *MockRepository) GetReservationsByUserID(ctx context.Context, userID int64) (*[]entity.Reservation, error) {
+	ret := _m.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetReservationsByUserID")
+	}
+
+	var r0 *[]entity.Reservation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*[]entity.Reservation, error)); ok {
+		return rf(ctx, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *[]entity.Reservation); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*[]entity.Reservation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTableByID provides a mock function with given fields: ctx, tableID
+func (_m *MockRepository) GetTableByID(ctx context.Context, tableID int64) (*entity.Table, error) {
+	ret := _m.Called(ctx, tableID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTableByID")
+	}
+
+	var r0 *entity.Table
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*entity.Table, error)); ok {
+		return rf(ctx, tableID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *entity.Table); ok {
+		r0 = rf(ctx, tableID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.Table)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, tableID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -197,24 +227,22 @@ func (_m *MockRepository) GetUserByID(ctx context.Context, userID int64) (*entit
 }
 
 // GetUserRole provides a mock function with given fields: ctx, userID
-func (_m *MockRepository) GetUserRole(ctx context.Context, userID int64) (*entity.UserRole, error) {
+func (_m *MockRepository) GetUserRole(ctx context.Context, userID int64) (int64, error) {
 	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserRole")
 	}
 
-	var r0 *entity.UserRole
+	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (*entity.UserRole, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (int64, error)); ok {
 		return rf(ctx, userID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *entity.UserRole); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) int64); ok {
 		r0 = rf(ctx, userID)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entity.UserRole)
-		}
+		r0 = ret.Get(0).(int64)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
@@ -280,24 +308,6 @@ func (_m *MockRepository) RemoveUser(ctx context.Context, userID int64) error {
 	return r0
 }
 
-// RemoveUserRole provides a mock function with given fields: ctx, userID
-func (_m *MockRepository) RemoveUserRole(ctx context.Context, userID int64) error {
-	ret := _m.Called(ctx, userID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for RemoveUserRole")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, userID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // SaveReservation provides a mock function with given fields: ctx, userID, tableNumber, date
 func (_m *MockRepository) SaveReservation(ctx context.Context, userID int64, tableNumber int64, date time.Time) error {
 	ret := _m.Called(ctx, userID, tableNumber, date)
@@ -334,17 +344,17 @@ func (_m *MockRepository) SaveTable(ctx context.Context, tableNumber int64, seat
 	return r0
 }
 
-// SaveUser provides a mock function with given fields: ctx, name, passwd, email
-func (_m *MockRepository) SaveUser(ctx context.Context, name string, passwd string, email string) error {
-	ret := _m.Called(ctx, name, passwd, email)
+// SaveUpdateUserRole provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockRepository) SaveUpdateUserRole(ctx context.Context, userID int64, roleID int64) error {
+	ret := _m.Called(ctx, userID, roleID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for SaveUser")
+		panic("no return value specified for SaveUpdateUserRole")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
-		r0 = rf(ctx, name, passwd, email)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
+		r0 = rf(ctx, userID, roleID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -352,17 +362,17 @@ func (_m *MockRepository) SaveUser(ctx context.Context, name string, passwd stri
 	return r0
 }
 
-// SaveUserRole provides a mock function with given fields: ctx, userID, roleID
-func (_m *MockRepository) SaveUserRole(ctx context.Context, userID int64, roleID int64) error {
-	ret := _m.Called(ctx, userID, roleID)
+// SaveUser provides a mock function with given fields: ctx, name, passwd, email, roleID
+func (_m *MockRepository) SaveUser(ctx context.Context, name string, passwd string, email string, roleID int64) error {
+	ret := _m.Called(ctx, name, passwd, email, roleID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for SaveUserRole")
+		panic("no return value specified for SaveUser")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
-		r0 = rf(ctx, userID, roleID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, int64) error); ok {
+		r0 = rf(ctx, name, passwd, email, roleID)
 	} else {
 		r0 = ret.Error(0)
 	}

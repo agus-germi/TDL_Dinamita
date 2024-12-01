@@ -8,6 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const adminRoleID = 1
+
 var (
 	// User messages errors
 	ErrUserAlreadyExists  = errors.New("user already exists")
@@ -65,11 +67,7 @@ func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
 	return s.repo.RemoveUser(ctx, userID)
 }
 
-func (s *serv) UpdateUserRole(ctx context.Context, userID, newRoleID int64, clientRoleID int64) error {
-	if clientRoleID != adminRoleID {
-		return ErrInvalidPermission
-	}
-
+func (s *serv) UpdateUserRole(ctx context.Context, userID, newRoleID int64) error {
 	usr, _ := s.repo.GetUserByID(ctx, userID)
 	if usr == nil {
 		return ErrUserNotFound

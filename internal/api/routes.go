@@ -9,23 +9,26 @@ import (
 
 // TODO: Cambiar las URIs de los endpoints para que sean mas RESTful.
 func (a *API) SetRoutes(e *echo.Echo) {
-	//api := e.Group("/api/v1")
+	// Main group of routes for API v1
+	api := e.Group("/api/v1", JWTMiddleware)
 
-	// Group routes for /users
-	users := e.Group("/users")
-	users.POST("/register", a.RegisterUser)
-	users.DELETE("/remove", a.RemoveUser)
-	users.POST("/roles", a.AddUserRole)
+	// Group routes for /users under /api/v1
+	users := api.Group("/users")
+	users.POST("", a.RegisterUser)
 	users.POST("/login", a.LoginUser)
+	users.DELETE("/:id", a.DeleteUser)
+	users.PATCH("/:id", a.UpdateUserRole)
 	users.GET("/:id/reservations", a.GetReservationsOfUser)
 
-	reservations := e.Group("/reservations")
-	reservations.POST("/register", a.CreateReservation)
-	reservations.DELETE("/remove", a.RemoveReservation)
+	// Group routes for /reservations under /api/v1
+	reservations := api.Group("/reservations")
+	reservations.POST("", a.CreateReservation)
+	reservations.DELETE("/:id", a.DeleteReservation)
 
-	tables := e.Group("/tables")
-	tables.POST("/register", a.AddTable)
-	tables.DELETE("/remove", a.RemoveTable)
+	// Group routes for /tables under /api/v1
+	tables := api.Group("/tables")
+	tables.POST("", a.CreateTable)
+	tables.DELETE("/:id", a.DeleteTable)
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".
