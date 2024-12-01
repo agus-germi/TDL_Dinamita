@@ -13,6 +13,7 @@
 
 - Implementar limite de tiempo para las queries a la base de datos (utilizando context)
 
+- Cambiar las URIs de los endpoints para que sean mas RESTful.
 
 # Testing Endpoints with Postman
 ## Endpoint reserve_table

@@ -60,7 +60,7 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 			ID:              entityReservation.ID,
 			UserID:          entityReservation.UserID,
 			TableNumber:     entityReservation.TableNumber,
-			ReservationDate: entityReservation.ReservationDate.Format("2006-01-02 15:04:05"),
+			ReservationDate: entityReservation.ReservationDate,
 		}
 	}
 

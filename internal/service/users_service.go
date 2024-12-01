@@ -20,15 +20,13 @@ var (
 	ErrUserRoleNotFound     = errors.New("this user has any role")
 )
 
-const adminRoleID = 1
-
 func (s *serv) RegisterUser(ctx context.Context, name, password, email string) error {
 	usr, _ := s.repo.GetUserByEmail(ctx, email)
 	if usr != nil {
 		return ErrUserAlreadyExists
 	}
 
-	hashedPassword, err := HashPassword(password)
+	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		return err
 	}
@@ -67,18 +65,8 @@ func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
 	return s.repo.RemoveUser(ctx, userID)
 }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func (s *serv) UpdateUserRole(ctx context.Context, userID, roleID int64, email string) error {
-
-	hasPermission, err := s.repo.HasPermission(ctx, email)
-	if err != nil {
-		return err
-	}
-	if !hasPermission {
+func (s *serv) UpdateUserRole(ctx context.Context, userID, newRoleID int64, clientRoleID int64) error {
+	if clientRoleID != adminRoleID {
 		return ErrInvalidPermission
 	}
 
@@ -87,5 +75,10 @@ func (s *serv) UpdateUserRole(ctx context.Context, userID, roleID int64, email s
 		return ErrUserNotFound
 	}
 
-	return s.repo.SaveUpdateUserRole(ctx, userID, roleID)
+	return s.repo.SaveUpdateUserRole(ctx, userID, newRoleID)
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
 }

@@ -21,9 +21,9 @@ type Service interface {
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 
 	// Admin features
-	UpdateUserRole(ctx context.Context, userID, roleID int64, email string) error
-	AddTable(ctx context.Context, tableNumber, seats int64, location string, userEmail string) error //All tables are added being available
-	RemoveTable(ctx context.Context, tableNumber int64, userEmail string) error
+	UpdateUserRole(ctx context.Context, userID, newRoleID int64, clientRoleID int64) error
+	AddTable(ctx context.Context, tableNumber, seats int64, location string, clientRoleID int64) error
+	RemoveTable(ctx context.Context, tableNumber int64, clientRoleID int64) error
 }
 
 type serv struct {
@@ -33,3 +33,5 @@ type serv struct {
 func New(repo repository.Repository) Service {
 	return &serv{repo: repo}
 }
+
+var adminRoleID int64 = 1

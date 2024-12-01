@@ -119,14 +119,3 @@ func (r *repo) GetUserRole(ctx context.Context, userID int64) (int64, error) {
 
 	return usr.RoleID, nil
 }
-
-func (r *repo) HasPermission(ctx context.Context, email string) (bool, error) {
-	usr, _ := r.GetUserByEmail(ctx, email)
-	if usr == nil {
-		log.Println("User with email: %s, was not found", email)
-		return false, ErrUserNotFound
-	}
-	log.Println("ROLE: ", usr.RoleID)
-
-	return usr.RoleID == 1, nil // 1 is the admin role
-}

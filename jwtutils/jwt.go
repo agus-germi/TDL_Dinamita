@@ -1,4 +1,4 @@
-package jwt
+package jwtutils
 
 import (
 	"errors"
@@ -30,7 +30,8 @@ func SignedLoginToken(u *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": u.ID,
 		"email":   u.Email,
-		"name":    u.Name,
+		"role":    u.RoleID,
+		"name":    u.Name, // Lo necesitamos enviar?
 		"exp":     expirationTime,
 	})
 	jwt, err := token.SignedString([]byte(key))
@@ -41,7 +42,20 @@ func SignedLoginToken(u *models.User) (string, error) {
 	return jwt, nil
 }
 
-func ParseLoginJWT(value string) (jwt.MapClaims, error) {
+func GetClaimsFromCookie(c echo.Context) (jwt.MapClaims, error) {
+	cookie, err := c.Cookie("Authorization")
+	if err != nil {
+		return nil, err
+	}
+	claims, err := parseLoginJWT(cookie.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
+}
+
+func parseLoginJWT(value string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(value, func(token *jwt.Token) (interface{}, error) {
 		return []byte(key), nil
 	})
@@ -62,19 +76,6 @@ func ParseLoginJWT(value string) (jwt.MapClaims, error) {
 
 	if !token.Valid {
 		return nil, ErrInvalidToken
-	}
-
-	return claims, nil
-}
-
-func GetClaimsFromCookie(c echo.Context) (jwt.MapClaims, error) {
-	cookie, err := c.Cookie("Authorization")
-	if err != nil {
-		return nil, err
-	}
-	claims, err := ParseLoginJWT(cookie.Value)
-	if err != nil {
-		return nil, err
 	}
 
 	return claims, nil

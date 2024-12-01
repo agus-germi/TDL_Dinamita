@@ -76,11 +76,10 @@ func (a *API) CreateReservation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	// Get userID from cookie
-	claims, err = jwtutils.GetClaimsFromCookie(c)
+	claims, err := jwtutils.GetClaimsFromCookie(c)
 	if err != nil {
-		log.Println("Error while getting the user ID from the cookie:", err)
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+		log.Println("Error while getting the JWT claims from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 	userID := claims["user_id"].(int64)
 
@@ -137,18 +136,21 @@ func (a *API) RemoveReservation(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseMessage{Message: "Reservation removed successfully"})
 }
 
+// TODO: rename this function CreateTable
 func (a *API) AddTable(c echo.Context) error {
-	email, err := getEmailFromCookie(c)
+	claims, err := jwtutils.GetClaimsFromCookie(c)
 	if err != nil {
-		log.Println("Error while getting the email from the cookie:", err)
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+		log.Println("Error while getting the JWT claims from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
-	println("email", email)
+	roleID := claims["role"].(int64)
+
+	log.Println("[Create Table] Role ID:", roleID)
 
 	ctx := c.Request().Context()
 	params := dtos.AddTableDTO{}
 
-	//Linkeo la request con la instancia de RegisterReservationDTO
+	//Linkeo la request con la instancia de CreateTableDTO
 	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
@@ -160,7 +162,7 @@ func (a *API) AddTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location, email)
+	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location, roleID)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -174,14 +176,17 @@ func (a *API) AddTable(c echo.Context) error {
 }
 
 func (a *API) RemoveTable(c echo.Context) error {
-	email, err := getEmailFromCookie(c)
+	claims, err := jwtutils.GetClaimsFromCookie(c)
 	if err != nil {
-		log.Println("Error while getting the email from the cookie:", err)
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+		log.Println("Error while getting the JWT claims from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
+	roleID := claims["role"].(int64)
+
+	log.Println("[Delete Table] Role ID:", roleID)
 
 	ctx := c.Request().Context()
-	params := dtos.RemoveTableDTO{}
+	params := dtos.RemoveTableDTO{} // TableNumber should be sent in the URI
 
 	err = c.Bind(&params)
 	if err != nil {
@@ -193,7 +198,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.RemoveTable(ctx, params.Number, email)
+	err = a.serv.RemoveTable(ctx, params.Number, roleID)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -206,6 +211,7 @@ func (a *API) RemoveTable(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseMessage{Message: "Table removed successfully"})
 }
 
+// Este endpoint se llamaria cuando un usuario tomase la decision de eliminar su cuenta.
 func (a *API) RemoveUser(c echo.Context) error {
 
 	ctx := c.Request().Context()
@@ -236,15 +242,17 @@ func (a *API) RemoveUser(c echo.Context) error {
 }
 
 func (a *API) AddUserRole(c echo.Context) error {
-
-	email, err := getEmailFromCookie(c)
+	claims, err := jwtutils.GetClaimsFromCookie(c)
 	if err != nil {
-		log.Println("Error while getting the email from the cookie:", err)
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Unauthorized"})
+		log.Println("Error while getting the JWT claims from the cookie:", err)
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
+	roleID := claims["role"].(int64)
+
+	log.Println("[Update User Role] Role ID:", roleID)
 
 	ctx := c.Request().Context()
-	params := dtos.UserRoleDTO{}
+	params := dtos.UpdateUserRoleDTO{}
 
 	// Linkeo la request con la instancia de UserRoleDTO
 	err = c.Bind(&params)
@@ -258,7 +266,7 @@ func (a *API) AddUserRole(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	err = a.serv.UpdateUserRole(ctx, params.UserID, params.RoleID, email)
+	err = a.serv.UpdateUserRole(ctx, params.UserID, params.NewRoleID, roleID)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -299,7 +307,7 @@ func (a *API) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
-	token, err := jwt.SignedLoginToken(usr)
+	token, err := jwtutils.SignedLoginToken(usr)
 	if err != nil {
 		log.Println("Error trying to create a jwt:", err)
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
@@ -319,7 +327,7 @@ func (a *API) LoginUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"success": "true"})
 }
 
-func (a *API) GetAllReservationsOfUser(c echo.Context) error {
+func (a *API) GetReservationsOfUser(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	base := 10
@@ -330,14 +338,7 @@ func (a *API) GetAllReservationsOfUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
 
-	params := dtos.GetReservationsDTO{UserID: userID}
-
-	err = a.dataValidator.Struct(params)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
-	}
-
-	reservations, err := a.serv.GetReservationsByUserID(ctx, params.UserID)
+	reservations, err := a.serv.GetReservationsByUserID(ctx, userID)
 	if err != nil {
 		if statusCode, ok := errorResponses[err]; ok {
 			return c.JSON(statusCode, responseMessage{Message: err.Error()})
@@ -360,27 +361,9 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 	for i, reservation := range *reservations {
 		dtoReservations[i] = dtos.ReservationDTO{
 			ID:              reservation.ID,
-			UserID:          reservation.UserID,
 			TableNumber:     reservation.TableNumber,
 			ReservationDate: reservation.ReservationDate,
 		}
 	}
 	return &dtoReservations
-}
-
-// funciones aux
-
-// getEmailFromCookie obtiene el email del usuario a partir de la cookie de autenticación
-func getEmailFromCookie(c echo.Context) (string, error) {
-
-	cookie, err := c.Cookie("Authorization")
-	if err != nil {
-		return "", err
-	}
-	claims, err := jwt.ParseLoginJWT(cookie.Value)
-	if err != nil {
-		return "", err
-	}
-	email := claims["email"].(string)
-	return email, nil
 }

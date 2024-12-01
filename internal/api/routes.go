@@ -7,8 +7,9 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+// TODO: Cambiar las URIs de los endpoints para que sean mas RESTful.
 func (a *API) SetRoutes(e *echo.Echo) {
-	//api := e.Group("/api")
+	//api := e.Group("/api/v1")
 
 	// Group routes for /users
 	users := e.Group("/users")
@@ -16,10 +17,10 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	users.DELETE("/remove", a.RemoveUser)
 	users.POST("/roles", a.AddUserRole)
 	users.POST("/login", a.LoginUser)
-	users.GET("/:id/reservations", a.GetAllReservationsOfUser)
+	users.GET("/:id/reservations", a.GetReservationsOfUser)
 
 	reservations := e.Group("/reservations")
-	reservations.POST("/create", a.CreateReservation)
+	reservations.POST("/register", a.CreateReservation)
 	reservations.DELETE("/remove", a.RemoveReservation)
 
 	tables := e.Group("/tables")

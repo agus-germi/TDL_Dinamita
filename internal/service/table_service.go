@@ -13,12 +13,8 @@ var (
 	ErrInvalidPermission  = errors.New("user does not have permission to execute")
 )
 
-func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string, email string) error {
-	hasPermission, err := s.repo.HasPermission(ctx, email)
-	if err != nil {
-		return err
-	}
-	if !hasPermission {
+func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string, clientRoleID int64) error {
+	if clientRoleID != adminRoleID {
 		return ErrInvalidPermission
 	}
 
@@ -30,13 +26,8 @@ func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location 
 	return s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
 }
 
-func (s *serv) RemoveTable(ctx context.Context, tableNumber int64, email string) error {
-
-	hasPermission, err := s.repo.HasPermission(ctx, email)
-	if err != nil {
-		return err
-	}
-	if !hasPermission {
+func (s *serv) RemoveTable(ctx context.Context, tableNumber int64, clientRoleID int64) error {
+	if clientRoleID != adminRoleID {
 		return ErrInvalidPermission
 	}
 
@@ -45,7 +36,7 @@ func (s *serv) RemoveTable(ctx context.Context, tableNumber int64, email string)
 		return ErrTableNotFound
 	}
 
-	err = s.repo.RemoveTable(ctx, tableNumber)
+	err := s.repo.RemoveTable(ctx, tableNumber)
 	if err != nil {
 		return ErrRemovingTable
 	}
