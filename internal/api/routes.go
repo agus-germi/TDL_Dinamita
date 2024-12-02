@@ -9,13 +9,16 @@ import (
 
 // TODO: Cambiar las URIs de los endpoints para que sean mas RESTful.
 func (a *API) SetRoutes(e *echo.Echo) {
-	// Main group of routes for API v1
+	// Public routes (without JWT token)
+	public := e.Group("/api/v1")
+	public.POST("/users", a.RegisterUser)
+	public.POST("/users/login", a.LoginUser)
+
+	// Main group of routes for API v1 (with JWT token)
 	api := e.Group("/api/v1", JWTMiddleware)
 
 	// Group routes for /users under /api/v1
 	users := api.Group("/users")
-	users.POST("", a.RegisterUser)
-	users.POST("/login", a.LoginUser)
 	users.DELETE("/:id", a.DeleteUser)
 	users.PATCH("/:id", a.UpdateUserRole)
 	users.GET("/:id/reservations", a.GetReservationsOfUser)

@@ -151,11 +151,10 @@ func (a *API) DeleteUser(c echo.Context) error {
 
 func (a *API) UpdateUserRole(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(int64)
+	log.Println("[Update User Role] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
-
-	log.Println("[Update User Role] Client Role ID:", clientRoleID)
 
 	if clientRoleID != adminRoleID {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't assign a new role to a user"})
@@ -199,17 +198,16 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 
 func (a *API) GetReservationsOfUser(c echo.Context) error {
 	clientUserID, ok := c.Get("user_id").(int64) // Aserción de tipo
+	log.Println("[Get Reservations of User] Client User ID:", clientUserID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
 
 	clientRoleID, ok := c.Get("user_id").(int64) // Aserción de tipo
+	log.Println("[Get Reservations of User] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
-
-	log.Println("[Get Reservations of User] Client User ID:", clientUserID)
-	log.Println("[Get Reservations of User] Client Role ID:", clientRoleID)
 
 	base := 10
 	bitSize := 64

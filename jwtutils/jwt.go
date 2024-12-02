@@ -30,7 +30,7 @@ func SignedLoginToken(u *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": u.ID,
 		"email":   u.Email,
-		"role":    u.RoleID,
+		"role_id": u.RoleID,
 		"name":    u.Name, // Lo necesitamos enviar?
 		"exp":     expirationTime,
 	})

@@ -7,5 +7,5 @@ type User struct {
 	ID     int64  `json:"id"`
 	Name   string `json:"name"`
 	Email  string `json:"email"`
-	RoleID string `json:"role_id"`
+	RoleID int64  `json:"role_id"`
 }

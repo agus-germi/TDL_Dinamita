@@ -13,9 +13,7 @@
 
 - Implementar limite de tiempo para las queries a la base de datos (utilizando context)
 
-- Cambiar las URIs de los endpoints para que sean mas RESTful.
-
-- Considerar agregar middlewares en echo para realizar la autenticacion con JWT (y evitar duplicar codigo en los handlers de los endpoints)
+- Basic Auth para login
 
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
