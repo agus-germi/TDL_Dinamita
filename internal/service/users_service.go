@@ -8,6 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const adminRoleID = 1
+
 var (
 	// User messages errors
 	ErrUserAlreadyExists  = errors.New("user already exists")
@@ -26,24 +28,26 @@ func (s *serv) RegisterUser(ctx context.Context, name, password, email string) e
 		return ErrUserAlreadyExists
 	}
 
-	hashedPassword, err := HashPassword(password)
+	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		return err
 	}
 
-	return s.repo.SaveUser(ctx, name, hashedPassword, email)
+	return s.repo.SaveUser(ctx, name, hashedPassword, email, 2) // Every user is created with a role 2 (user)
 }
 
 func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
 	usr, err := s.repo.GetUserByEmail(ctx, email)
 	if usr == nil {
+		s.log.Debugf("User not found")
 		return nil, ErrUserNotFound
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	if usr.Role != 1 {
+	// Admins don't have password (this is really insecure. We should hash the password when we create the admin user during the DB migration)
+	if usr.RoleID != adminRoleID {
 		err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
 		if err != nil {
 			return nil, ErrInvalidCredentials
@@ -51,9 +55,10 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 	}
 
 	return &models.User{
-		ID:    usr.ID,
-		Name:  usr.Name,
-		Email: usr.Email}, nil
+		ID:     usr.ID,
+		Name:   usr.Name,
+		Email:  usr.Email,
+		RoleID: usr.RoleID}, nil
 }
 
 func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
@@ -61,41 +66,20 @@ func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
 	if usr == nil {
 		return ErrUserNotFound
 	}
+
 	return s.repo.RemoveUser(ctx, userID)
 }
 
-func HashPassword(password string) (string, error) {
+func (s *serv) UpdateUserRole(ctx context.Context, userID, newRoleID int64) error {
+	usr, _ := s.repo.GetUserByID(ctx, userID)
+	if usr == nil {
+		return ErrUserNotFound
+	}
+
+	return s.repo.SaveUpdateUserRole(ctx, userID, newRoleID)
+}
+
+func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
-}
-
-// TODO: Pensar en los requirimientos: deseamos poder cambiar el rol de un usuario que ya posee uno previamente?
-// Si la respuesta es sí, tenemos que modificar este código. (aunque en nuestro caso no tiene mucho sentido este feature)
-// En realidad, pensandolo bien, ya tenemos el feature implementado--> Removemos el rol y despues le agregamos uno nuevo :)
-func (s *serv) AddUserRole(ctx context.Context, userID, roleID int64, email string) error {
-
-	if !s.repo.HasPermission(ctx, email) {
-		return ErrInvalidPermission
-	}
-
-	usr_role, _ := s.repo.GetUserRole(ctx, userID)
-	if usr_role != nil {
-		return ErrUserRoleAlreadyAdded
-	}
-
-	return s.repo.SaveUserRole(ctx, userID, roleID)
-}
-
-func (s *serv) RemoveUserRole(ctx context.Context, userID int64) error {
-	usr_role, _ := s.repo.GetUserRole(ctx, userID)
-	if usr_role == nil {
-		return ErrUserRoleNotFound
-	}
-
-	err := s.repo.RemoveUserRole(ctx, userID)
-	if err != nil {
-		return ErrRemovingUserRole
-	}
-
-	return nil
 }

@@ -1,0 +1,93 @@
+package jwtutils
+
+import (
+	"errors"
+	"time"
+
+	"github.com/agus-germi/TDL_Dinamita/internal/models"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+)
+
+const key = "01234567890123456789012345678901" // TODO: Cambiar por una key más segura, idealmente almacenada en una variable de entorno
+
+var (
+	ErrInvalidKey          = jwt.ErrInvalidKey
+	ErrParsingToken        = errors.New("error parsing token")
+	ErrInvalidClaimsFormat = errors.New("invalid claims format")
+	ErrInvalidToken        = errors.New("invalid token")
+	ErrTokenExpired        = errors.New("token has expired")
+	ErrMissingToken        = errors.New("missing token")
+)
+
+// SignedLoginToken genera un token firmado con el id, email y el nombre del usuario
+func SignedLoginToken(u *models.User) (string, error) {
+	//HS256 > viable porque el servidor que creo que el certificado tambien lo validará
+
+	// Expiration time: 24 hours
+	// expirationTime := time.Now().Add(24 * time.Hour).Unix() // Expiration time according Unix format.
+	expirationTime := time.Now().Add(1 * time.Minute).Unix() // Expiration time according Unix format.
+
+	//Claims: estructura de datos que se puede firmar y validar
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": u.ID,
+		"email":   u.Email,
+		"role_id": u.RoleID,
+		"name":    u.Name,
+		"exp":     expirationTime,
+	})
+	jwt, err := token.SignedString([]byte(key))
+	if err != nil {
+		return "", err
+	}
+	println("token", jwt)
+	return jwt, nil
+}
+
+func GetClaimsFromToken(c echo.Context) (jwt.MapClaims, error) {
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return nil, ErrMissingToken
+	}
+	println("token", token)
+	// Deleting "Bearer " from the beginning of the token
+	if len(token) > 7 && token[:7] == "Bearer " {
+		token = token[7:]
+	}
+	println("token", token)
+
+	claims, err := parseLoginJWT(token)
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
+}
+
+func parseLoginJWT(value string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(value, func(token *jwt.Token) (interface{}, error) {
+		return []byte(key), nil
+	})
+	println("[PARSING] token", token)
+	println("[PARSING] Err:", err)
+	if err != nil {
+		// Distinction between expired token and other errors
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, ErrTokenExpired
+		}
+
+		return nil, ErrInvalidToken
+	}
+
+	// Check if the claims are valid
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, ErrInvalidClaimsFormat
+	}
+
+	if !token.Valid {
+		return nil, ErrInvalidToken
+	}
+
+	return claims, nil
+}

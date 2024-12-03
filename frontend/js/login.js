@@ -1,3 +1,5 @@
+//import jwt_decode from 'jwt-decode';
+
 document.getElementById('loginForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Evita el envío del formulario
 
@@ -25,12 +27,22 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         if (!response.ok) {
             throw new Error('Error en el inicio de sesión');
         }
-        return response.json(); // Asegúrate de que el backend responde con JSON
+        return response.json();
     })
     .then(data => {
+
+        localStorage.setItem('token', data.token);
+
+        // const token = localStorage.getItem('token');
+        // const decoded = jwt_decode(token);
+        // console.log("Decoded token:", decoded);
+        // const userId = decoded.user_id; 
+        // console.log("User ID:", userId);
+
         document.getElementById('loginMessage').innerText = "Inicio de sesión exitoso";
-        localStorage.setItem('username', data.name); // Guardar nombre de usuario en localStorage
-        console.log('Usuario en storage: ' + localStorage.getItem('username'));
+
+        //localStorage.setItem('username', data.name); // Guardar nombre de usuario en localStorage
+        //console.log('Usuario en storage: ' + localStorage.getItem('username'));
         window.location.href = '/static/html/main.html'; // Redirigir a la página principal
     })
     .catch(error => {

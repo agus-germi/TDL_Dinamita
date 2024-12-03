@@ -3,29 +3,19 @@
 - Por algun motivo la asignacion de id para una reserva esta vinculada con la asignacion de id para mesas:
     > O sea, si creo una mesa la base de datos le asigna un id (digamos 1), y a continuacion, cuando hago una reserva nueva
       la base de datos le asigna, a la reserva, un id siguiente al que esta en la tabla "tables" (en este ejemplo: id=2)
-- Analizar si es conveniente (y necesario) diferenciar DTOS de una misma entidad
-    > Es decir, tiene sentido tener "AddTableDTO" y "RemoveTableDTO" en vez de un solo DTO llamado "TableDTO", en donde esta
-      toda la informacion necesaria para las dos operaciones mencionadas?
 
-    Tenemos:
-    > 
-      type AddTableDTO struct {
-	    Number   int64  `json:"number" validate:"required"`
-	    Seats    int64  `json:"seats"  validate:"required"`
-	    Location string `json:"location" validate:"required"`
-      }
-    > 
-      type RemoveTableDTO struct {
-	    Number   int64  `json:"number" validate:"required"`
-      }
-    Podemos reemplazarlos por:
-    > 
-      type TableDTO struct {
-	    Number   int64  `json:"number" validate:"required"`
-	    Seats    int64  `json:"seats"  validate:"required"`
-	    Location string `json:"location" validate:"required"`
-      }
-    Y acceder a los campos que necesitemos en cada caso.
+- Implement transactions in repository functions.
+  Luego de esto podemos:
+  > Simular múltiples solicitudes concurrentes para asegurarte de que el sistema maneja adecuadamente los bloqueos y evita inconsistencias.
+  wrk -t4 -c100 -d10s http://localhost:8080/api/reservations
+
+  > Utiliza herramientas como ab (Apache Benchmark), wrk o k6 para simular múltiples solicitudes concurrentes y verificar el rendimiento de tu API.
+
+- Implementar limite de tiempo para las queries a la base de datos (utilizando context)
+
+- Basic Auth para login
+
+- Reemplazar log.Println por log.Debugf en todas sus apariciones
 
 # Testing Endpoints with Postman
 ## Endpoint reserve_table

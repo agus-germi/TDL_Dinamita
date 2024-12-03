@@ -34,22 +34,82 @@ func (_m *MockService) AddTable(ctx context.Context, tableNumber int64, seats in
 	return r0
 }
 
-// AddUserRole provides a mock function with given fields: ctx, userID, roleID
-func (_m *MockService) AddUserRole(ctx context.Context, userID int64, roleID int64) error {
-	ret := _m.Called(ctx, userID, roleID)
+// CancelReservation provides a mock function with given fields: ctx, reservationID
+func (_m *MockService) CancelReservation(ctx context.Context, reservationID int64) error {
+	ret := _m.Called(ctx, reservationID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AddUserRole")
+		panic("no return value specified for CancelReservation")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
-		r0 = rf(ctx, userID, roleID)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, reservationID)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
+}
+
+// GetReservationByID provides a mock function with given fields: ctx, reservationID
+func (_m *MockService) GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error) {
+	ret := _m.Called(ctx, reservationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetReservationByID")
+	}
+
+	var r0 *models.Reservation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*models.Reservation, error)); ok {
+		return rf(ctx, reservationID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *models.Reservation); ok {
+		r0 = rf(ctx, reservationID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Reservation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, reservationID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetReservationsByUserID provides a mock function with given fields: ctx, userID
+func (_m *MockService) GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error) {
+	ret := _m.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetReservationsByUserID")
+	}
+
+	var r0 *[]models.Reservation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*[]models.Reservation, error)); ok {
+		return rf(ctx, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *[]models.Reservation); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*[]models.Reservation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // LoginUser provides a mock function with given fields: ctx, email, password
@@ -82,17 +142,17 @@ func (_m *MockService) LoginUser(ctx context.Context, email string, password str
 	return r0, r1
 }
 
-// RegisterReservation provides a mock function with given fields: ctx, userID, name, password, email, tableNumber, date
-func (_m *MockService) RegisterReservation(ctx context.Context, userID int64, name string, password string, email string, tableNumber int64, date time.Time) error {
-	ret := _m.Called(ctx, userID, name, password, email, tableNumber, date)
+// MakeReservation provides a mock function with given fields: ctx, userID, tableNumber, date
+func (_m *MockService) MakeReservation(ctx context.Context, userID int64, tableNumber int64, date time.Time) error {
+	ret := _m.Called(ctx, userID, tableNumber, date)
 
 	if len(ret) == 0 {
-		panic("no return value specified for RegisterReservation")
+		panic("no return value specified for MakeReservation")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, string, string, string, int64, time.Time) error); ok {
-		r0 = rf(ctx, userID, name, password, email, tableNumber, date)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, time.Time) error); ok {
+		r0 = rf(ctx, userID, tableNumber, date)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -118,27 +178,9 @@ func (_m *MockService) RegisterUser(ctx context.Context, name string, password s
 	return r0
 }
 
-// RemoveReservation provides a mock function with given fields: ctx, reservationID
-func (_m *MockService) RemoveReservation(ctx context.Context, reservationID int64) error {
-	ret := _m.Called(ctx, reservationID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for RemoveReservation")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, reservationID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// RemoveTable provides a mock function with given fields: ctx, tableNumber
-func (_m *MockService) RemoveTable(ctx context.Context, tableNumber int64) error {
-	ret := _m.Called(ctx, tableNumber)
+// RemoveTable provides a mock function with given fields: ctx, tableID
+func (_m *MockService) RemoveTable(ctx context.Context, tableID int64) error {
+	ret := _m.Called(ctx, tableID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveTable")
@@ -146,7 +188,7 @@ func (_m *MockService) RemoveTable(ctx context.Context, tableNumber int64) error
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, tableNumber)
+		r0 = rf(ctx, tableID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -154,9 +196,9 @@ func (_m *MockService) RemoveTable(ctx context.Context, tableNumber int64) error
 	return r0
 }
 
-// RemoveUser provides a mock function with given fields: ctx, userID
-func (_m *MockService) RemoveUser(ctx context.Context, userID int64) error {
-	ret := _m.Called(ctx, userID)
+// RemoveUser provides a mock function with given fields: ctx, userIDToDelete
+func (_m *MockService) RemoveUser(ctx context.Context, userIDToDelete int64) error {
+	ret := _m.Called(ctx, userIDToDelete)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveUser")
@@ -164,7 +206,7 @@ func (_m *MockService) RemoveUser(ctx context.Context, userID int64) error {
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, userID)
+		r0 = rf(ctx, userIDToDelete)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -172,17 +214,17 @@ func (_m *MockService) RemoveUser(ctx context.Context, userID int64) error {
 	return r0
 }
 
-// RemoveUserRole provides a mock function with given fields: ctx, userID
-func (_m *MockService) RemoveUserRole(ctx context.Context, userID int64) error {
-	ret := _m.Called(ctx, userID)
+// UpdateUserRole provides a mock function with given fields: ctx, userID, newRoleID
+func (_m *MockService) UpdateUserRole(ctx context.Context, userID int64, newRoleID int64) error {
+	ret := _m.Called(ctx, userID, newRoleID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for RemoveUserRole")
+		panic("no return value specified for UpdateUserRole")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
+		r0 = rf(ctx, userID, newRoleID)
 	} else {
 		r0 = ret.Error(0)
 	}

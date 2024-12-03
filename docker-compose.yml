@@ -8,7 +8,7 @@ services:
       - db
     env_file: ".env"
     ports:
-      - 8080:8080
+      - ${APP_PORT}:${APP_PORT}
     volumes:
       -  ./.env:/usr/src/app/.env  # Montar el archivo .env en el contenedor
     # En vez de este comando podriamos configurar docker-compose con healthschecks (investigar mas)
@@ -32,7 +32,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${DB_PORT}:${DB_PORT}
       
   mailhog:
     image: mailhog/mailhog
@@ -41,5 +41,6 @@ services:
     ports:
       - 8025:8025 # Web UI for MailHog
       - 1025:1025 # SMTP server
+      
 volumes:
   postgres-data:

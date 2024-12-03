@@ -6,6 +6,7 @@ import (
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
+	"github.com/agus-germi/TDL_Dinamita/logger"
 )
 
 // Service is the bussiness logic of the application
@@ -15,22 +16,26 @@ type Service interface {
 	// Customer features
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
-	RemoveUser(ctx context.Context, userID int64) error
-	RegisterReservation(ctx context.Context, userID int64, name, password, email string, tableNumber int64, date time.Time) error
-	RemoveReservation(ctx context.Context, reservationID int64) error
+	RemoveUser(ctx context.Context, userIDToDelete int64) error
+	MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
+	CancelReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
+	GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error)
 
 	// Admin features
-	AddUserRole(ctx context.Context, userID, roleID int64, email string) error
-	RemoveUserRole(ctx context.Context, userID int64) error
-	AddTable(ctx context.Context, tableNumber, seats int64, location string, userEmail string) error //All tables are added being available
-	RemoveTable(ctx context.Context, tableNumber int64, userEmail string) error
+	UpdateUserRole(ctx context.Context, userID, newRoleID int64) error
+	AddTable(ctx context.Context, tableNumber, seats int64, location string) error
+	RemoveTable(ctx context.Context, tableID int64) error
 }
 
 type serv struct {
 	repo repository.Repository
+	log  logger.Logger
 }
 
-func New(repo repository.Repository) Service {
-	return &serv{repo: repo}
+func New(repo repository.Repository, log logger.Logger) Service {
+	return &serv{
+		repo: repo,
+		log:  log,
+	}
 }

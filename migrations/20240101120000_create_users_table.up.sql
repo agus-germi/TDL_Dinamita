@@ -1,11 +1,17 @@
 --CREATE DATABASE tdl_dinamita;  Esta linea solo se deberia ejecutar una única vez.
 
+CREATE TABLE IF NOT EXISTS roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    role VARCHAR(50) NOT NULL
+    role_id INT NOT NULL,
+    FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
 CREATE TABLE IF NOT EXISTS tables (
@@ -29,25 +35,11 @@ CREATE TABLE IF NOT EXISTS reservations (
     time_slot_id INT NOT NULL,
     FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE,
-     FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS user_roles (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE,  -- Cada user solo puede estar vinculado a un único rol, por eso debe aparecer una única vez en la tabla user_roles
-    role_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE  --Creo que tiene sentido que si se elimina un rol de la tabla roles,
-                                                                -- entonces se debe eliminar todas las filas de la tabla users_roles que presenten el rol que se elimino.
+    FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE CASCADE
 );
 
 -- Agregamos horarios fijos de manera dinamica 
--- Turnos desde  las 12:00 hasta las 22:00 - considerando que cada turno es de 2hs
+-- Turnos desde las 12:00 hasta las 22:00 - considerando que cada turno es de 2hs
 DO $$
 BEGIN
     FOR hour IN 12..22 BY 2 LOOP
@@ -59,11 +51,14 @@ END $$;
 -- Creacion de los usuarios administradores. (En nuestro caso solo sera admin y user por ende no tendremos superadmin)
 --  role 1 : Admin | role 2 : User
 
-INSERT INTO users (name, password, email, role) 
+INSERT INTO roles (id, name) VALUES (1, 'Admin');
+INSERT INTO roles (id, name) VALUES (2, 'User');
+
+INSERT INTO users (name, password, email, role_id) 
 VALUES ('Agus', '12345678', 'agerminario@fi.uba.ar', 1);
 
-INSERT INTO users (name, password, email, role) 
+INSERT INTO users (name, password, email, role_id) 
 VALUES ('Valen', '12345678', 'vmorenofi.uba.ar', 1);
 
-INSERT INTO users (name, password, email, role) 
+INSERT INTO users (name, password, email, role_id) 
 VALUES ('Seba', '12345678', 'skraglievich@fi.uba.ar', 1);
