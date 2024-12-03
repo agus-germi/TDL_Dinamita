@@ -6,6 +6,7 @@ import (
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
+	"github.com/agus-germi/TDL_Dinamita/logger"
 )
 
 // Service is the bussiness logic of the application
@@ -29,8 +30,12 @@ type Service interface {
 
 type serv struct {
 	repo repository.Repository
+	log  logger.Logger
 }
 
-func New(repo repository.Repository) Service {
-	return &serv{repo: repo}
+func New(repo repository.Repository, log logger.Logger) Service {
+	return &serv{
+		repo: repo,
+		log:  log,
+	}
 }

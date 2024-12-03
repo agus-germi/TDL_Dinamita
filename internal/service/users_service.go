@@ -39,6 +39,7 @@ func (s *serv) RegisterUser(ctx context.Context, name, password, email string) e
 func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
 	usr, err := s.repo.GetUserByEmail(ctx, email)
 	if usr == nil {
+		s.log.Debugf("User not found")
 		return nil, ErrUserNotFound
 	}
 	if err != nil {

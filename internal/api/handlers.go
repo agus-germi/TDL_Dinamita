@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
+	"time"
 
 	"strconv"
 
@@ -51,11 +51,7 @@ func (a *API) RegisterUser(c echo.Context) error {
 	ctx := c.Request().Context()
 	err = a.serv.RegisterUser(ctx, params.Name, params.Password, params.Email)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while registering user: %v")
 	}
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "User registered successfully"})
@@ -66,67 +62,50 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	err := c.Bind(&params)
 	if err != nil {
-		log.Println(err)
+		a.log.Error(err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
 
 	err = a.dataValidator.Struct(params)
 	if err != nil {
-		log.Println(err)
+		a.log.Error(err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
 	ctx := c.Request().Context()
 	usr, err := a.serv.LoginUser(ctx, params.Email, params.Password)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			log.Println("Error trying to login:", err)
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		log.Println("Error trying to login:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error trying to login: %v")
 	}
 
 	token, err := jwtutils.SignedLoginToken(usr)
 	if err != nil {
-		log.Println("Error trying to create a jwt:", err)
+		a.log.Errorf("Error trying to create a jwt:", err)
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
-	cookie := &http.Cookie{
-		Name:     "Authorization",
-		Value:    token,
-		SameSite: http.SameSiteNoneMode, // Indica que la cookie no debe ser enviada en una petición de un sitio diferente al que la generó.
-		Secure:   true,                  // Indica que la cookie solo debe ser enviada al servidor (nuestra API) si la conexión se realiza a través de HTTPS.
-		HttpOnly: true,                  // Previene que la cookie sea accesible desde JavaScript ejecutado en el navegador. (impide que scripts maliciosos lean o manipulen las cookies.)
-		Path:     "/",                   // Hacemos accesible la cookie para todos los endpointsde la aplicacion.
-	}
-
-	c.SetCookie(cookie)
-
-	return c.JSON(http.StatusOK, map[string]string{"success": "true"})
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "User logged successfully", "token": token})
 }
 
 // Este endpoint se llamaria cuando un usuario tomase la decision de eliminar su cuenta.
 func (a *API) DeleteUser(c echo.Context) error {
 	clientUserID, ok := c.Get("user_id").(int64) // Aserción de tipo
+	a.log.Debugf("[Delete Reservation] Client User ID:", clientUserID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
 
 	clientRoleID, ok := c.Get("role").(int64)
+	a.log.Debugf("[Delete Reservation] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
-
-	log.Println("[Delete Reservation] Client User ID:", clientUserID)
-	log.Println("[Delete Reservation] Client Role ID:", clientRoleID)
 
 	base := 10
 	bitSize := 64
 
 	userIDToDelete, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Reservation] User ID sent in the URI:", userIDToDelete)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID to delete"})
 	}
@@ -138,12 +117,7 @@ func (a *API) DeleteUser(c echo.Context) error {
 	ctx := c.Request().Context()
 	err = a.serv.RemoveUser(ctx, userIDToDelete)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		log.Println("Error while deleting user:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while deleting user: %v")
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "User deleted successfully"})
@@ -151,7 +125,7 @@ func (a *API) DeleteUser(c echo.Context) error {
 
 func (a *API) UpdateUserRole(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(int64)
-	log.Println("[Update User Role] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Update User Role] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
@@ -164,6 +138,7 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 	bitSize := 64
 
 	userIDToUpdate, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Update User Role] User ID sent in the URI:", userIDToUpdate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID to update"})
 	}
@@ -185,12 +160,7 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 
 	err = a.serv.UpdateUserRole(ctx, userIDToUpdate, params.NewRoleID)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		log.Println("Error while assigning a new role to the user:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while assigning a new role to the user: %v")
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "New role assigned to the user successfully"})
@@ -198,21 +168,22 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 
 func (a *API) GetReservationsOfUser(c echo.Context) error {
 	clientUserID, ok := c.Get("user_id").(int64) // Aserción de tipo
-	log.Println("[Get Reservations of User] Client User ID:", clientUserID)
+	a.log.Debugf("[Get Reservations of User] Client User ID:", clientUserID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
 
-	clientRoleID, ok := c.Get("user_id").(int64) // Aserción de tipo
-	log.Println("[Get Reservations of User] Client Role ID:", clientRoleID)
+	clientRoleID, ok := c.Get("role").(int64) // Aserción de tipo
+	a.log.Debugf("[Get Reservations of User] Client Role ID:", clientRoleID)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
 
 	base := 10
 	bitSize := 64
 
 	userID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Get Reservations of User] User ID sent in the URI:", userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
@@ -224,11 +195,7 @@ func (a *API) GetReservationsOfUser(c echo.Context) error {
 	ctx := c.Request().Context()
 	reservations, err := a.serv.GetReservationsByUserID(ctx, userID)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while getting reservations: %v")
 	}
 
 	dtoReservations := convertReservationsToDTO(reservations)
@@ -238,18 +205,19 @@ func (a *API) GetReservationsOfUser(c echo.Context) error {
 
 // Reservation endpoints
 func (a *API) CreateReservation(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(int64) // Aserción de tipo
+	clientUserID, ok := c.Get("user_id").(float64) // Aserción de tipo
+	a.log.Debugf("[Create Reservation] Client User ID:", clientUserID)
+	clientUserIDInt := int64(clientUserID)
+	a.log.Debugf("[Create Reservation] Client User ID:", clientUserIDInt)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
 
 	clientEmail, ok := c.Get("email").(string)
+	a.log.Debugf("[Create Reservation] Client Email:", clientEmail)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client email in context"})
 	}
-
-	log.Println("[Create Reservation] User ID:", clientUserID)
-	log.Println("[Create Reservation] Email:", clientEmail)
 
 	params := dtos.CreateReservationDTO{}
 
@@ -264,47 +232,44 @@ func (a *API) CreateReservation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	ctx := c.Request().Context() // obtengo el contexto del objeto Request que viene con la petición HTTP
-	err = a.serv.MakeReservation(ctx, clientUserID, params.TableNumber, params.ReservationDate)
-	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
+	reservationDate, _ := time.Parse(time.RFC3339, params.ReservationDate) // Think if we need to specify the time zone (-03:00 for Buenos Aires)
 
-		log.Println("Error during reservation registration:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+	ctx := c.Request().Context() // obtengo el contexto del objeto Request que viene con la petición HTTP
+	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error during reservation registration: %v")
 	}
 
 	emailBody := fmt.Sprintf(
 		"Hello!<br><br>Your reservation for table %d on %s has been confirmed.<br>Thank you!",
-		params.TableNumber, params.ReservationDate.Format("2006-01-02 15:04"),
+		params.TableNumber, reservationDate.Format("2006-01-02 15:04"),
 	)
 
 	err = notification.SendReservationConfirmationEmail(clientEmail, emailBody)
 	if err != nil {
-		log.Println("Failed to send confirmation email:", err)
+		a.log.Errorf("Failed to send confirmation email:", err)
 	}
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Reservation registered successfully"})
 }
 
 func (a *API) DeleteReservation(c echo.Context) error {
 	clientUserID, ok := c.Get("user_id").(int64) // Aserción de tipo
+	a.log.Debugf("[Delete Reservation] Client User ID:", clientUserID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
 
 	clientRoleID, ok := c.Get("role").(int64)
+	a.log.Debugf("[Delete Reservation] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
-
-	log.Println("[Delete Reservation] User ID:", clientUserID)
-	log.Println("[Delete Reservation] Role ID:", clientRoleID)
 
 	base := 10
 	bitSize := 64
 
 	reservationID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Reservation] Reservation ID sent in the URI:", reservationID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid reservation ID"})
 	}
@@ -317,12 +282,7 @@ func (a *API) DeleteReservation(c echo.Context) error {
 
 	err = a.serv.CancelReservation(ctx, reservationID)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		log.Println("Error while cancelling reservation:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while canceling reservation: %v")
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Reservation canceled successfully"})
@@ -331,11 +291,10 @@ func (a *API) DeleteReservation(c echo.Context) error {
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(int64)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
-
-	log.Println("[Create Table] Role ID:", clientRoleID)
 
 	if clientRoleID != adminRoleID {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
@@ -356,12 +315,7 @@ func (a *API) CreateTable(c echo.Context) error {
 	ctx := c.Request().Context()
 	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		log.Println("Error while adding a table:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while adding a table: %v")
 	}
 
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Table added successfully"})
@@ -369,11 +323,10 @@ func (a *API) CreateTable(c echo.Context) error {
 
 func (a *API) DeleteTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(int64)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
-
-	log.Println("[Delete Table] Role ID:", clientRoleID)
 
 	if clientRoleID != adminRoleID {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
@@ -383,6 +336,7 @@ func (a *API) DeleteTable(c echo.Context) error {
 	bitSize := 64
 
 	tableID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Table] Table ID sent in the URI:", tableID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid table ID"})
 	}
@@ -390,15 +344,19 @@ func (a *API) DeleteTable(c echo.Context) error {
 	ctx := c.Request().Context()
 	err = a.serv.RemoveTable(ctx, tableID)
 	if err != nil {
-		if statusCode, ok := errorResponses[err]; ok {
-			return c.JSON(statusCode, responseMessage{Message: err.Error()})
-		}
-
-		log.Println("Error while deleting table:", err)
-		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+		return a.handleErrorFromService(c, err, "Error while deleting table: %v")
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Table deleted successfully"})
+}
+
+func (a *API) handleErrorFromService(c echo.Context, err error, debugMsg string) error {
+	if statusCode, ok := errorResponses[err]; ok {
+		return c.JSON(statusCode, responseMessage{Message: err.Error()})
+	}
+
+	a.log.Errorf(debugMsg, err)
+	return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 }
 
 func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.ReservationDTO {
@@ -431,7 +389,7 @@ func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID
 
 	// Verfify if the user is the owner of the reservation
 	if reservation.UserID != userID {
-		return errors.New("You are not allowed to cancel this reservation")
+		return errors.New("you are not allowed to cancel this reservation")
 	}
 
 	return nil

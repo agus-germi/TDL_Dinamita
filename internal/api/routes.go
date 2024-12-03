@@ -11,11 +11,11 @@ import (
 func (a *API) SetRoutes(e *echo.Echo) {
 	// Public routes (without JWT token)
 	public := e.Group("/api/v1")
-	public.POST("/users", a.RegisterUser)
-	public.POST("/users/login", a.LoginUser)
+	public.POST("/auth/signup", a.RegisterUser)
+	public.POST("/auth/login", a.LoginUser)
 
 	// Main group of routes for API v1 (with JWT token)
-	api := e.Group("/api/v1", JWTMiddleware)
+	api := e.Group("/api/v1", a.JWTMiddleware)
 
 	// Group routes for /users under /api/v1
 	users := api.Group("/users")
@@ -47,7 +47,6 @@ func (a *API) SetStaticFiles(e *echo.Echo) {
 }
 
 func (a *API) SetMiddlewares(e *echo.Echo) {
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"http://localhost:8080"},                    // Origen que permitimos que se conecte a nuestra API.  TODO: Usar variable de entorno para cambiar facilmente el origen entre desarrollo y produccion.

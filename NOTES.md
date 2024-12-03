@@ -15,6 +15,8 @@
 
 - Basic Auth para login
 
+- Reemplazar log.Println por log.Debugf en todas sus apariciones
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```

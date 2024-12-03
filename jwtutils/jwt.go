@@ -17,6 +17,7 @@ var (
 	ErrInvalidClaimsFormat = errors.New("invalid claims format")
 	ErrInvalidToken        = errors.New("invalid token")
 	ErrTokenExpired        = errors.New("token has expired")
+	ErrMissingToken        = errors.New("missing token")
 )
 
 // SignedLoginToken genera un token firmado con el id, email y el nombre del usuario
@@ -31,7 +32,7 @@ func SignedLoginToken(u *models.User) (string, error) {
 		"user_id": u.ID,
 		"email":   u.Email,
 		"role_id": u.RoleID,
-		"name":    u.Name, // Lo necesitamos enviar?
+		"name":    u.Name,
 		"exp":     expirationTime,
 	})
 	jwt, err := token.SignedString([]byte(key))
@@ -42,12 +43,19 @@ func SignedLoginToken(u *models.User) (string, error) {
 	return jwt, nil
 }
 
-func GetClaimsFromCookie(c echo.Context) (jwt.MapClaims, error) {
-	cookie, err := c.Cookie("Authorization")
-	if err != nil {
-		return nil, err
+func GetClaimsFromToken(c echo.Context) (jwt.MapClaims, error) {
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return nil, ErrMissingToken
 	}
-	claims, err := parseLoginJWT(cookie.Value)
+	println("token", token)
+	// Deleting "Bearer " from the beginning of the token
+	if len(token) > 7 && token[:7] == "Bearer " {
+		token = token[7:]
+	}
+	println("token", token)
+
+	claims, err := parseLoginJWT(token)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +67,8 @@ func parseLoginJWT(value string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(value, func(token *jwt.Token) (interface{}, error) {
 		return []byte(key), nil
 	})
+	println("[PARSING] token", token)
+	println("[PARSING] Err:", err)
 	if err != nil {
 		// Distinction between expired token and other errors
 		if errors.Is(err, jwt.ErrTokenExpired) {
