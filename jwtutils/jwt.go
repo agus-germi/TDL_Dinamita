@@ -25,7 +25,8 @@ func SignedLoginToken(u *models.User) (string, error) {
 	//HS256 > viable porque el servidor que creo que el certificado tambien lo validará
 
 	// Expiration time: 24 hours
-	expirationTime := time.Now().Add(24 * time.Hour).Unix() // Expiration time according Unix format.
+	// expirationTime := time.Now().Add(24 * time.Hour).Unix() // Expiration time according Unix format.
+	expirationTime := time.Now().Add(1 * time.Minute).Unix() // Expiration time according Unix format.
 
 	//Claims: estructura de datos que se puede firmar y validar
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

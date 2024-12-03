@@ -3,7 +3,6 @@ package service
 import (
 	context "context"
 	"errors"
-	"log"
 	time "time"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
@@ -32,7 +31,7 @@ func (s *serv) CancelReservation(ctx context.Context, reservationID int64) error
 func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error) {
 	usr, err := s.repo.GetUserByID(ctx, userID)
 	if usr == nil {
-		log.Println(ErrUserNotFound)
+		s.log.Error(ErrUserNotFound)
 		return nil, ErrUserNotFound
 	}
 	if err != nil {
@@ -55,7 +54,7 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 			ID:              entityReservation.ID,
 			UserID:          entityReservation.UserID,
 			TableNumber:     entityReservation.TableNumber,
-			ReservationDate: entityReservation.ReservationDate,
+			ReservationDate: entityReservation.Date, // TODO: hay que conseguir el time slot correspondiente a cada reserva y crear un time.Time con la fecha y la hora
 		}
 	}
 

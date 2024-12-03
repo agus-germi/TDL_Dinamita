@@ -234,6 +234,8 @@ func (a *API) CreateReservation(c echo.Context) error {
 
 	reservationDate, _ := time.Parse(time.RFC3339, params.ReservationDate) // Think if we need to specify the time zone (-03:00 for Buenos Aires)
 
+	a.log.Debugf("[Create Reservation] Reservation Date:", reservationDate)
+
 	ctx := c.Request().Context() // obtengo el contexto del objeto Request que viene con la petición HTTP
 	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate)
 	if err != nil {

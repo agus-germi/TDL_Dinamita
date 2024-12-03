@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"log"
 	time "time"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
+	"github.com/agus-germi/TDL_Dinamita/logger"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -41,18 +41,22 @@ type Repository interface {
 }
 
 type repo struct {
-	db *pgxpool.Pool
+	db  *pgxpool.Pool
+	log logger.Logger
 }
 
-func New(db *pgxpool.Pool) Repository {
-	return &repo{db: db}
+func New(db *pgxpool.Pool, log logger.Logger) Repository {
+	return &repo{
+		db:  db,
+		log: log,
+	}
 }
 
 func (r *repo) executeInTransaction(ctx context.Context, operation func(tx pgx.Tx) error) error {
 	// Start a transaction
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		log.Printf("Failed to start transaction: %v", err)
+		r.log.Errorf("Failed to start transaction: %v", err)
 		return err
 	}
 
@@ -60,17 +64,16 @@ func (r *repo) executeInTransaction(ctx context.Context, operation func(tx pgx.T
 	defer func() {
 		if p := recover(); p != nil {
 			tx.Rollback(ctx)
-			log.Println("Transaction rollback due to panic")
-			panic(p)
+			r.log.Panicf("Transaction rollback due to panic: %v", p)
 		} else if err != nil {
 			tx.Rollback(ctx)
-			log.Println("Transaction rollback due to error")
+			r.log.Errorf("Transaction rollback due to error: %v", err)
 		} else {
 			err = tx.Commit(ctx)
 			if err != nil {
-				log.Printf("Failed to commit transaction: %v", err)
+				r.log.Errorf("Failed to commit transaction: %v", err)
 			} else {
-				log.Println("Transaction committed successfully")
+				r.log.Infof("Transaction committed successfully")
 			}
 		}
 	}()
