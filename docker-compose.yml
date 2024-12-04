@@ -3,7 +3,7 @@ services:
     build:
       context: .
     container_name: rest-server
-    hostname: rest-server
+    hostname: ${APP_HOST}
     depends_on:
       - db
     env_file: ".env"
@@ -23,7 +23,7 @@ services:
   db:
     image: postgres:15-alpine
     container_name: postgres-db
-    hostname: db
+    hostname: ${DB_HOST}
 
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -39,8 +39,8 @@ services:
     container_name: mailhog
     hostname: mailhog
     ports:
-      - 8025:8025 # Web UI for MailHog
-      - 1025:1025 # SMTP server
+      - ${MAILHOG_PORT}:${MAILHOG_PORT} # Web UI for MailHog
+      - ${SMTP_PORT}:${SMTP_PORT} # SMTP server
       
 volumes:
   postgres-data:

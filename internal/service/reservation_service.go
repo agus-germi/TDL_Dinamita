@@ -74,7 +74,7 @@ func (s *serv) GetReservationByID(ctx context.Context, reservationID int64) (*mo
 		ID:              entityReservation.ID,
 		UserID:          entityReservation.UserID,
 		TableNumber:     entityReservation.TableNumber,
-		ReservationDate: entityReservation.ReservationDate,
+		ReservationDate: entityReservation.Date, // TODO: hay que conseguir el time slot correspondiente a cada reserva y crear un time.Time con la fecha y la hora
 	}
 
 	return &modelReservation, nil

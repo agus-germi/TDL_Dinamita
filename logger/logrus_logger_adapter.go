@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/agus-germi/TDL_Dinamita/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ func (l *LogrusLoggerAdapter) Println(i ...interface{}) {
 }
 
 func (l *LogrusLoggerAdapter) Debug(i ...interface{}) {
-	l.log.Debug(i...)
+	l.log.Debug(fmt.Sprintf("[DEBUG] %s", fmt.Sprint(i...)))
 }
 
 func (l *LogrusLoggerAdapter) Debugf(format string, args ...interface{}) {
@@ -26,7 +26,7 @@ func (l *LogrusLoggerAdapter) Debugf(format string, args ...interface{}) {
 }
 
 func (l *LogrusLoggerAdapter) Info(i ...interface{}) {
-	l.log.Info(i...)
+	l.log.Info(fmt.Sprintf("[INFO] %s", fmt.Sprint(i...)))
 }
 
 func (l *LogrusLoggerAdapter) Infof(format string, args ...interface{}) {
@@ -34,7 +34,7 @@ func (l *LogrusLoggerAdapter) Infof(format string, args ...interface{}) {
 }
 
 func (l *LogrusLoggerAdapter) Warn(i ...interface{}) {
-	l.log.Warn(i...)
+	l.log.Warn(fmt.Sprintf("[WARN] %s", fmt.Sprint(i...)))
 }
 
 func (l *LogrusLoggerAdapter) Warnf(format string, args ...interface{}) {
@@ -42,7 +42,7 @@ func (l *LogrusLoggerAdapter) Warnf(format string, args ...interface{}) {
 }
 
 func (l *LogrusLoggerAdapter) Error(i ...interface{}) {
-	l.log.Error(i...)
+	l.log.Error(fmt.Sprintf("[ERROR] %s", fmt.Sprint(i...)))
 }
 
 func (l *LogrusLoggerAdapter) Errorf(format string, args ...interface{}) {
@@ -50,7 +50,7 @@ func (l *LogrusLoggerAdapter) Errorf(format string, args ...interface{}) {
 }
 
 func (l *LogrusLoggerAdapter) Fatal(i ...interface{}) {
-	l.log.Fatal(i...)
+	l.log.Fatal(fmt.Sprintf("[FATAL] %s", fmt.Sprint(i...)))
 }
 
 func (l *LogrusLoggerAdapter) Fatalf(format string, args ...interface{}) {
@@ -58,7 +58,7 @@ func (l *LogrusLoggerAdapter) Fatalf(format string, args ...interface{}) {
 }
 
 func (l *LogrusLoggerAdapter) Panic(i ...interface{}) {
-	l.log.Panic(i...)
+	l.log.Panic(fmt.Sprintf("[PANIC] %s", fmt.Sprint(i...)))
 }
 
 func (l *LogrusLoggerAdapter) Panicf(format string, args ...interface{}) {
@@ -71,27 +71,31 @@ func (l *LogrusLoggerAdapter) Writer() io.Writer {
 
 func NewLogrusLoggerAdapter() *LogrusLoggerAdapter {
 	log := logrus.New()
-	log.SetFormatter(&logrus.TextFormatter{}) // Choose any format (default: &logrus.TextFormatter{})
-	log.SetOutput(os.Stdout)
+	log.SetFormatter(&logrus.TextFormatter{
+		ForceColors:      true, // Enable colors
+		FullTimestamp:    true,
+		TimestampFormat:  "2006-01-02 15:04:05",
+		DisableColors:    false, // Make sure colors are enabled (no one can disable them)
+		QuoteEmptyFields: true,
+	})
 
-	// If the APP_ENV variable isn't recognized, try to load the .env file first
-	err := godotenv.Load("/usr/src/app/.env")
-	if err != nil {
-		log.Errorln("Error: .env file couldn't be loaded.")
-	}
+	log.SetOutput(os.Stdout) // Choose any output (default: os.Stderr) --> Maybe we can use a file instead of stdout
 
 	// Configure log levels according environment variables
-	env := os.Getenv("APP_ENV")
-	if env == "production" {
+	env, err := utils.GetEnv("APP_ENV")
+	if err != nil {
+		log.Errorf("[ERROR] Couldn't get 'APP_ENV' variable: %v", err)
+	}
+
+	if env == "prod" {
 		log.SetLevel(logrus.ErrorLevel)
-		log.Println("Production environment detected.")
-	} else if env == "deveploment" {
+		log.Info("[INFO] Production environment detected.")
+	} else if env == "dev" {
 		log.SetLevel(logrus.DebugLevel)
-		log.Println("Development environment detected.")
+		log.Info("[INFO] Development environment detected.")
 	} else {
-		log.SetLevel(logrus.DebugLevel) // If environment var "APP_ENV" was not provided --> Default level = InfoLevel
-		//log.SetLevel(logrus.InfoLevel) // If environment var "APP_ENV" was not provided --> Default level = InfoLevel
-		log.Println("APP_ENV variable wasn't set.")
+		log.SetLevel(logrus.InfoLevel) // If environment var "APP_ENV" was not provided --> Default level = InfoLevel
+		log.Info("[INFO] APP_ENV variable wasn't set.")
 	}
 	return &LogrusLoggerAdapter{log: log}
 }

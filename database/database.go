@@ -2,13 +2,12 @@ package database
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/agus-germi/TDL_Dinamita/logger"
+	"github.com/agus-germi/TDL_Dinamita/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -19,41 +18,41 @@ import (
 func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
 	err := godotenv.Load("/usr/src/app/.env")
 	if err != nil {
-		log.Println("Error: .env file couldn't be loaded.")
+		logger.Log.Errorf("'.env' file couldn't be loaded: %v", err)
 		return nil, err
 	}
 
-	dbHost, err := getEnv("DB_HOST")
+	dbHost, err := utils.GetEnv("DB_HOST")
 	if err != nil {
 		return nil, err
 	}
 
-	dbPort, err := getEnv("DB_PORT")
+	dbPort, err := utils.GetEnv("DB_PORT")
 	if err != nil {
 		return nil, err
 	}
 
-	dbUser, err := getEnv("DB_USER")
+	dbUser, err := utils.GetEnv("DB_USER")
 	if err != nil {
 		return nil, err
 	}
 
-	dbPasswd, err := getEnv("DB_PASSWORD")
+	dbPasswd, err := utils.GetEnv("DB_PASSWORD")
 	if err != nil {
 		return nil, err
 	}
 
-	dbName, err := getEnv("DB_NAME")
+	dbName, err := utils.GetEnv("DB_NAME")
 	if err != nil {
 		return nil, err
 	}
 
-	sslMode, err := getEnv("DB_SSLMODE")
+	sslMode, err := utils.GetEnv("DB_SSLMODE")
 	if err != nil {
 		return nil, err
 	}
 
-	dbURL, err := getEnv("DB_URL")
+	dbURL, err := utils.GetEnv("DB_URL")
 	if err != nil {
 		return nil, err
 	}
@@ -65,29 +64,41 @@ func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
 	dbURL = strings.ReplaceAll(dbURL, "${DB_NAME}", dbName)
 	dbURL = strings.ReplaceAll(dbURL, "${DB_SSLMODE}", sslMode)
 
-	maxConns_str, err := getEnv("MAX_CONNS")
+	maxConnsStr, err := utils.GetEnv("MAX_CONNS")
 	if err != nil {
 		return nil, err
 	}
 
-	minConns_str, err := getEnv("MIN_CONNS")
+	minConnsStr, err := utils.GetEnv("MIN_CONNS")
 	if err != nil {
 		return nil, err
 	}
 
-	idleTime_str, err := getEnv("MAX_CONN_IDLE_TIME")
+	idleTimeStr, err := utils.GetEnv("MAX_CONN_IDLE_TIME")
 	if err != nil {
 		return nil, err
 	}
 
-	maxConns, _ := strconv.Atoi(maxConns_str)
-	minConns, _ := strconv.Atoi(os.Getenv(minConns_str))
-	idleTime, _ := time.ParseDuration(os.Getenv(idleTime_str))
+	maxConns, err := strconv.Atoi(maxConnsStr)
+	if err != nil {
+		logger.Log.Fatalf("Error trying to convert MAX_CONNS environment variable to int: %v", err)
+		return nil, err
+	}
+	minConns, err := strconv.Atoi(minConnsStr)
+	if err != nil {
+		logger.Log.Fatalf("Error trying to convert MIN_CONNS environment variable to int: %v", err)
+		return nil, err
+	}
+	idleTime, err := time.ParseDuration(idleTimeStr)
+	if err != nil {
+		logger.Log.Fatalf("Error trying to parse duration of MAX_CONN_IDLE_TIME environment variable: %v", err)
+		return nil, err
+	}
 
 	// Pool Configuration
 	config, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
-		log.Fatalf("Error trying parse dbURL to create pool configuration: %v", err)
+		logger.Log.Fatalf("Error trying parse dbURL to create pool configuration: %v", err)
 	}
 	config.MaxConns = int32(maxConns)
 	config.MinConns = int32(minConns)
@@ -97,22 +108,14 @@ func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
 
 	dbPool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		log.Fatalf("Error trying to create the connections pool: %v", err)
+		logger.Log.Fatalf("Error trying to create the connections pool: %v", err)
 	}
 
 	if err := verifyDatabaseConnection(ctx, dbPool); err != nil {
-		log.Fatalf("Error trying to verify the db connection: %v", err)
+		logger.Log.Fatalf("Error trying to verify the db connection: %v", err)
 	}
 
 	return dbPool, nil
-}
-
-func getEnv(key string) (string, error) {
-	value := os.Getenv(key)
-	if value == "" {
-		return "", fmt.Errorf("environment variable %s is not set", key)
-	}
-	return value, nil
 }
 
 func verifyDatabaseConnection(ctx context.Context, pool *pgxpool.Pool) error {
@@ -127,6 +130,6 @@ func verifyDatabaseConnection(ctx context.Context, pool *pgxpool.Pool) error {
 		return err
 	}
 
-	log.Println("Verification of db connection successfully done.")
+	logger.Log.Infof("Verification of db connection successfully done.")
 	return nil
 }

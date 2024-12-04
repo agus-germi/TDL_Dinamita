@@ -221,7 +221,6 @@ func (a *API) CreateReservation(c echo.Context) error {
 
 	params := dtos.CreateReservationDTO{}
 
-	//Linkeo la request con la instancia de CreateReservationDTO
 	err := c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
@@ -229,6 +228,7 @@ func (a *API) CreateReservation(c echo.Context) error {
 
 	err = a.dataValidator.Struct(params)
 	if err != nil {
+		a.log.Errorf("[Create Reservation] error during data validation: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 

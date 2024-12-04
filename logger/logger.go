@@ -22,6 +22,13 @@ type Logger interface {
 	Writer() io.Writer // Allow integration with Echo or any thrid party library.
 }
 
+// This log is a global variable that will be used by the whole application, and it "follows" the singleton pattern.
+var Log Logger
+
+func init() {
+	Log = NewLogrusLoggerAdapter() // If we want to change the logger framework we currently use, we just need to create a new adapter and change this line.
+}
+
 func New() Logger {
-	return NewLogrusLoggerAdapter() // If we want to change the logger framework, we just need to create a new adapter and change this line.
+	return Log
 }

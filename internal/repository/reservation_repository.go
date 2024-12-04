@@ -2,7 +2,6 @@ package repository
 
 import (
 	context "context"
-	"log"
 	"time"
 
 	"errors"
@@ -66,7 +65,7 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 			return err
 		}
 
-		r.log.Debugf("Reservation saved successfully.")
+		r.log.Infof("Reservation saved successfully.")
 		return nil
 	}
 
@@ -86,7 +85,7 @@ func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error
 			return ErrReservationNotFound // Custom error if no rows were deleted (maybe it could be "reservation doesn't exist")
 		}
 
-		r.log.Debugf("Reservation (%d) removed successfully.", reservationID)
+		r.log.Infof("Reservation (%d) removed successfully.", reservationID)
 		return nil
 	}
 
@@ -131,7 +130,7 @@ func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*en
 		return nil, err
 	}
 
-	log.Printf("Reservation retrieved successfully by ID: %d", reservationID)
+	r.log.Debugf("Reservation retrieved successfully by ID: %d", reservationID)
 	return &rsv, nil
 }
 
