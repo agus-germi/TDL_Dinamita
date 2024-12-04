@@ -19,11 +19,11 @@ const (
 	qryRemoveUser = `DELETE FROM users
 					WHERE id=$1`
 
-	qryGetUserByEmail = `SELECT id, name, password, email, role_id
+	qryGetUserByEmail = `SELECT *
 						FROM users
 						WHERE email=$1`
 
-	qryGetUserByID = `SELECT id, name, password, email, role_id
+	qryGetUserByID = `SELECT *
 						FROM users
 						WHERE id=$1`
 
@@ -40,11 +40,11 @@ func (r *repo) SaveUser(ctx context.Context, name, password, email string, roleI
 	operation := func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, qryInsertUser, name, password, email, roleID)
 		if err != nil {
-			log.Printf("Failed to execute insert query: %v", err)
+			r.log.Errorf("Failed to execute insert query: %v", err)
 			return err
 		}
 
-		log.Println("User saved successfully.")
+		r.log.Infof("User (email=%s) saved successfully.", email)
 		return nil
 	}
 
@@ -55,16 +55,16 @@ func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
 	operation := func(tx pgx.Tx) error {
 		result, err := tx.Exec(ctx, qryRemoveUser, userID)
 		if err != nil {
-			log.Printf("Failed to execute delete query: %v", err)
+			r.log.Errorf("Failed to execute delete user query: %v", err)
 			return err
 		}
 
 		if result.RowsAffected() == 0 {
-			log.Println("No rows were affected by the delete query.")
+			r.log.Errorf("No rows were affected by the delete user query.")
 			return ErrUserNotFound
 		}
 
-		log.Println("User removed successfully.")
+		r.log.Infof("User (id=%d) removed successfully.", userID)
 		return nil
 	}
 
@@ -87,9 +87,11 @@ func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, err
 
 	err := r.db.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
 	if err != nil {
+		r.log.Errorf("Failed to execute get user by ID query: %v", err)
 		return nil, err
 	}
 
+	r.log.Debugf("User (id=%d) retrieved successfully.", userID)
 	return &usr, nil
 }
 
