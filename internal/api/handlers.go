@@ -62,13 +62,13 @@ func (a *API) LoginUser(c echo.Context) error {
 
 	err := c.Bind(&params)
 	if err != nil {
-		a.log.Error(err)
+		a.log.Errorf("[User Login] error while binding info of DTO: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
 
 	err = a.dataValidator.Struct(params)
 	if err != nil {
-		a.log.Error(err)
+		a.log.Errorf("[User Login] error during data validation: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
@@ -84,19 +84,23 @@ func (a *API) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
 	}
 
+	a.log.Infof("[User Login] User logged successfully: %v", usr.Email)
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": "User logged successfully", "token": token})
 }
 
-// Este endpoint se llamaria cuando un usuario tomase la decision de eliminar su cuenta.
 func (a *API) DeleteUser(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(int64) // Aserción de tipo
-	a.log.Debugf("[Delete Reservation] Client User ID:", clientUserID)
+	clientUserID, ok := c.Get("user_id").(float64) // Aserción de tipo
+	a.log.Debugf("[Delete User] Client User ID:", clientUserID)
+	clientUserIDInt := int64(clientUserID)
+	a.log.Debugf("[Delete User] Client User ID:", clientUserIDInt)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
 	}
 
-	clientRoleID, ok := c.Get("role").(int64)
-	a.log.Debugf("[Delete Reservation] Client Role ID:", clientRoleID)
+	clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Delete User] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Delete User] Client Role ID:", clientRoleIDInt)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
@@ -105,12 +109,12 @@ func (a *API) DeleteUser(c echo.Context) error {
 	bitSize := 64
 
 	userIDToDelete, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Reservation] User ID sent in the URI:", userIDToDelete)
+	a.log.Debugf("[Delete User] User ID sent in the URI:", userIDToDelete)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID to delete"})
 	}
 
-	if clientRoleID != adminRoleID && clientUserID != userIDToDelete {
+	if clientRoleID != adminRoleID && clientUserIDInt != userIDToDelete {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can only delete your own account"})
 	}
 

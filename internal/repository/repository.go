@@ -46,6 +46,7 @@ type repo struct {
 }
 
 func New(db *pgxpool.Pool, log logger.Logger) Repository {
+	log.Debugf("Logger has been injected into API")
 	return &repo{
 		db:  db,
 		log: log,

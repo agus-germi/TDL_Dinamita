@@ -17,6 +17,10 @@
 
 - Reemplazar log.Println por log.Debugf en todas sus apariciones
 
+- Admins don't have password (this is really insecure. We should hash the password when we create the admin user during the DB migration)
+
+- Si un usuario borra su propia cuenta entonces deberia ser deslogueado y su JWT token deberia ser destruido (para que no se pueda operar mas con ese token).
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```

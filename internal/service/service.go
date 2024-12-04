@@ -34,6 +34,7 @@ type serv struct {
 }
 
 func New(repo repository.Repository, log logger.Logger) Service {
+	log.Debugf("Logger has been injected into API")
 	return &serv{
 		repo: repo,
 		log:  log,

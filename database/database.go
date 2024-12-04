@@ -9,19 +9,12 @@ import (
 	"github.com/agus-germi/TDL_Dinamita/logger"
 	"github.com/agus-germi/TDL_Dinamita/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 // This function creates a new connection to the database
 // CreatePoolConnection
 func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
-	err := godotenv.Load("/usr/src/app/.env")
-	if err != nil {
-		logger.Log.Errorf("'.env' file couldn't be loaded: %v", err)
-		return nil, err
-	}
-
 	dbHost, err := utils.GetEnv("DB_HOST")
 	if err != nil {
 		return nil, err
