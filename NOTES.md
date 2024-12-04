@@ -21,6 +21,10 @@
 
 - Si un usuario borra su propia cuenta entonces deberia ser deslogueado y su JWT token deberia ser destruido (para que no se pueda operar mas con ese token).
 
+- Si un admin le cambia el rol otro usuario (que ya esta logeado y posee un JWT activo), lo que pasa es que el contenido del JWT de la sesion activa del usuario que fue modificado
+queda con la informacion viaje (en este caso queda con el rol previo, por lo que hay operaciones que no tiene permitido realizar).
+  > Esto quizas que lo podemos solucionar haciendo que el usuario se deslogee y que el token se destruya. De esta forma en el siguiente inicio de sesion se crea un nuevo JWT con la info nueva.
+
 # Testing Endpoints with Postman
 ## Endpoint reserve_table
 ```
