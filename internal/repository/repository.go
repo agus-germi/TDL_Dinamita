@@ -38,6 +38,10 @@ type Repository interface {
 	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) // Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
 	//GetReservationsByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*[]entity.Reservation, error) // Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
 	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
+
+	//Menu
+	SaveDish(ctx context.Context, name string, price int64, description string) error
+	GetDishByName(ctx context.Context, name string) (*entity.Dish, error)
 }
 
 type repo struct {

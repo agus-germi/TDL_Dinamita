@@ -367,6 +367,59 @@ func (a *API) DeleteTable(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseMessage{Message: "Table deleted successfully"})
 }
 
+// Menu endpoints
+func (a *API) AddDishToMenu(c echo.Context) error {
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleID != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
+	}
+
+	params := dtos.AddDishDTO{}
+
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	ctx := c.Request().Context()
+	err = a.serv.AddDishToMenu(ctx, params.Name, params.Price, params.Description)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while adding a dish to the menu: %v")
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Dish added to the menu successfully"})
+
+}
+
+func (a *API) RemoveDishFromMenu(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
+}
+
+func (a *API) GetMenu(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
+}
+
+func (a *API) GetDish(c echo.Context) error { // no se si es necesario
+	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
+}
+
+func (a *API) UpdateDish(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
+}
+
 // Auxiliary functions
 func (a *API) handleErrorFromService(c echo.Context, err error, debugMsg string) error {
 	if statusCode, ok := errorResponses[err]; ok {
