@@ -18,10 +18,10 @@
         </nav>
         
         <div class="user-info">
-            <!-- <input type="text" id="user-name" readonly> -->
+            <input type="text" id="userName" readonly> 
             <button onclick="toggleDropdown()">⋮</button>
             <div class="dropdown" id="dropdownMenu">
-                <a href="/logout">Cerrar Sesión</a>
+                <a href="../index.html">Cerrar Sesión</a>
             </div>
         </div>
     </header>
@@ -66,7 +66,6 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Las reservas se cargarán aquí dinámicamente -->
             </tbody>
         </table>
     </div>
@@ -78,12 +77,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const userName = localStorage.getItem('username'); 
-            console.log('hola ' + userName);
+            const userName = localStorage.getItem('userName'); 
+            document.getElementById('userName').value = userName;
 
-           // const userId = localStorage.getItem('userId'); 
-            fetchReservations(35); //Cambiar por el userID que me viene del login
-            //document.getElementById('user-name').value = userName;
+            const userId = localStorage.getItem('userId'); 
+            fetchReservations(userId);
         });
 
         function toggleDropdown() {
@@ -91,7 +89,6 @@
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Cerrar el menú si se hace clic fuera de él
         window.onclick = function(event) {
             if (!event.target.matches('.user-info button')) {
                 const dropdowns = document.getElementsByClassName("dropdown");
@@ -104,19 +101,25 @@
             }
         }
 
-        // Obtener reservas del usuario
-        function fetchReservations(UserID) {
-            fetch(`http://localhost:8080/users/${UserID}/reservations`, {
+        function fetchReservations(userId) {
+            const token = localStorage.getItem('token'); 
+            if (!token) {
+                console.error("Token JWT no encontrado");
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/v1/users/${userId}/reservations`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Enviar el token JWT en el encabezado
                 },
             })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Error en la solicitud: ${response.statusText}`);
                 }
-            return response.json(); // Convierte la respuesta a JSON
+                return response.json(); // Convierte la respuesta a JSON
             })
             .then(data => {
                 populateReservationTable(data); // Procesa las reservas
@@ -126,24 +129,19 @@
             });
             }
 
-        // Llenar la tabla con las reservas
         function populateReservationTable(reservations) {
             const tableBody = document.querySelector('#reservation-list tbody');
-            tableBody.innerHTML = ''; // Limpiar contenido previo
+            tableBody.innerHTML = '';
 
             reservations.forEach(reservation => {
+                const [date, time] = reservation.reservation_date.split("T");
+                
+                // Crear una nueva fila (tr)
                 const row = document.createElement('tr');
-                console.log(reservation);
-
-                const [date, time] = reservation.reservation_date.split(" ");
-                console.log(date);
-                console.log(time);
-
-
 
                 row.innerHTML = `
-                    <td>${date}</td>
-                    <td>${time}</td>
+                    <td>${date}</td> <!-- Muestra la fecha correctamente -->
+                    <td>${time.split("Z")[0]}</td> <!-- Muestra la hora sin la parte Z -->
                     <td>${reservation.table_number}</td>
                     <td>
                         <button onclick="cancelReservation(${reservation.id})">Cancelar</button>
@@ -154,11 +152,42 @@
             });
         }
 
-        // Cancelar una reserva
         function cancelReservation(reservationID) {
-            // Implementar cancelación aquí
-            console.log(`Cancelar reserva con ID: ${reservationID}`);
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+
+            if (!token) {
+                console.error("Token JWT no encontrado");
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/v1/reservations/${reservationID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
+                return response.json();  // Aquí se convierte la respuesta en JSON
+            })
+            .then(data => {
+                
+                if (data.message) { 
+                    alert(data.message);  
+                } else {
+                    alert('Reserva cancelada con éxito'); 
+                }
+                fetchReservations(userId);  // Vuelve a cargar las reservas
+            })
+            .catch(error => {
+                console.error('Error al cancelar la reserva:', error);
+            });
         }
+
     </script>
 </body>
 </html>

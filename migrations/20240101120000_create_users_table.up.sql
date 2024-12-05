@@ -58,7 +58,7 @@ INSERT INTO users (name, password, email, role_id)
 VALUES ('Agus', '12345678', 'agerminario@fi.uba.ar', 1);
 
 INSERT INTO users (name, password, email, role_id) 
-VALUES ('Valen', '12345678', 'vmorenofi.uba.ar', 1);
+VALUES ('Valen', '12345678', 'vmoreno@fi.uba.ar', 1);
 
 INSERT INTO users (name, password, email, role_id) 
 VALUES ('Seba', '12345678', 'skraglievich@fi.uba.ar', 1);

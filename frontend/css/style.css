@@ -225,3 +225,20 @@ footer {
     text-align: center;
     color: #28a745;
 }
+
+.user-info input {
+    background-color: #007bff;
+    color: white; 
+    border: none; 
+    padding: 5px 10px; 
+    border-radius: 5px; 
+    font-size: 14px; 
+    font-weight: bold; 
+    cursor: default; 
+    text-align: right; 
+    margin-left: auto; 
+}
+
+.user-info input:focus {
+    outline: none; 
+}
