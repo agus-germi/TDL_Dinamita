@@ -13,6 +13,7 @@ const (
 	qryGetDish     = `SELECT name, price, description FROM dishes WHERE name=$1`
 	qryGetDishByID = `SELECT name, price, description FROM dishes WHERE id=$1`
 	qryDeleteDish  = `DELETE FROM dishes WHERE id=$1`
+	qryGetDishes   = `SELECT * FROM dishes`
 )
 
 func (r *repo) SaveDish(ctx context.Context, name string, price int64, description string) error {
@@ -73,4 +74,32 @@ func (r *repo) RemoveDish(ctx context.Context, dishID int64) error {
 	}
 
 	return r.executeInTransaction(ctx, operation)
+}
+
+func (r *repo) GetAllDishes(ctx context.Context) (*[]entity.Dish, error) {
+	rows, err := r.db.Query(ctx, qryGetDishes)
+	if err != nil {
+		r.log.Errorf("Failed to execute select reservations (by user id) query: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	dishes := []entity.Dish{}
+	for rows.Next() {
+		var dish entity.Dish
+		if err := rows.Scan(&dish.ID, &dish.Name, &dish.Price, &dish.Description); err != nil {
+			r.log.Errorf("Failed to scan row: %v", err)
+			return nil, err
+		}
+
+		dishes = append(dishes, dish)
+	}
+
+	if rows.Err() != nil {
+		r.log.Errorf("Error occurred during row iteration: %v", rows.Err())
+		return nil, rows.Err()
+	}
+
+	r.log.Debugf("Dishes retrieved successfully.")
+	return &dishes, nil
 }

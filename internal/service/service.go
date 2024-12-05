@@ -28,6 +28,8 @@ type Service interface {
 	RemoveTable(ctx context.Context, tableID int64) error
 	RemoveDish(ctx context.Context, dishID int64) error
 	AddDishToMenu(ctx context.Context, name string, price int64, description string) error
+
+	GetDishes(ctx context.Context) (*[]models.Dish, error)
 }
 
 type serv struct {

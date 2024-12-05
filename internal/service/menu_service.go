@@ -3,6 +3,8 @@ package service
 import (
 	context "context"
 	"errors"
+
+	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 )
 
 var (
@@ -33,4 +35,22 @@ func (s *serv) RemoveDish(ctx context.Context, dishID int64) error {
 	}
 
 	return nil
+}
+
+// get all dishes from the database
+func (s *serv) GetDishes(ctx context.Context) (*[]models.Dish, error) {
+	dishes, err := s.repo.GetAllDishes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if dishes == nil {
+		return &[]models.Dish{}, nil
+	}
+
+	modelDishes := make([]models.Dish, len(*dishes))
+	for i, dish := range *dishes {
+		modelDishes[i] = models.Dish(dish)
+	}
+	return &modelDishes, nil
 }

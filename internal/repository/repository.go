@@ -44,6 +44,7 @@ type Repository interface {
 	GetDishByName(ctx context.Context, name string) (*entity.Dish, error)
 	GetDishByID(ctx context.Context, dishID int64) (*entity.Dish, error)
 	RemoveDish(ctx context.Context, dishID int64) error
+	GetAllDishes(ctx context.Context) (*[]entity.Dish, error)
 }
 
 type repo struct {

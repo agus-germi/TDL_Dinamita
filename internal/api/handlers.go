@@ -385,7 +385,7 @@ func (a *API) AddDishToMenu(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
 	}
 
-	params := dtos.AddDishDTO{}
+	params := dtos.DishDTO{}
 
 	err := c.Bind(&params)
 	if err != nil {
@@ -439,14 +439,16 @@ func (a *API) RemoveDishFromMenu(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseMessage{Message: "Dish deleted successfully"})
 }
 
-func (a *API) GetMenu(c echo.Context) error {
-	// TODO: get menu
-	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
-}
+func (a *API) GetDishesInMenu(c echo.Context) error {
+	ctx := c.Request().Context()
+	dishes, err := a.serv.GetDishes(ctx)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while getting dishes: %v")
+	}
+	//convertir dishes a DTO
+	dtoDishes := convertDishesToDTO(dishes)
+	return c.JSON(http.StatusOK, dtoDishes)
 
-func (a *API) GetDish(c echo.Context) error {
-	// TODO: get dish > no se si es necesario
-	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
 }
 
 func (a *API) UpdateDish(c echo.Context) error {
@@ -478,6 +480,22 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 		}
 	}
 	return &dtoReservations
+}
+
+func convertDishesToDTO(dishes *[]models.Dish) *[]dtos.DishDTO {
+	if dishes == nil {
+		return &[]dtos.DishDTO{}
+	}
+
+	dtoDishes := make([]dtos.DishDTO, len(*dishes))
+	for i, dish := range *dishes {
+		dtoDishes[i] = dtos.DishDTO{
+			Name:        dish.Name,
+			Price:       dish.Price,
+			Description: dish.Description,
+		}
+	}
+	return &dtoDishes
 }
 
 func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID, roleID, reservationID int64) error {

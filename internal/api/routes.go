@@ -36,6 +36,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	menu := api.Group("/menu")
 	menu.POST("", a.AddDishToMenu)
 	menu.DELETE("/:id", a.RemoveDishFromMenu)
+	menu.GET("", a.GetDishesInMenu)
 
 }
 
