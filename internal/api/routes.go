@@ -35,6 +35,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	//Group routes for /menu under /api/v1
 	menu := api.Group("/menu")
 	menu.POST("", a.AddDishToMenu)
+	menu.DELETE("/:id", a.RemoveDishFromMenu)
 
 }
 

@@ -305,9 +305,9 @@ func (a *API) DeleteReservation(c echo.Context) error {
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -339,13 +339,16 @@ func (a *API) CreateTable(c echo.Context) error {
 }
 
 func (a *API) DeleteTable(c echo.Context) error {
-	clientRoleID, ok := c.Get("role").(int64)
-	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleIDInt)
+
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
 
-	if clientRoleID != adminRoleID {
+	if clientRoleIDInt != adminRoleID {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
 	}
 
@@ -405,18 +408,49 @@ func (a *API) AddDishToMenu(c echo.Context) error {
 }
 
 func (a *API) RemoveDishFromMenu(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
+	//verifico que sea admin
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleIDInt != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
+	}
+
+	base := 10
+	bitSize := 64
+
+	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Table] Table ID sent in the URI:", dishID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
+	}
+
+	ctx := c.Request().Context()
+	err = a.serv.RemoveDish(ctx, dishID)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while deleting dish: %v")
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Dish deleted successfully"})
 }
 
 func (a *API) GetMenu(c echo.Context) error {
+	// TODO: get menu
 	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
 }
 
-func (a *API) GetDish(c echo.Context) error { // no se si es necesario
+func (a *API) GetDish(c echo.Context) error {
+	// TODO: get dish > no se si es necesario
 	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
 }
 
 func (a *API) UpdateDish(c echo.Context) error {
+	//TODO: update dish
 	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
 }
 
