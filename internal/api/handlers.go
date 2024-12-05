@@ -296,8 +296,11 @@ func (a *API) DeleteReservation(c echo.Context) error {
 
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
-	clientRoleID, ok := c.Get("role").(int64)
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
 	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
