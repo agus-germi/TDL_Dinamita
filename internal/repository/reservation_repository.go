@@ -17,9 +17,11 @@ const (
 	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, date, time_slot_id) 
 							VALUES ($1, $2, $3, $4)`
 
-	qryGetReservationsByUserID = `SELECT *
-						 FROM reservations
-						 WHERE reserved_by=$1`
+	qryGetReservationsByUserID = `SELECT r.id, r.reserved_by, r.table_number, r.date, ts.time
+								FROM reservations r
+								INNER JOIN time_slots ts ON r.time_slot_id = ts.id
+								WHERE r.reserved_by=$1
+								ORDER BY r.date, ts.time`
 
 	qryGetReservationByID = `SELECT *
 							FROM reservations
@@ -95,7 +97,7 @@ func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error
 func (r *repo) GetReservationsByUserID(ctx context.Context, userID int64) (*[]entity.Reservation, error) {
 	rows, err := r.db.Query(ctx, qryGetReservationsByUserID, userID)
 	if err != nil {
-		r.log.Errorf("Failed to execute select reservation (by user id) query: %v", err)
+		r.log.Errorf("Failed to execute select reservations (by user id) query: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -103,10 +105,11 @@ func (r *repo) GetReservationsByUserID(ctx context.Context, userID int64) (*[]en
 	reservations := []entity.Reservation{}
 	for rows.Next() {
 		var rsv entity.Reservation
-		if err := rows.Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.TimeSlotID); err != nil {
+		if err := rows.Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.Time); err != nil {
 			r.log.Errorf("Failed to scan row: %v", err)
 			return nil, err
 		}
+
 		reservations = append(reservations, rsv)
 	}
 
@@ -114,8 +117,6 @@ func (r *repo) GetReservationsByUserID(ctx context.Context, userID int64) (*[]en
 		r.log.Errorf("Error occurred during row iteration: %v", rows.Err())
 		return nil, rows.Err()
 	}
-
-	// TODO: buscar el time slot correspondiente a cada reserva (pensar si hay que hacerlo aca o en la capa de servicio)
 
 	r.log.Debugf("Reservations (of usr_id=%d) retrieved successfully.", userID)
 	return &reservations, nil
@@ -134,9 +135,6 @@ func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*en
 	return &rsv, nil
 }
 
-// Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
-// Este metodo hay que modificarlo para que se adecue a la nueva estructura de la tabla de reservas (las tablas que estan en el informe de la semana que le entregamos al profe).
-// Basicamente hay que extraer la fecha de Date.
 func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
 	time_slot_id, err := r.getTimeSlotID(ctx, date)
 	if err != nil {
@@ -144,49 +142,16 @@ func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumb
 	}
 
 	formattedDate := date.Format("2006-01-02")
-	reservation := entity.Reservation{}
-	err = r.db.QueryRow(ctx, qryGetReservationByTableNumberAndDate, tableNumber, formattedDate, time_slot_id).Scan(&reservation.ID, &reservation.UserID, &reservation.TableNumber, &reservation.Date, &reservation.TimeSlotID)
+	rsv := entity.Reservation{}
+	err = r.db.QueryRow(ctx, qryGetReservationByTableNumberAndDate, tableNumber, formattedDate, time_slot_id).Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.Time)
 	if err != nil {
 		r.log.Errorf("Failed to execute select reservation (by table number, date and time slot id): %v", err)
 		return nil, err
 	}
 
 	r.log.Debugf("Reservation retrieved successfully for table number %d on date %s and time %s.", tableNumber, formattedDate, date.Format("15:04"))
-	return &reservation, nil
+	return &rsv, nil
 }
-
-// Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
-// Este metodo hay que modificarlo para que se adecue a la nueva estructura de la tabla de reservas (las tablas que estan en el informe de la semana que le entregamos al profe).
-// Basicamente hay que extraer la fecha de Date.
-/*
-func (r *repo) GetReservationsByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*[]entity.Reservation, error) {
-	formattedDate := date.Format(time.RFC3339)
-	rows, err := r.db.Query(ctx, qryGetReservationByTableNumberAndDate, tableNumber, formattedDate)
-	if err != nil {
-		log.Printf("Failed to execute select query: %v", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	var reservations []entity.Reservation
-	for rows.Next() {
-		var rsv entity.Reservation
-		if err := rows.Scan(&rsv.UserID, &rsv.TableNumber, &rsv.Date); err != nil {
-			log.Printf("Failed to scan row: %v", err)
-			return nil, err
-		}
-		reservations = append(reservations, rsv)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Printf("Error occurred during row iteration: %v", err)
-		return nil, err
-	}
-
-	log.Printf("Reservations retrieved successfully for table number %d on date %s.", tableNumber, formattedDate)
-	return &reservations, nil
-}
-*/
 
 func (r *repo) getTimeSlotID(ctx context.Context, date time.Time) (int64, error) {
 	var time_slot_id int64

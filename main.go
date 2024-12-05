@@ -50,9 +50,6 @@ func configureLifeCycleHooks(lc fx.Lifecycle, api *api.API, e *echo.Echo, dbPool
 
 				// El valor de "address" podemos leerlo de la variable de entorno API_PORT (o APP_PORT)
 
-				// Cambiar el logger de Echo para que use logrus
-				// e.Logger = echo.Logger(logAdapter)
-
 				// Echo middleware logger configuration --> transfering echo http logs management to logrus
 				e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 					Output: log.Writer(),
