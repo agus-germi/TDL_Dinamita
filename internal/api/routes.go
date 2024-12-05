@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// TODO: Cambiar las URIs de los endpoints para que sean mas RESTful.
 func (a *API) SetRoutes(e *echo.Echo) {
 	// Public routes (without JWT token)
 	public := e.Group("/api/v1")

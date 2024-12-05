@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 	"github.com/jackc/pgx/v5"
@@ -40,7 +39,7 @@ func (r *repo) SaveUser(ctx context.Context, name, password, email string, roleI
 	operation := func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, qryInsertUser, name, password, email, roleID)
 		if err != nil {
-			r.log.Errorf("Failed to execute insert query: %v", err)
+			r.log.Errorf("Failed to execute insert user query: %v", err)
 			return err
 		}
 
@@ -99,17 +98,18 @@ func (r *repo) SaveUpdateUserRole(ctx context.Context, userID, roleID int64) err
 	operation := func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, qryUpdateUserRole, roleID, userID)
 		if err != nil {
-			log.Printf("Failed to execute update user role query: %v", err)
+			r.log.Errorf("Failed to execute update user role query: %v", err)
 			return err
 		}
 
-		log.Println("User updated successfully.")
+		r.log.Infof("User (id=%d) updated successfully.", userID)
 		return nil
 	}
 
 	return r.executeInTransaction(ctx, operation)
 }
 
+// Esta funcion no se invoca en ningun lado. Quizas la podemos borrar.
 func (r *repo) GetUserRole(ctx context.Context, userID int64) (int64, error) {
 	usr := entity.User{}
 
