@@ -16,7 +16,8 @@ var (
 func init() {
 	logger.Log.Debug("Executing init() function of 'notification' package: Loading SMTP_HOST and SMTP_PORT from '.env' file")
 
-	smtpHost, err := utils.GetEnv("SMTP_HOST")
+	var err error
+	smtpHost, err = utils.GetEnv("SMTP_HOST")
 	if err != nil || smtpHost == "" {
 		logger.Log.Fatalf("SMTP_HOST is not set or invalid: %v", err)
 	}
