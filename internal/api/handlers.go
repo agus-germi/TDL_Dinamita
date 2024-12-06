@@ -339,7 +339,7 @@ func (a *API) CreateTable(c echo.Context) error {
 }
 
 func (a *API) DeleteTable(c echo.Context) error {
-	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	clientRoleID, ok := c.Get("role").(float64) // Type assertion
 	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
 	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleIDInt)
@@ -372,7 +372,7 @@ func (a *API) DeleteTable(c echo.Context) error {
 
 // Menu endpoints
 func (a *API) AddDishToMenu(c echo.Context) error {
-	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	clientRoleID, ok := c.Get("role").(float64)
 	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
 	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)

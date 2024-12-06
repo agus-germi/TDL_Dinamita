@@ -3,7 +3,6 @@ package repository
 import (
 	context "context"
 	"errors"
-	"log"
 
 	entity "github.com/agus-germi/TDL_Dinamita/internal/entity"
 	"github.com/jackc/pgx/v5"
@@ -16,7 +15,7 @@ const (
 					VALUES ($1, $2, $3, $4)`
 
 	qryDeleteTable = `DELETE FROM tables
-					WHERE number=$1`
+					WHERE id=$1`
 
 	qryGetTableByNumber = `SELECT number, seats, location, is_available
 				   FROM tables
@@ -31,30 +30,30 @@ func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location
 	operation := func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)
 		if err != nil {
-			log.Printf("Failed to insert table: %v", err)
+			r.log.Debugf("Failed to insert table: %v", err)
 			return err
 		}
 
-		log.Printf("Table with number %d saved successfully", tableNumber)
+		r.log.Infof("Table with number %d saved successfully", tableNumber)
 		return nil
 	}
 
 	return r.executeInTransaction(ctx, operation)
 }
 
-func (r *repo) RemoveTable(ctx context.Context, tableNumber int64) error {
+func (r *repo) RemoveTable(ctx context.Context, tableID int64) error {
 	operation := func(tx pgx.Tx) error {
-		result, err := r.db.Exec(ctx, qryDeleteTable, tableNumber)
+		result, err := r.db.Exec(ctx, qryDeleteTable, tableID)
 		if err != nil {
 			return err
 		}
 
 		if result.RowsAffected() == 0 {
-			log.Println("Rows affected = 0")
+			r.log.Debugf("Rows affected = 0")
 			return ErrTableNotFound
 		}
 
-		log.Println("Table removed successfully.")
+		r.log.Infof("Table (id=%d) removed successfully.", tableID)
 		return nil
 	}
 
@@ -66,11 +65,11 @@ func (r *repo) GetTableByNumber(ctx context.Context, tableNumber int64) (*entity
 
 	err := r.db.QueryRow(ctx, qryGetTableByNumber, tableNumber).Scan(&table.Number, &table.Seats, &table.Location, &table.IsAvailable)
 	if err != nil {
-		log.Printf("Failed to execute select query: %v", err)
+		r.log.Debugf("Failed to execute select table (by number) query: %v", err)
 		return nil, err
 	}
 
-	log.Printf("Table retrieved successfully by number: %d", tableNumber)
+	r.log.Debugf("Table retrieved successfully by number: %d", tableNumber)
 	return &table, nil
 }
 
@@ -79,10 +78,10 @@ func (r *repo) GetTableByID(ctx context.Context, tableID int64) (*entity.Table, 
 
 	err := r.db.QueryRow(ctx, qryGetTableByID, tableID).Scan(&table.ID, &table.Number, &table.Seats, &table.Location, &table.IsAvailable)
 	if err != nil {
-		log.Printf("Failed to execute select query: %v", err)
+		r.log.Debugf("Failed to execute select table (by id) query: %v", err)
 		return nil, err
 	}
 
-	log.Printf("Table retrieved successfully by ID: %d", tableID)
+	r.log.Debugf("Table retrieved successfully by ID: %d", tableID)
 	return &table, nil
 }
