@@ -27,9 +27,14 @@ const (
 								WHERE r.reserved_by=$1
 								ORDER BY r.date, ts.time`
 
-	qryGetReservationByID = `SELECT *
+	qryGetReservationByID = `SELECT id
 							FROM reservations
 							WHERE id=$1`
+
+	qryGetReservationForUpdateByID = `SELECT id
+							FROM reservations
+							WHERE id=$1
+							FOR UPDATE`
 
 	qryRemoveReservation = `DELETE FROM reservations
 							WHERE id=$1`
@@ -97,18 +102,26 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 
 func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error {
 	operation := func(tx pgx.Tx) error {
-		result, err := tx.Exec(ctx, qryRemoveReservation, reservationID)
+		// lock reservation row in the table
+		var id int64
+		err := tx.QueryRow(ctx, qryGetReservationForUpdateByID, reservationID).Scan(&id)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				r.log.Errorf("No rows were found by get reservation by ID query: %v", err)
+				return ErrReservationNotFound
+			}
+
+			r.log.Errorf("Failed to execute select reservation (by ID): %v", err)
+			return err
+		}
+
+		_, err = tx.Exec(ctx, qryRemoveReservation, reservationID)
 		if err != nil {
 			r.log.Errorf("Failed to execute delete reservation query: %v", err)
 			return err
 		}
 
-		if result.RowsAffected() == 0 {
-			r.log.Errorf("No rows were affected by the delete query: %v", ErrReservationNotFound)
-			return ErrReservationNotFound // Custom error if no rows were deleted (maybe it could be "reservation doesn't exist")
-		}
-
-		r.log.Infof("Reservation (%d) removed successfully.", reservationID)
+		r.log.Infof("Reservation (ID: %d) removed successfully.", reservationID)
 		return nil
 	}
 
