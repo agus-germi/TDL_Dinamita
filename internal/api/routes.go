@@ -31,6 +31,14 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	tables := api.Group("/tables")
 	tables.POST("", a.CreateTable)
 	tables.DELETE("/:id", a.DeleteTable)
+
+	//Group routes for /menu under /api/v1
+	menu := api.Group("/menu")
+	menu.POST("", a.AddDishToMenu)
+	menu.DELETE("/:id", a.RemoveDishFromMenu)
+	menu.GET("", a.GetDishesInMenu)
+	menu.PATCH("/:id", a.UpdateDishInMenu)
+
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".

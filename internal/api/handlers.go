@@ -305,9 +305,9 @@ func (a *API) DeleteReservation(c echo.Context) error {
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -339,13 +339,16 @@ func (a *API) CreateTable(c echo.Context) error {
 }
 
 func (a *API) DeleteTable(c echo.Context) error {
-	clientRoleID, ok := c.Get("role").(int64)
-	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleIDInt)
+
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
 
-	if clientRoleID != adminRoleID {
+	if clientRoleIDInt != adminRoleID {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
 	}
 
@@ -365,6 +368,135 @@ func (a *API) DeleteTable(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Table deleted successfully"})
+}
+
+// Menu endpoints
+func (a *API) AddDishToMenu(c echo.Context) error {
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleID != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
+	}
+
+	params := dtos.DishDTO{}
+
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+
+	ctx := c.Request().Context()
+	err = a.serv.AddDishToMenu(ctx, params.Name, params.Price, params.Description)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while adding a dish to the menu: %v")
+	}
+
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Dish added to the menu successfully"})
+
+}
+
+func (a *API) RemoveDishFromMenu(c echo.Context) error {
+	//verifico que sea admin
+	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
+	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleIDInt != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
+	}
+
+	base := 10
+	bitSize := 64
+
+	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Table] Table ID sent in the URI:", dishID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
+	}
+
+	ctx := c.Request().Context()
+	err = a.serv.RemoveDish(ctx, dishID)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while deleting dish: %v")
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Dish deleted successfully"})
+}
+
+func (a *API) UpdateDishInMenu(c echo.Context) error {
+	clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Update Dish in Menu] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Update Dish in Menu] Client Role ID:", clientRoleIDInt)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleID != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't assign a new role to a user"})
+	}
+
+	base := 10
+	bitSize := 64
+
+	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Update Dish In Menu] Parsed Dish ID:", dishID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
+	}
+
+	ctx := c.Request().Context()
+	params := dtos.DishDTO{} // uso el mismo DTO porque considero que se pueden modificar todos los campos del plato
+
+	err = c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+	err = a.serv.UpdateDish(ctx, dishID, params.Name, params.Price, params.Description)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while updating dish: %v")
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Dish updated successfully"})
+
+}
+
+func (a *API) GetDishesInMenu(c echo.Context) error {
+	ctx := c.Request().Context()
+	dishes, err := a.serv.GetDishes(ctx)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while getting dishes: %v")
+	}
+	//convertir dishes a DTO
+	dtoDishes := convertDishesToDTO(dishes)
+	return c.JSON(http.StatusOK, dtoDishes)
+
+}
+
+func (a *API) UpdateDish(c echo.Context) error {
+	//TODO: update dish
+	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
 }
 
 // Auxiliary functions
@@ -391,6 +523,22 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 		}
 	}
 	return &dtoReservations
+}
+
+func convertDishesToDTO(dishes *[]models.Dish) *[]dtos.DishDTO {
+	if dishes == nil {
+		return &[]dtos.DishDTO{}
+	}
+
+	dtoDishes := make([]dtos.DishDTO, len(*dishes))
+	for i, dish := range *dishes {
+		dtoDishes[i] = dtos.DishDTO{
+			Name:        dish.Name,
+			Price:       dish.Price,
+			Description: dish.Description,
+		}
+	}
+	return &dtoDishes
 }
 
 func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID, roleID, reservationID int64) error {

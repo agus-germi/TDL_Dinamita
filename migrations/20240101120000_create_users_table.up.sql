@@ -38,6 +38,13 @@ CREATE TABLE IF NOT EXISTS reservations (
     FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS dishes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,-- para guardar precios de hasta 99999999.99
+    description TEXT -- Descripcion del plato
+);
+
 -- Agregamos horarios fijos de manera dinamica 
 -- Turnos desde las 12:00 hasta las 22:00 - considerando que cada turno es de 2hs
 DO $$
