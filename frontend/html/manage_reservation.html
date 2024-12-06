@@ -45,7 +45,8 @@
             </div>
             <div>
                 <label for="table">Mesa:</label>
-                <select id="table" name="table" required></select>
+                <select id="table" name="table" required>
+                </select>
             </div>
             <button type="submit" class="logout-button">Reservar</button>
         </form>
@@ -92,9 +93,64 @@
             fetchReservations(userId);
 
             fetchAvailableTimes();
-            //fetchAvailableTables();
+            fetchAvailableTables();
 
         });
+
+        document.getElementById('reservation-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Previene la recarga de la página al enviar el formulario.
+
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+
+            if (!token) {
+                console.error("Token JWT no encontrado");
+                return;
+            }
+
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const tableNumber = document.getElementById('table').value;
+
+            console.log(date);
+            console.log(time);
+            console.log(tableNumber);
+
+
+
+            const reservationData = {
+                reservation_date: `${date}T${time}Z`, // Combina la fecha y hora en formato ISO 8601.
+                table_number: parseInt(tableNumber, 10),
+            };
+            console.log(reservationData.reservation_date);
+
+            fetch('http://localhost:8080/api/v1/reservations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Enviar el token JWT en el encabezado.
+                },
+                body: JSON.stringify(reservationData),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || 'Error desconocido');
+                    });
+                }
+                return response.json(); // Convierte la respuesta a JSON.
+            })
+            .then(data => {
+                showModal(data.message || 'Reserva realizada con éxito');
+                fetchReservations(userId); // Actualiza la tabla de reservas.
+                toggleReservationForm(); // Cierra el formulario.
+            })
+            .catch(error => {
+                console.error('Error al realizar la reserva:', error);
+                showModal(`Error al realizar la reserva: ${error.message}`);
+            });
+        });
+
 
         function toggleDropdown() {
             const dropdown = document.getElementById('dropdownMenu');
@@ -249,6 +305,46 @@
                 option.value = timeObj.time;  
                 option.textContent = timeObj.time;  
                 timeSelect.appendChild(option);
+            });
+        }
+
+        function fetchAvailableTables() {
+            const token = localStorage.getItem('token'); 
+            if (!token) {
+                console.error("Token JWT no encontrado");
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/v1/tables`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                populateTableSelect(data);
+            })
+            .catch(error => {
+                console.error('Error al obtener las mesas disponibles:', error);
+            });
+        }
+
+        function populateTableSelect(tables) {
+            const tableSelect = document.getElementById('table');
+            tableSelect.innerHTML = ''; 
+
+            tables.forEach(table => {
+                const option = document.createElement('option');
+                option.value = table.number
+                option.textContent = `Mesa ${table.number} - ${table.seats} asientos`;
+                tableSelect.appendChild(option);
             });
         }
     </script>
