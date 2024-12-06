@@ -25,6 +25,10 @@ const (
 	qryGetTableByID = `SELECT id, number, seats, location, is_available
 				   FROM tables
 				   WHERE id=$1`
+
+	qryGetAvailableTables = `SELECT id, number, seats, location, is_available
+				   FROM tables
+				   WHERE is_available = TRUE`
 )
 
 func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
@@ -86,3 +90,32 @@ func (r *repo) GetTableByID(ctx context.Context, tableID int64) (*entity.Table, 
 	log.Printf("Table retrieved successfully by ID: %d", tableID)
 	return &table, nil
 }
+
+func (r *repo) GetAvailableTables(ctx context.Context) (*[]entity.Table, error) {
+    var tables []entity.Table
+
+    rows, err := r.db.Query(ctx, qryGetAvailableTables)
+    if err != nil {
+        log.Printf("Failed to execute select query: %v", err)
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var table entity.Table
+        if err := rows.Scan(&table.ID, &table.Number, &table.Seats, &table.Location, &table.IsAvailable); err != nil {
+            log.Printf("Failed to scan table: %v", err)
+            return nil, err
+        }
+        tables = append(tables, table)
+    }
+
+    if err := rows.Err(); err != nil {
+        log.Printf("Error iterating rows: %v", err)
+        return nil, err
+    }
+
+    log.Printf("Successfully fetched available tables")
+    return &tables, nil
+}
+

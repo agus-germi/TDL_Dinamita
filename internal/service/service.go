@@ -26,6 +26,10 @@ type Service interface {
 	UpdateUserRole(ctx context.Context, userID, newRoleID int64) error
 	AddTable(ctx context.Context, tableNumber, seats int64, location string) error
 	RemoveTable(ctx context.Context, tableID int64) error
+	GetAvailableTables(ctx context.Context) (*[]models.Table, error)
+
+	//Time Slot
+	GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error)
 }
 
 type serv struct {

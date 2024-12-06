@@ -29,6 +29,7 @@ type Repository interface {
 	RemoveTable(ctx context.Context, tableNumber int64) error
 	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
 	GetTableByID(ctx context.Context, tableID int64) (*entity.Table, error)
+	GetAvailableTables(ctx context.Context) (*[]entity.Table, error)
 
 	// Reservation
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
@@ -38,6 +39,9 @@ type Repository interface {
 	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) // Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
 	//GetReservationsByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*[]entity.Reservation, error) // Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
 	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
+
+	//Time slots
+	GetTimeSlots(ctx context.Context) (*[]entity.TimeSlot, error)
 }
 
 type repo struct {

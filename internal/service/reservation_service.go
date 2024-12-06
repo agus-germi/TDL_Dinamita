@@ -93,6 +93,31 @@ func (s *serv) GetReservationByID(ctx context.Context, reservationID int64) (*mo
 	return &modelReservation, nil
 }
 
+func (s *serv) GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error) {
+    entityTimeSlots, err := s.repo.GetTimeSlots(ctx)
+    if err != nil {
+        s.log.Errorf("Failed to get time slots: %v", err)
+        return nil, err
+    }
+
+    if entityTimeSlots == nil {
+        return &[]models.TimeSlot{}, nil
+    }
+
+    modelTimeSlots := make([]models.TimeSlot, len(*entityTimeSlots))
+    for i, entityTimeSlot := range *entityTimeSlots {
+        modelTimeSlots[i] = models.TimeSlot{
+            ID:   entityTimeSlot.ID,
+            Time: entityTimeSlot.Time.Format("15:04:05"), // Formateo directamente aquí
+        }
+    }
+
+    return &modelTimeSlots, nil
+}
+
+
+
+
 // Combine date (format YYYY-MM-DD) and _time (format HH:mm) in a single string that comply ISO 8601
 // func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {
 // 	combinedDateTime := fmt.Sprintf("%sT%s:00Z", date.Format("2006-01-02"), _time)

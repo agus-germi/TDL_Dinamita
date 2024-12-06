@@ -40,7 +40,8 @@
             </div>
             <div>
                 <label for="time">Hora:</label>
-                <select id="time" name="time" required></select>
+                <select id="time" name="time" required>
+                </select>
             </div>
             <div>
                 <label for="table">Mesa:</label>
@@ -70,6 +71,13 @@
         </table>
     </div>
 
+    <div id="alert-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modal-message"></p>
+        </div>
+    </div>
+
     <script>
         function toggleReservationForm() {
             const form = document.getElementById('reservation-form');
@@ -82,6 +90,10 @@
 
             const userId = localStorage.getItem('userId'); 
             fetchReservations(userId);
+
+            fetchAvailableTimes();
+            //fetchAvailableTables();
+
         });
 
         function toggleDropdown() {
@@ -172,22 +184,73 @@
                 if (!response.ok) {
                     throw new Error(`Error en la solicitud: ${response.statusText}`);
                 }
-                return response.json();  // Aquí se convierte la respuesta en JSON
+                return response.json();  
             })
             .then(data => {
-                
+
                 if (data.message) { 
-                    alert(data.message);  
+                    showModal(data.message);
                 } else {
-                    alert('Reserva cancelada con éxito'); 
+                    showModal('Reserva cancelada con éxito');
                 }
-                fetchReservations(userId);  // Vuelve a cargar las reservas
+                fetchReservations(userId);  
             })
             .catch(error => {
                 console.error('Error al cancelar la reserva:', error);
             });
         }
 
+        function showModal(message) {
+            const modal = document.getElementById('alert-modal');
+            const modalMessage = document.getElementById('modal-message');
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('alert-modal');
+            modal.style.display = 'none';
+        }
+
+        function fetchAvailableTimes() {
+            const token = localStorage.getItem('token'); 
+            if (!token) {
+                console.error("Token JWT no encontrado");
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/v1/time_slots`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                populateTimeSelect(data);
+            })
+            .catch(error => {
+                console.error('Error al obtener las horas disponibles:', error);
+            });
+        }
+
+        function populateTimeSelect(times) {
+            const timeSelect = document.getElementById('time');
+            timeSelect.innerHTML = ''; 
+
+            times.forEach(timeObj => {
+                const option = document.createElement('option');
+                option.value = timeObj.time;  
+                option.textContent = timeObj.time;  
+                timeSelect.appendChild(option);
+            });
+        }
     </script>
 </body>
 </html>
