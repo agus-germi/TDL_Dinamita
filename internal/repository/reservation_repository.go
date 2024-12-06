@@ -37,6 +37,11 @@ const (
 	qryGetTimeSlotID = `SELECT id
 						FROM time_slots
 						WHERE time=$1`
+
+	qryGetTimeSlots = `SELECT id, time 
+					  FROM time_slots 
+					  ORDER BY time`
+
 )
 
 // TODO: Investigate how to use SELECT ... FOR UPDATE (to lock the row in the table) and UPDATE ... SET ... WHERE ... (to update the row in the table)
@@ -164,4 +169,32 @@ func (r *repo) getTimeSlotID(ctx context.Context, date time.Time) (int64, error)
 
 	r.log.Debugf("Time slot ID (%d) retrieved successfully for time %s.", time_slot_id, formattedTime)
 	return time_slot_id, nil
+}
+
+func (r *repo) GetTimeSlots(ctx context.Context) (*[]entity.TimeSlot, error) {
+	rows, err := r.db.Query(ctx, qryGetTimeSlots)
+	if err != nil {
+		r.log.Errorf("Failed to execute select time slots query: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	timeSlots := []entity.TimeSlot{}
+	for rows.Next() {
+		var ts entity.TimeSlot
+		if err := rows.Scan(&ts.ID, &ts.Time); err != nil {
+			r.log.Errorf("Failed to scan row: %v", err)
+			return nil, err
+		}
+
+		timeSlots = append(timeSlots, ts)
+	}
+
+	if rows.Err() != nil {
+		r.log.Errorf("Error occurred during row iteration: %v", rows.Err())
+		return nil, rows.Err()
+	}
+
+	r.log.Debugf("Time slots retrieved successfully.")
+	return &timeSlots, nil
 }

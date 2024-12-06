@@ -1,5 +1,5 @@
 document.getElementById('registerForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Evita el envío del formulario
+    event.preventDefault(); 
 
     const name = document.getElementById('registerUsername').value;
     const password = document.getElementById('registerPassword').value;
@@ -14,7 +14,7 @@ document.getElementById('registerForm').addEventListener('submit', function(even
     if (!password) {
         registerMessage.innerText = 'La contraseña es obligatoria.';
         return;
-    }else{
+    } else {
         if (password.length < 8 || password.length > 15) {
             registerMessage.innerText = 'La contraseña debe tener entre 8 y 15 caracteres.';
             return;
@@ -27,23 +27,23 @@ document.getElementById('registerForm').addEventListener('submit', function(even
         return;
     }
 
-    fetch('http://localhost:8080/users/register', {
+    fetch('http://localhost:8080/api/v1/auth/signup', { 
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, password, email }),
+        body: JSON.stringify({ name, password, email }), 
     })
     .then(response => {
         if (!response.ok) {
             throw new Error('Error en el registro');
         }
-        return response.json(); // Cambiar a JSON si el servidor responde con un objeto JSON
+        return response.json();
     })
     .then(data => {
-        document.getElementById('registerMessage').innerText = data.message; // Suponiendo que el mensaje está en el objeto data
-        localStorage.setItem('username', name); // Guardar en localStorage
-        window.location.href = '/static/index.html'; // Redirigir a la página principal
+        document.getElementById('registerMessage').innerText = data.message; 
+        localStorage.setItem('username', name); 
+        window.location.href = '/static/index.html'; 
     })
     .catch(error => {
         document.getElementById('registerMessage').innerText = error.message;

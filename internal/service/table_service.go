@@ -3,6 +3,7 @@ package service
 import (
 	context "context"
 	"errors"
+	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 )
 
 var (
@@ -34,3 +35,24 @@ func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
 
 	return nil
 }
+
+func (s *serv) GetAvailableTables(ctx context.Context) (*[]models.Table, error) {
+    tables, err := s.repo.GetAvailableTables(ctx)
+    if err != nil {
+        return nil, err
+    }
+
+    var modelTables []models.Table
+    for _, t := range *tables {
+        modelTable := models.Table{
+            Number:    t.Number,
+            Seats:     t.Seats,
+            Location:  t.Location,
+            IsAvailable: t.IsAvailable,
+        }
+        modelTables = append(modelTables, modelTable)
+    }
+
+    return &modelTables, nil
+}
+

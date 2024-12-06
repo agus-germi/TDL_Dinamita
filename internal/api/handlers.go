@@ -499,6 +499,16 @@ func (a *API) UpdateDish(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
 }
 
+func (a *API) GetTables(c echo.Context) error {
+	ctx := c.Request().Context()
+	tables, err := a.serv.GetAvailableTables(ctx)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while fetching available tables: %v")
+	}
+
+	return c.JSON(http.StatusOK, tables)
+}
+
 // Auxiliary functions
 func (a *API) handleErrorFromService(c echo.Context, err error, debugMsg string) error {
 	if statusCode, ok := errorResponses[err]; ok {
@@ -541,6 +551,17 @@ func convertDishesToDTO(dishes *[]models.Dish) *[]dtos.DishDTO {
 	return &dtoDishes
 }
 
+func convertTimeSlotsToDTO(timeSlots *[]models.TimeSlot) []map[string]interface{} {
+	dto := make([]map[string]interface{}, len(*timeSlots))
+	for i, ts := range *timeSlots {
+		dto[i] = map[string]interface{}{
+			"id":   ts.ID,
+			"time": ts.Time,
+		}
+	}
+	return dto
+}
+
 func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID, roleID, reservationID int64) error {
 	// An admin user can cancel any reservation
 	if roleID == adminRoleID {
@@ -559,4 +580,18 @@ func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID
 	}
 
 	return nil
+}
+
+// Time slots endpoint
+func (a *API) GetTimeSlots(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	timeSlots, err := a.serv.GetTimeSlots(ctx)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while getting time slots: %v")
+	}
+
+	dtoTimeSlots := convertTimeSlotsToDTO(timeSlots)
+
+	return c.JSON(http.StatusOK, dtoTimeSlots)
 }

@@ -29,6 +29,7 @@ type Repository interface {
 	RemoveTable(ctx context.Context, tableID int64) error
 	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
 	GetTableByID(ctx context.Context, tableID int64) (*entity.Table, error)
+	GetAvailableTables(ctx context.Context) (*[]entity.Table, error)
 
 	// Reservation
 	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
@@ -46,6 +47,9 @@ type Repository interface {
 	UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error
 	RemoveDish(ctx context.Context, dishID int64) error
 	GetAllDishes(ctx context.Context) (*[]entity.Dish, error)
+
+	//Time slots
+	GetTimeSlots(ctx context.Context) (*[]entity.TimeSlot, error)
 }
 
 type repo struct {

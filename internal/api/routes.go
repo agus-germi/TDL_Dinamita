@@ -31,6 +31,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	tables := api.Group("/tables")
 	tables.POST("", a.CreateTable)
 	tables.DELETE("/:id", a.DeleteTable)
+	tables.GET("", a.GetTables)
 
 	//Group routes for /menu under /api/v1
 	menu := api.Group("/menu")
@@ -39,6 +40,9 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	menu.GET("", a.GetDishesInMenu)
 	menu.PATCH("/:id", a.UpdateDishInMenu)
 
+	// Group routes for /time_slots under /api/v1
+	timeSlots := api.Group("/time_slots")
+	timeSlots.GET("", a.GetTimeSlots)
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".

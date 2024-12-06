@@ -21,6 +21,9 @@ type Service interface {
 	CancelReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 	GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error)
+	GetDishes(ctx context.Context) (*[]models.Dish, error)
+	GetAvailableTables(ctx context.Context) (*[]models.Table, error)
+	GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error)
 
 	// Admin features
 	UpdateUserRole(ctx context.Context, userID, newRoleID int64) error
@@ -29,8 +32,6 @@ type Service interface {
 	RemoveDish(ctx context.Context, dishID int64) error
 	AddDishToMenu(ctx context.Context, name string, price int64, description string) error
 	UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error
-
-	GetDishes(ctx context.Context) (*[]models.Dish, error)
 }
 
 type serv struct {

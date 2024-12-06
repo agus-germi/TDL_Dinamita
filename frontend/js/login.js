@@ -1,49 +1,47 @@
-//import jwt_decode from 'jwt-decode';
-
 document.getElementById('loginForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Evita el envío del formulario
+    event.preventDefault();
 
-    const email = document.getElementById('loginEmail').value; // Cambiar loginUsername a loginEmail
+    const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
     if (!email) {
         document.getElementById('loginMessage').innerText = 'El email es obligatorio.';
         return;
     }
-    
+
     if (!password) {
         document.getElementById('loginMessage').innerText = 'La contraseña es obligatoria.';
         return;
     }
 
-    fetch('http://localhost:8080/users/login', {
+    fetch('http://localhost:8080/api/v1/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), 
+        body: JSON.stringify({ email, password }),
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Error en el inicio de sesión');
+            return response.json().then(err => {
+                throw new Error(err.message || 'Error en el inicio de sesión');
+            });
         }
         return response.json();
     })
     .then(data => {
-
         localStorage.setItem('token', data.token);
 
-        // const token = localStorage.getItem('token');
-        // const decoded = jwt_decode(token);
-        // console.log("Decoded token:", decoded);
-        // const userId = decoded.user_id; 
-        // console.log("User ID:", userId);
+        const decodedToken = jwt_decode(data.token);
+        const userId = decodedToken.user_id || decodedToken.id;
+        const name = decodedToken.name;
+        console.log('ID del usuario: ' + userId);
+
+        localStorage.setItem('userId', userId);
+        localStorage.setItem('userName', name);
 
         document.getElementById('loginMessage').innerText = "Inicio de sesión exitoso";
-
-        //localStorage.setItem('username', data.name); // Guardar nombre de usuario en localStorage
-        //console.log('Usuario en storage: ' + localStorage.getItem('username'));
-        window.location.href = '/static/html/main.html'; // Redirigir a la página principal
+        window.location.href = '/static/html/main.html';
     })
     .catch(error => {
         document.getElementById('loginMessage').innerText = error.message;

@@ -61,11 +61,11 @@ END $$;
 INSERT INTO roles (id, name) VALUES (1, 'Admin');
 INSERT INTO roles (id, name) VALUES (2, 'User');
 
-INSERT INTO users (name, password, email, role_id) 
-VALUES ('Agus', '12345678', 'agerminario@fi.uba.ar', 1);
+INSERT INTO users (name, password, email, role_id)
+VALUES('agus', '$2a$14$qYw4gqHgSAObMdAraUZZ5.IVduI/6JJUze.WGYvs7fdViMyiOUBCG', 'agerminario@fi.uba.ar', 1);
 
 INSERT INTO users (name, password, email, role_id) 
-VALUES ('Valen', '12345678', 'vmorenofi.uba.ar', 1);
+VALUES('valen', '$2a$14$fd5pMYtyaB2Z0pFogjwUjuHQY2I7PL23YTCM3.NI83KqncMATlwbS', 'vmoreno@fi.uba.ar', 1);
 
 INSERT INTO users (name, password, email, role_id) 
-VALUES ('Seba', '12345678', 'skraglievich@fi.uba.ar', 1);
+VALUES('seba', '$2a$14$yeldkzqFM65K0qiCmlsCxuxBsEuKgwQThY89zz8M8NFURWLB1CH7u', 'skraglievich@fi.uba.ar', 1);

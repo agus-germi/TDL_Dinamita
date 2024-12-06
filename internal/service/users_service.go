@@ -46,12 +46,9 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 		return nil, err
 	}
 
-	// Admins don't have password (this is really insecure. We should hash the password when we create the admin user during the DB migration)
-	if usr.RoleID != adminRoleID {
-		err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
-		if err != nil {
-			return nil, ErrInvalidCredentials
-		}
+	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
+	if err != nil {
+		return nil, ErrInvalidCredentials
 	}
 
 	return &models.User{

@@ -31,6 +31,9 @@ FROM alpine:latest AS final
 # PostgreSQL client installation
 RUN apk add --no-cache postgresql-client
 
+# RUN apk update && apk add ca-certificates 
+# RUN update-ca-certificates
+
 # Copy binary file from build stage
 COPY --from=builder /output/linux/restaurant_system /usr/local/bin/restaurant_system
 

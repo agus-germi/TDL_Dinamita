@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
-    <title>Sistema de Reserva de Mesas - Página Principal</title>
+    <title>Gestión de Reservas</title>
 </head>
 <body>
     <header>
         <h1>Bienvenido al Sistema de Reserva de Mesas</h1>
         <nav>
+            <a href="/static/html/main.html">Inicio</a>
             <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
             <a href="/static/html/menu_digital.html">Menú Digital</a>
             <a href="/promotions">Promociones</a>
@@ -17,7 +18,7 @@
         </nav>
         
         <div class="user-info">
-            <input type="text" id="userName" readonly>
+            <input type="text" id="userName" readonly> 
             <button onclick="toggleDropdown()">⋮</button>
             <div class="dropdown" id="dropdownMenu">
                 <a href="../index.html">Cerrar Sesión</a>
@@ -49,6 +50,5 @@
             }
         }
     </script>
-
 </body>
 </html>
