@@ -439,6 +439,49 @@ func (a *API) RemoveDishFromMenu(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseMessage{Message: "Dish deleted successfully"})
 }
 
+func (a *API) UpdateDishInMenu(c echo.Context) error {
+	clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Update Dish in Menu] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Update Dish in Menu] Client Role ID:", clientRoleIDInt)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleID != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't assign a new role to a user"})
+	}
+
+	base := 10
+	bitSize := 64
+
+	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Update Dish In Menu] Parsed Dish ID:", dishID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
+	}
+
+	ctx := c.Request().Context()
+	params := dtos.DishDTO{} // uso el mismo DTO porque considero que se pueden modificar todos los campos del plato
+
+	err = c.Bind(&params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
+
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
+	err = a.serv.UpdateDish(ctx, dishID, params.Name, params.Price, params.Description)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while updating dish: %v")
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Dish updated successfully"})
+
+}
+
 func (a *API) GetDishesInMenu(c echo.Context) error {
 	ctx := c.Request().Context()
 	dishes, err := a.serv.GetDishes(ctx)

@@ -37,6 +37,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	menu.POST("", a.AddDishToMenu)
 	menu.DELETE("/:id", a.RemoveDishFromMenu)
 	menu.GET("", a.GetDishesInMenu)
+	menu.PATCH("/:id", a.UpdateDishInMenu)
 
 }
 

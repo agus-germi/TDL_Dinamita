@@ -9,11 +9,17 @@ import (
 )
 
 const (
-	qryInsertDish  = `INSERT INTO dishes (name, price, description) VALUES ($1, $2, $3)`
-	qryGetDish     = `SELECT name, price, description FROM dishes WHERE name=$1`
+	qryInsertDish = `INSERT INTO dishes (name, price, description) VALUES ($1, $2, $3)`
+
+	qryGetDish = `SELECT name, price, description FROM dishes WHERE name=$1`
+
 	qryGetDishByID = `SELECT name, price, description FROM dishes WHERE id=$1`
-	qryDeleteDish  = `DELETE FROM dishes WHERE id=$1`
-	qryGetDishes   = `SELECT * FROM dishes`
+
+	qryDeleteDish = `DELETE FROM dishes WHERE id=$1`
+
+	qryGetDishes = `SELECT * FROM dishes`
+
+	qryUpdateDish = `UPDATE dishes SET name=$1, price=$2, description=$3 WHERE id=$4`
 )
 
 func (r *repo) SaveDish(ctx context.Context, name string, price int64, description string) error {
@@ -55,6 +61,21 @@ func (r *repo) GetDishByID(ctx context.Context, dishID int64) (*entity.Dish, err
 
 	log.Printf("Dish retrieved successfully by ID: %d", dishID)
 	return &dish, nil
+}
+
+func (r *repo) UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error {
+	operation := func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, qryUpdateDish, name, price, description, dishID)
+		if err != nil {
+			r.log.Errorf("Failed to execute update user role query: %v", err)
+			return err
+		}
+
+		r.log.Infof("Dish (id=%d) updated successfully.", dishID)
+		return nil
+	}
+
+	return r.executeInTransaction(ctx, operation)
 }
 
 func (r *repo) RemoveDish(ctx context.Context, dishID int64) error {

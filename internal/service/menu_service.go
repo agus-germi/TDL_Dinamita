@@ -37,6 +37,15 @@ func (s *serv) RemoveDish(ctx context.Context, dishID int64) error {
 	return nil
 }
 
+func (s *serv) UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error {
+	dish, _ := s.repo.GetDishByID(ctx, dishID)
+	if dish == nil {
+		return ErrDishNotFound
+	}
+
+	return s.repo.UpdateDish(ctx, dishID, name, price, description)
+}
+
 // get all dishes from the database
 func (s *serv) GetDishes(ctx context.Context) (*[]models.Dish, error) {
 	dishes, err := s.repo.GetAllDishes(ctx)
