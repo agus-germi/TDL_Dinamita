@@ -8,8 +8,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const adminRoleID = 1
-
 var (
 	// User messages errors
 	ErrUserAlreadyExists  = errors.New("user already exists")
