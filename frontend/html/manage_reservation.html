@@ -12,7 +12,7 @@
         <nav>
             <a href="/static/html/main.html">Inicio</a>
             <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
-            <a href="/menu">Menú Digital</a>
+            <a href="/static/html/menu_digital.html">Menú Digital</a>
             <a href="/promotions">Promociones</a>
             <a href="/reviews">Opiniones</a>
         </nav>
@@ -98,11 +98,10 @@
         });
 
         document.getElementById('reservation-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Previene la recarga de la página al enviar el formulario.
+            event.preventDefault();
 
             const token = localStorage.getItem('token');
             const userId = localStorage.getItem('userId');
-
             if (!token) {
                 console.error("Token JWT no encontrado");
                 return;
@@ -112,17 +111,29 @@
             const time = document.getElementById('time').value;
             const tableNumber = document.getElementById('table').value;
 
-            console.log(date);
-            console.log(time);
-            console.log(tableNumber);
+            // Validaciones
+            const now = new Date(); 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); 
 
+            const selectedDate = new Date(`${date}T00:00:00`);
 
+            if (selectedDate < today) {
+                showModal("La fecha no puede ser anterior a hoy.");
+                return;
+            }
+
+            // Verifica si el horario es pasado en caso de ser hoy
+            const currentTime = now.toTimeString().slice(0, 5); 
+            if (selectedDate.getTime() === today.getTime() && time <= currentTime) {
+                showModal("No puedes elegir un horario pasado para hoy.");
+                return;
+            }
 
             const reservationData = {
-                reservation_date: `${date}T${time}Z`, // Combina la fecha y hora en formato ISO 8601.
+                reservation_date: `${date}T${time}Z`,
                 table_number: parseInt(tableNumber, 10),
             };
-            console.log(reservationData.reservation_date);
 
             fetch('http://localhost:8080/api/v1/reservations', {
                 method: 'POST',
