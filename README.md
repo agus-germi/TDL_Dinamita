@@ -25,6 +25,15 @@
         ```
     > **Aclaracion**: Esto es por el momento. A medida que vamos completando versiones del server, nos conviene contruir una imagen para cada version e ir subiendolas a un repositorio en docker hub. De esta forma cualquier persona puede hacer `docker pull <namespace:tag>` y se descarga localmente la imagen, para luego correrla en un contenedor. De esa forma nos aseguramos de que este usando una version valida del server.
 
+- To run the concurrency tests using k6 framework (make sure to run all the containers first):
+    ```sh
+    docker-compose exec k6 run /script.js
+    ```
+
+- To run the k6 container on interactive mode execute:
+    ```sh
+    docker-compose exec k6 sh
+    ```
 
 ### TODO
 

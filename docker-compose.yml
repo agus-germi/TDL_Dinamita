@@ -16,6 +16,8 @@ services:
                "echo 'Waiting for database...';
                timeout 60 sh -c 'until pg_isready -h db -p 5432; do sleep 1; done';
                exec /usr/local/bin/restaurant_system"]
+    networks:
+      - app-network
     # deploy:
     #   restart_policy:
     #     condition: on-failure
@@ -41,5 +43,24 @@ services:
     ports:
       - ${MAILHOG_PORT}:${MAILHOG_PORT} # Web UI for MailHog
       - ${SMTP_PORT}:${SMTP_PORT} # SMTP server
+
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ./testConcurrencyScripts:/scripts
+    # entrypoint: ["sh", "-c", 
+    #             "for script in /scripts/*.js;
+    #              do k6 run $script; done"]
+    entrypoint: ["k6", "run", "/scripts/reservation-load-test.js"]
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - app-network
+  
 volumes:
   postgres-data:
+
+networks:
+  app-network:
+    driver: bridge
