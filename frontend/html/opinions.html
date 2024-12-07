@@ -136,7 +136,6 @@
             const userName = localStorage.getItem('userName');
             const user_id = localStorage.getItem('userId');
 
-            // Validación de rating: asegurarse de que no esté vacío
             if (!rating || rating === '0') {
                 showModal('Please select a rating before submitting.');
                 return;  
@@ -165,7 +164,7 @@
             .then(() => {
                 fetchOpinions(); 
                 opinionForm.reset(); 
-                updateStars(0);  // Reset the stars after submitting
+                updateStars(0); 
             })
             .catch(error => {
                 console.error('Error submitting opinion:', error);
