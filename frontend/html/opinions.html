@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
-    <title>Table Reservation System - Main Page</title>
+    <title>Opinions</title>
 </head>
 <body>
     <header>
         <h1>Welcome to the Table Reservation System</h1>
         <nav>
             <a href="/static/html/main.html">Beginning</a>
-            <a href="/static/html/manage_reservation.html">Manage Reservations</a>
+            <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
             <a href="/static/html/menu_digital.html">Digital Menu</a>
-            <a href="/promotions">Promotions</a>
             <a href="/static/html/opinions.html">Opinions</a>
         </nav>
         
         <div class="user-info">
-            <input type="text" id="userName" readonly>
+            <input type="text" id="userName" readonly> 
             <button onclick="toggleDropdown()">⋮</button>
             <div class="dropdown" id="dropdownMenu">
                 <a href="../index.html">Sign Out</a>
@@ -26,10 +25,151 @@
         </div>
     </header>
 
+    <div class="container">
+        <h2>Leave Your Opinion</h2>
+
+        <form id="reservation-form">
+            <label for="opinionText">Your Opinion:</label>
+            <textarea id="opinionText" required placeholder="Share your thoughts here..."></textarea>
+            
+            <label for="stars">Rating:</label>
+            <div id="stars" class="stars">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+            </div>
+            
+            <input type="hidden" id="rating" name="rating" required />
+            
+            <button type="submit" class="logout-button">Submit Opinion</button>
+        </form>
+
+        <h2>Opinions from Users</h2>
+
+        <!-- Opinions Table -->
+        <table id="opinions-table" class="table-style">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Opinion</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="alert-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modal-message"></p>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const userName = localStorage.getItem('userName'); 
             document.getElementById('userName').value = userName;
+    
+            fetchOpinions(); 
+        });
+
+        function showModal(message) {
+            const modal = document.getElementById('alert-modal');
+            const modalMessage = document.getElementById('modal-message');
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('alert-modal');
+            modal.style.display = 'none';
+        }
+
+        function fetchOpinions() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error("JWT token not found");
+                return;
+            }
+
+            fetch('http://localhost:8080/api/v1/opinions', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateOpinionsTable(data);
+            })
+            .catch(error => {
+                console.error('Error fetching opinions:', error);
+            });
+        }
+
+        function populateOpinionsTable(opinions) {
+            const tableBody = document.querySelector('#opinions-table tbody');
+            tableBody.innerHTML = '';
+
+            opinions.forEach(opinion => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${opinion.user_name}</td>
+                    <td>${opinion.opinion}</td>
+                    <td>${'★'.repeat(opinion.rating)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        const opinionForm = document.getElementById('opinionForm');
+        opinionForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const opinionText = document.getElementById('opinionText').value;
+            const rating = document.getElementById('rating').value;
+            const userName = localStorage.getItem('userName');
+            const user_id = localStorage.getItem('userId');
+
+            // Validación de rating: asegurarse de que no esté vacío
+            if (!rating || rating === '0') {
+                showModal('Please select a rating before submitting.');
+                return;  
+            }
+
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error("JWT token not found");
+                return;
+            }
+
+            fetch('http://localhost:8080/api/v1/opinions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_id,
+                    opinion: opinionText,
+                    rating: parseInt(rating)
+                })
+            })
+            .then(response => response.json())
+            .then(() => {
+                fetchOpinions(); 
+                opinionForm.reset(); 
+                updateStars(0);  // Reset the stars after submitting
+            })
+            .catch(error => {
+                console.error('Error submitting opinion:', error);
+            });
         });
 
         function toggleDropdown() {
@@ -48,7 +188,27 @@
                 }
             }
         }
-    </script>
 
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('rating');
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                ratingInput.value = value;
+                updateStars(value);
+            });
+        });
+
+        function updateStars(rating) {
+            stars.forEach(star => {
+                const starValue = star.getAttribute('data-value');
+                if (starValue <= rating) {
+                    star.classList.add('filled');
+                } else {
+                    star.classList.remove('filled');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

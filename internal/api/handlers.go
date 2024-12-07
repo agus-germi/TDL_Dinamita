@@ -598,30 +598,35 @@ func (a *API) GetTimeSlots(c echo.Context) error {
 
 //Opinions endpoints
 func (a *API) CreateOpinion(c echo.Context) error {
+    clientUserID, ok := c.Get("user_id").(float64)
+    if !ok {
+        a.log.Errorf("[Create Opinion] Invalid client user ID in context")
+        return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+    }
+    clientUserIDInt := int64(clientUserID)
+    a.log.Debugf("[Create Opinion] Client User ID: %d", clientUserIDInt)
+
     params := dtos.CreateOpinionDTO{}
-    
     err := c.Bind(&params)
     if err != nil {
+        a.log.Errorf("[Create Opinion] Error parsing request body: %v", err)
         return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
     }
 
     err = a.dataValidator.Struct(params)
     if err != nil {
+        a.log.Errorf("[Create Opinion] Validation error: %v", err)
         return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
     }
 
     ctx := c.Request().Context()
-
-    opinion := models.Opinion{
-		UserID:  params.UserID,
-        Opinion: params.Opinion,
-    }
-
-    err = a.serv.CreateOpinion(ctx, opinion)
+    err = a.serv.CreateOpinion(ctx, clientUserIDInt, params.Opinion, params.Rating)
     if err != nil {
+        a.log.Errorf("[Create Opinion] Error while creating opinion: %v", err)
         return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
     }
 
+    // Responder al cliente
     return c.JSON(http.StatusCreated, responseMessage{Message: "Opinion created successfully"})
 }
 

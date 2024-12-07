@@ -9,17 +9,17 @@ import (
 )
 
 const (
-    qryInsertOpinion   = `INSERT INTO opinions (user_id, opinion) VALUES ($1, $2)`
-    qryGetOpinions     = `SELECT o.id, o.user_id, u.name, o.opinion 
+    qryInsertOpinion   = `INSERT INTO opinions (user_id, opinion, rating) VALUES ($1, $2, $3)`
+    qryGetOpinions     = `SELECT o.id, o.user_id, u.name, o.opinion, o.rating
                             FROM opinions o, users u 
                             WHERE o.user_id = u.id`
 )
 
-func (r *repo) SaveOpinion(ctx context.Context, userID int64, opinion string) error {
-    log.Printf("Received user_id: %d, opinion: %s", userID, opinion)
+func (r *repo) SaveOpinion(ctx context.Context, userID int64, opinion string, rating int) error {
+    log.Printf("Received user_id: %d, opinion: %s, rating: %d", userID, opinion, rating)
 
     operation := func(tx pgx.Tx) error {
-        _, err := tx.Exec(ctx, qryInsertOpinion, userID, opinion)
+        _, err := tx.Exec(ctx, qryInsertOpinion, userID, opinion, rating)
         if err != nil {
             log.Printf("Failed to insert opinion: %v", err)
             return err
@@ -44,7 +44,7 @@ func (r *repo) GetAllOpinions(ctx context.Context) (*[]entity.Opinion, error) {
     opinions := []entity.Opinion{}
     for rows.Next() {
         var opinion entity.Opinion
-        if err := rows.Scan(&opinion.ID, &opinion.UserID, &opinion.Name, &opinion.Opinion); err != nil {
+        if err := rows.Scan(&opinion.ID, &opinion.UserID, &opinion.Name, &opinion.Opinion, &opinion.Rating); err != nil {
             log.Printf("Failed to scan row: %v", err)
             return nil, err
         }

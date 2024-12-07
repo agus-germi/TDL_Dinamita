@@ -5,4 +5,5 @@ type Opinion struct {
     UserID  int64  `json:"user_id"`
     Name    string `json:"name"`
     Opinion string `json:"opinion"`
+    Rating  int    `json:"rating"`
 }

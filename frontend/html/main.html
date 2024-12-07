@@ -7,20 +7,21 @@
     <title>Table Reservation System - Main Page</title>
 </head>
 <body>
-    <header>
-        <h1>Welcome to the Table Reservation System</h1>
-        <nav>
-            <a href="/static/html/manage_reservation.html">Manage Reservations</a>
-            <a href="/static/html/menu_digital.html">Digital Menu</a>
-            <a href="/promotions">Promotions</a>
-            <a href="/static/html/opinions.html">Opinions</a>
-        </nav>
-        
-        <div class="user-info">
-            <input type="text" id="userName" readonly>
-            <button onclick="toggleDropdown()">⋮</button>
-            <div class="dropdown" id="dropdownMenu">
-                <a href="../index.html">Sign Out</a>
+    <header class="header-inicio">
+        <div>
+            <h1>Welcome to the Table Reservation System</h1>
+            <nav>
+                <a href="/static/html/manage_reservation.html">Manage Reservations</a>
+                <a href="/static/html/menu_digital.html">Digital Menu</a>
+                <a href="/static/html/opinions.html">Opinions</a>
+            </nav>
+            
+            <div class="user-info">
+                <input type="text" id="userName" readonly>
+                <button onclick="toggleDropdown()">⋮</button>
+                <div class="dropdown" id="dropdownMenu">
+                    <a href="../index.html">Sign Out</a>
+                </div>
             </div>
         </div>
     </header>

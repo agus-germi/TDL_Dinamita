@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS dishes (
 CREATE TABLE IF NOT EXISTS opinions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT null,
-    opinion TEXT
+    opinion TEXT,
+    rating INT NOT null
 );
 
 -- Agregamos horarios fijos de manera dinamica 

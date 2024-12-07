@@ -7,6 +7,24 @@ body {
 
 }
 
+.header-inicio{
+    background-color: #007bff; 
+    color: white; 
+    height: 100vh;  
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    text-align: center;
+    padding: 0 20px; 
+}
+
+.header-inicio > div {
+    border: 3px solid white;  
+    padding: 20px;  
+    border-radius: 10px; 
+}
+
 header {
     background-color: #007bff;
     color: white;
@@ -74,6 +92,7 @@ nav a {
     background: white;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 h2 {
@@ -138,7 +157,6 @@ footer {
     background-color: #218838;
 }
 
-/* Estilo del formulario */
 #reservation-form {
     padding: 15px;
     background-color: #f8f9fa;
@@ -153,7 +171,16 @@ footer {
     font-weight: bold;
 }
 
-#reservation-form input,
+#reservation-form input{
+    width: 98%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+
 #reservation-form select {
     width: 100%;
     padding: 8px;
@@ -163,36 +190,7 @@ footer {
     font-size: 14px;
 }
 
-/* Estilo de la grilla de reservas */
-/* #reservation-list {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: white;
-    border-radius: 5px;
-    overflow: hidden;
-}
 
-#reservation-list th,
-#reservation-list td {
-    text-align: left;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-#reservation-list th {
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 14px;
-}
-
-#reservation-list tr:hover {
-    background-color: #f1f1f1;
-} */
-
-/* Botones de acción en la grilla */
 .action-button {
     border: none;
     padding: 5px 10px;
@@ -309,4 +307,51 @@ footer {
 
 .table-style tr:hover {
     background-color: #f1f1f1;
+}
+
+
+textarea {
+    width: 742px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    height: 120px;
+}
+
+#stars {
+    font-size: 30px;
+    color: #ccc;
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+#stars .star {
+    transition: color 0.3s ease;
+}
+
+#stars .star.selected {
+    color: gold;
+}
+
+#stars .star:focus {
+    outline: none;
+}
+
+textarea::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+.star {
+    font-size: 30px;
+    cursor: pointer;
+    color: lightgray;
+}
+
+.star.filled {
+    color: gold;
 }
