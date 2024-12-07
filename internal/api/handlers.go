@@ -244,11 +244,14 @@ func (a *API) CreateReservation(c echo.Context) error {
 
 	a.log.Debugf("[Create Reservation] Reservation Date:", reservationDate)
 
-	ctx := c.Request().Context() // obtengo el contexto del objeto Request que viene con la petición HTTP
+	ctx := c.Request().Context()
+	start := time.Now()
 	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate)
 	if err != nil {
 		return a.handleErrorFromService(c, err, "Error during reservation registration: %v")
 	}
+	duration := time.Since(start)
+	a.log.Infof("[Create Reservation] Reservation registered in %v", duration)
 
 	emailBody := fmt.Sprintf(
 		"Hello!<br><br>Your reservation for table %d on %s has been confirmed.<br>Thank you!",
