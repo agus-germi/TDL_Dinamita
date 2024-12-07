@@ -45,6 +45,12 @@ CREATE TABLE IF NOT EXISTS dishes (
     description TEXT -- Descripcion del plato
 );
 
+CREATE TABLE IF NOT EXISTS opinions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT null,
+    opinion TEXT
+);
+
 -- Agregamos horarios fijos de manera dinamica 
 -- Turnos desde las 12:00 hasta las 22:00 - considerando que cada turno es de 2hs
 DO $$

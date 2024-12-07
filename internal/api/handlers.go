@@ -595,3 +595,45 @@ func (a *API) GetTimeSlots(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dtoTimeSlots)
 }
+
+//Opinions endpoints
+func (a *API) CreateOpinion(c echo.Context) error {
+    params := dtos.CreateOpinionDTO{}
+    
+    err := c.Bind(&params)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+    }
+
+    err = a.dataValidator.Struct(params)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+    }
+
+    ctx := c.Request().Context()
+
+    opinion := models.Opinion{
+		UserID:  params.UserID,
+        Opinion: params.Opinion,
+    }
+
+    err = a.serv.CreateOpinion(ctx, opinion)
+    if err != nil {
+        return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
+    }
+
+    return c.JSON(http.StatusCreated, responseMessage{Message: "Opinion created successfully"})
+}
+
+func (a *API) GetOpinions(c echo.Context) error {
+    ctx := c.Request().Context()
+
+    // Fetch all opinions (you could add filters here if needed)
+    opinions, err := a.serv.GetOpinions(ctx)
+    if err != nil {
+        return a.handleErrorFromService(c, err, "Error while fetching opinions: %v")
+    }
+
+    return c.JSON(http.StatusOK, opinions)
+}
+

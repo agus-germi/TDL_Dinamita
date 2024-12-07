@@ -164,7 +164,7 @@ footer {
 }
 
 /* Estilo de la grilla de reservas */
-#reservation-list {
+/* #reservation-list {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
@@ -190,7 +190,7 @@ footer {
 
 #reservation-list tr:hover {
     background-color: #f1f1f1;
-}
+} */
 
 /* Botones de acción en la grilla */
 .action-button {
@@ -280,4 +280,33 @@ footer {
     font-size: 20px;
     color: #333;
     cursor: pointer;
+}
+
+
+.table-style {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.table-style th,
+.table-style td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-style th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.table-style tr:hover {
+    background-color: #f1f1f1;
 }

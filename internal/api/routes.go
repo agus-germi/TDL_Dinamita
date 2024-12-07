@@ -43,6 +43,11 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	// Group routes for /time_slots under /api/v1
 	timeSlots := api.Group("/time_slots")
 	timeSlots.GET("", a.GetTimeSlots)
+
+	// Group routes for /opinions under /api/v1
+	opinions := api.Group("/opinions")
+	opinions.GET("", a.GetOpinions)
+	opinions.POST("", a.CreateOpinion)
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".

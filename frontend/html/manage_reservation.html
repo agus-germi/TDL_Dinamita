@@ -4,67 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
-    <title>Gestión de Reservas</title>
+    <title>Reservations Management</title>
 </head>
 <body>
     <header>
-        <h1>Bienvenido al Sistema de Reserva de Mesas</h1>
+        <h1>Welcome to the Table Reservation System</h1>
         <nav>
-            <a href="/static/html/main.html">Inicio</a>
-            <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
-            <a href="/static/html/menu_digital.html">Menú Digital</a>
-            <a href="/promotions">Promociones</a>
-            <a href="/reviews">Opiniones</a>
+            <a href="/static/html/main.html">Beginning</a>
+            <a href="/static/html/manage_reservation.html">Manage Reservations</a>
+            <a href="/static/html/menu_digital.html">Digital Menu</a>
+            <a href="/promotions">Promotions</a>
+            <a href="/static/html/opinions.html">Opinions</a>
         </nav>
         
         <div class="user-info">
             <input type="text" id="userName" readonly> 
             <button onclick="toggleDropdown()">⋮</button>
             <div class="dropdown" id="dropdownMenu">
-                <a href="../index.html">Cerrar Sesión</a>
+                <a href="../index.html">Sign Out</a>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <h2>Gestión de Reservas</h2>
+        <h2>Reservations Management</h2>
   
         <!-- Botón para agregar una nueva reserva -->
-        <button id="add-reservation" class="logout-button" onclick="toggleReservationForm()">Reservar</button>
+        <button id="add-reservation" class="logout-button" onclick="toggleReservationForm()">Reserve</button>
   
         <!-- Formulario de reserva -->
         <form id="reservation-form" style="display: none; margin-top: 20px;">
             <div>
-                <label for="date">Fecha:</label>
+                <label for="date">Date:</label>
                 <input type="date" id="date" name="date" required>
             </div>
             <div>
-                <label for="time">Hora:</label>
+                <label for="time">Hour:</label>
                 <select id="time" name="time" required>
                 </select>
             </div>
             <div>
-                <label for="table">Mesa:</label>
+                <label for="table">Table:</label>
                 <select id="table" name="table" required>
                 </select>
             </div>
-            <button type="submit" class="logout-button">Reservar</button>
+            <button type="submit" class="logout-button">Reserve</button>
         </form>
   
         <!-- Confirmación -->
         <div id="confirmation" style="display: none; margin-top: 20px; color: green;">
-            ¡Reserva realizada con éxito!
+            Reservation made successfully!
         </div>
   
         <!-- Grilla de reservas -->
-        <h3>Tus Reservas</h3>
-        <table id="reservation-list" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <h3>Your Reservations</h3>
+        <table id="reservation-list" class="table-style">
             <thead>
                 <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Mesa</th>
-                    <th>Acciones</th>
+                    <th>Date</th>
+                    <th>Hour</th>
+                    <th>Table</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -103,7 +103,7 @@
             const token = localStorage.getItem('token');
             const userId = localStorage.getItem('userId');
             if (!token) {
-                console.error("Token JWT no encontrado");
+                console.error("JWT token not found");
                 return;
             }
 
@@ -119,14 +119,14 @@
             const selectedDate = new Date(`${date}T00:00:00`);
 
             if (selectedDate < today) {
-                showModal("La fecha no puede ser anterior a hoy.");
+                showModal("The date cannot be earlier than today.");
                 return;
             }
 
             // Verifica si el horario es pasado en caso de ser hoy
             const currentTime = now.toTimeString().slice(0, 5); 
             if (selectedDate.getTime() === today.getTime() && time <= currentTime) {
-                showModal("No puedes elegir un horario pasado para hoy.");
+                showModal("You cannot choose a past time for today.");
                 return;
             }
 
@@ -152,16 +152,15 @@
                 return response.json(); // Convierte la respuesta a JSON.
             })
             .then(data => {
-                showModal(data.message || 'Reserva realizada con éxito');
-                fetchReservations(userId); // Actualiza la tabla de reservas.
-                toggleReservationForm(); // Cierra el formulario.
+                showModal(data.message || 'Reservation made successfully');
+                fetchReservations(userId);
+                toggleReservationForm();
             })
             .catch(error => {
-                console.error('Error al realizar la reserva:', error);
-                showModal(`Error al realizar la reserva: ${error.message}`);
+                console.error('Error when making reservation:', error);
+                showModal(`Error when making reservation: ${error.message}`);
             });
         });
-
 
         function toggleDropdown() {
             const dropdown = document.getElementById('dropdownMenu');
@@ -183,7 +182,7 @@
         function fetchReservations(userId) {
             const token = localStorage.getItem('token'); 
             if (!token) {
-                console.error("Token JWT no encontrado");
+                console.error("JWT token not found");
                 return;
             }
 
@@ -191,20 +190,20 @@
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Enviar el token JWT en el encabezado
+                    'Authorization': `Bearer ${token}` 
                 },
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                    throw new Error(`Request error: ${response.statusText}`);
                 }
-                return response.json(); // Convierte la respuesta a JSON
+                return response.json();
             })
             .then(data => {
-                populateReservationTable(data); // Procesa las reservas
+                populateReservationTable(data); 
             })
             .catch(error => {
-                console.error('Error al obtener las reservas:', error);
+                console.error('Error obtaining reservations:', error);
             });
             }
 
@@ -219,11 +218,11 @@
                 const row = document.createElement('tr');
 
                 row.innerHTML = `
-                    <td>${date}</td> <!-- Muestra la fecha correctamente -->
-                    <td>${time.split("Z")[0]}</td> <!-- Muestra la hora sin la parte Z -->
+                    <td>${date}</td> 
+                    <td>${time.split("Z")[0]}</td> 
                     <td>${reservation.table_number}</td>
                     <td>
-                        <button onclick="cancelReservation(${reservation.id})">Cancelar</button>
+                        <button onclick="cancelReservation(${reservation.id})">Cancel</button>
                     </td>
                 `;
 
@@ -236,7 +235,7 @@
             const userId = localStorage.getItem('userId');
 
             if (!token) {
-                console.error("Token JWT no encontrado");
+                console.error("JWT token not found");
                 return;
             }
 
@@ -249,7 +248,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                    throw new Error(`Request error: ${response.statusText}`);
                 }
                 return response.json();  
             })
@@ -258,12 +257,12 @@
                 if (data.message) { 
                     showModal(data.message);
                 } else {
-                    showModal('Reserva cancelada con éxito');
+                    showModal('Reservation successfully canceled');
                 }
                 fetchReservations(userId);  
             })
             .catch(error => {
-                console.error('Error al cancelar la reserva:', error);
+                console.error('Error canceling reservation:', error);
             });
         }
 
@@ -282,7 +281,7 @@
         function fetchAvailableTimes() {
             const token = localStorage.getItem('token'); 
             if (!token) {
-                console.error("Token JWT no encontrado");
+                console.error("JWT token not found");
                 return;
             }
 
@@ -295,7 +294,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                    throw new Error(`Request error: ${response.statusText}`);
                 }
                 return response.json(); 
             })
@@ -303,7 +302,7 @@
                 populateTimeSelect(data);
             })
             .catch(error => {
-                console.error('Error al obtener las horas disponibles:', error);
+                console.error('Error getting available hours:', error);
             });
         }
 
@@ -322,7 +321,7 @@
         function fetchAvailableTables() {
             const token = localStorage.getItem('token'); 
             if (!token) {
-                console.error("Token JWT no encontrado");
+                console.error("JWT token not found");
                 return;
             }
 
@@ -335,7 +334,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                    throw new Error(`Request error: ${response.statusText}`);
                 }
                 return response.json(); 
             })
@@ -343,7 +342,7 @@
                 populateTableSelect(data);
             })
             .catch(error => {
-                console.error('Error al obtener las mesas disponibles:', error);
+                console.error('Error getting available tables:', error);
             });
         }
 
@@ -354,7 +353,7 @@
             tables.forEach(table => {
                 const option = document.createElement('option');
                 option.value = table.number
-                option.textContent = `Mesa ${table.number} - ${table.seats} asientos`;
+                option.textContent = `Table ${table.number} - ${table.seats} seats - ${table.location}`;
                 tableSelect.appendChild(option);
             });
         }

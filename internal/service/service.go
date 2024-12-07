@@ -24,6 +24,8 @@ type Service interface {
 	GetDishes(ctx context.Context) (*[]models.Dish, error)
 	GetAvailableTables(ctx context.Context) (*[]models.Table, error)
 	GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error)
+	CreateOpinion(ctx context.Context, opinion models.Opinion) error
+	GetOpinions(ctx context.Context) (*[]models.Opinion, error)
 
 	// Admin features
 	UpdateUserRole(ctx context.Context, userID, newRoleID int64) error
