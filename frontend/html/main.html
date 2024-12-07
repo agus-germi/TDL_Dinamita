@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
-    <title>Sistema de Reserva de Mesas - Página Principal</title>
+    <title>Table Reservation System - Main Page</title>
 </head>
 <body>
-    <header>
-        <h1>Bienvenido al Sistema de Reserva de Mesas</h1>
-        <nav>
-            <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
-            <a href="/static/html/menu_digital.html">Menú Digital</a>
-            <a href="/promotions">Promociones</a>
-            <a href="/reviews">Opiniones</a>
-        </nav>
-        
-        <div class="user-info">
-            <input type="text" id="userName" readonly>
-            <button onclick="toggleDropdown()">⋮</button>
-            <div class="dropdown" id="dropdownMenu">
-                <a href="../index.html">Cerrar Sesión</a>
+    <header class="header-inicio">
+        <div>
+            <h1>Welcome to the Table Reservation System</h1>
+            <nav>
+                <a href="/static/html/manage_reservation.html">Manage Reservations</a>
+                <a href="/static/html/menu_digital.html">Digital Menu</a>
+                <a href="/static/html/opinions.html">Opinions</a>
+            </nav>
+            
+            <div class="user-info">
+                <input type="text" id="userName" readonly>
+                <button onclick="toggleDropdown()">⋮</button>
+                <div class="dropdown" id="dropdownMenu">
+                    <a href="../index.html">Sign Out</a>
+                </div>
             </div>
         </div>
     </header>
@@ -36,7 +37,6 @@
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Cerrar el menú si se hace clic fuera de él
         window.onclick = function(event) {
             if (!event.target.matches('.user-info button')) {
                 const dropdowns = document.getElementsByClassName("dropdown");

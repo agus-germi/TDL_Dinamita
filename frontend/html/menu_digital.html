@@ -4,40 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
-    <title>Gestión de Reservas</title>
+    <title>Digital Menu</title>
 </head>
 <body>
     <header>
-        <h1>Bienvenido al Sistema de Reserva de Mesas</h1>
+        <h1>Welcome to the Table Reservation System</h1>
         <nav>
-            <a href="/static/html/main.html">Inicio</a>
-            <a href="/static/html/manage_reservation.html">Gestionar Reservas</a>
-            <a href="/static/html/menu_digital.html">Menú Digital</a>
-            <a href="/promotions">Promociones</a>
-            <a href="/reviews">Opiniones</a>
+            <a href="/static/html/main.html">Beginning</a>
+            <a href="/static/html/manage_reservation.html">Manage Reservations</a>
+            <a href="/static/html/menu_digital.html">Digital Menu</a>
+            <a href="/static/html/opinions.html">Opinions</a>
         </nav>
         
         <div class="user-info">
             <input type="text" id="userName" readonly> 
             <button onclick="toggleDropdown()">⋮</button>
             <div class="dropdown" id="dropdownMenu">
-                <a href="../index.html">Cerrar Sesión</a>
+                <a href="../index.html">Sign Out</a>
             </div>
         </div>
     </header>
+
+    <div class="container">
+        <h2>Menu</h2>
+        <table id="menu-table" class="table-style">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const userName = localStorage.getItem('userName'); 
             document.getElementById('userName').value = userName;
+    
+            fetchDishes(); 
         });
-
+    
+        function fetchDishes() {
+            const token = localStorage.getItem('token'); 
+            if (!token) {
+                console.error("JWT token not found");
+                return;
+            }
+    
+            fetch('http://localhost:8080/api/v1/menu', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Request error: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                populateMenuTable(data); 
+            })
+            .catch(error => {
+                console.error('Error getting menu:', error);
+            });
+        }
+    
+        function populateMenuTable(dishes) {
+            const tableBody = document.querySelector('#menu-table tbody');
+            tableBody.innerHTML = '';
+    
+            dishes.forEach(dish => {
+                const row = document.createElement('tr');
+    
+                row.innerHTML = `
+                    <td>${dish.name}</td>
+                    <td>${dish.price}</td>
+                    <td>${dish.description}</td>
+                `;
+    
+                tableBody.appendChild(row);
+            });
+        }
+    
         function toggleDropdown() {
             const dropdown = document.getElementById('dropdownMenu');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
-
-        // Cerrar el menú si se hace clic fuera de él
+    
         window.onclick = function(event) {
             if (!event.target.matches('.user-info button')) {
                 const dropdowns = document.getElementsByClassName("dropdown");

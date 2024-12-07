@@ -47,6 +47,10 @@ type Repository interface {
 
 	//Time slots
 	GetTimeSlots(ctx context.Context) (*[]entity.TimeSlot, error)
+	
+	// Opinion
+	SaveOpinion(ctx context.Context, userID int64, opinion string, rating int) error
+	GetAllOpinions(ctx context.Context) (*[]entity.Opinion, error)
 }
 
 type repo struct {
