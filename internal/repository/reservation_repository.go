@@ -2,6 +2,7 @@ package repository
 
 import (
 	context "context"
+	"fmt"
 	"time"
 
 	"errors"
@@ -10,7 +11,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-var ErrReservationNotFound = errors.New("reservation not found")
+var (
+	ErrReservationNotFound = errors.New("reservation not found")
+	ErrTableNotAvailable   = errors.New("table not available")
+)
 
 const (
 	invalidTimeSlotID    = -1
@@ -23,16 +27,22 @@ const (
 								WHERE r.reserved_by=$1
 								ORDER BY r.date, ts.time`
 
-	qryGetReservationByID = `SELECT *
+	qryGetReservationByID = `SELECT id
 							FROM reservations
 							WHERE id=$1`
+
+	qryGetReservationForUpdateByID = `SELECT id
+							FROM reservations
+							WHERE id=$1
+							FOR UPDATE`
 
 	qryRemoveReservation = `DELETE FROM reservations
 							WHERE id=$1`
 
-	qryGetReservationByTableNumberAndDate = `SELECT *
+	qryGetReservationByTableNumberAndDate = `SELECT id
 											FROM reservations
-											WHERE table_number=$1 AND date=$2 AND time_slot_id=$3`
+											WHERE table_number=$1 AND date=$2 AND time_slot_id=$3
+											FOR UPDATE`
 
 	qryGetTimeSlotID = `SELECT id
 						FROM time_slots
@@ -41,7 +51,6 @@ const (
 	qryGetTimeSlots = `SELECT id, time 
 					  FROM time_slots 
 					  ORDER BY time`
-
 )
 
 // TODO: Investigate how to use SELECT ... FOR UPDATE (to lock the row in the table) and UPDATE ... SET ... WHERE ... (to update the row in the table)
@@ -59,14 +68,26 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 	// ampliamente en la web, por lo que es una representación adecuada
 	// para el formato ISO 8601.
 	operation := func(tx pgx.Tx) error {
-		time_slot_id, err := r.getTimeSlotID(ctx, date)
+		timeSlotID, err := r.getTimeSlotIDInTx(ctx, tx, date)
 		if err != nil {
 			return err
 		}
 
 		formattedDate := date.Format("2006-01-02")
 
-		_, err = tx.Exec(ctx, qryInsertReservation, userID, tableNumber, formattedDate, time_slot_id)
+		// Check availability
+		var existingReservationID int64
+		err = tx.QueryRow(ctx, qryGetReservationByTableNumberAndDate, tableNumber, formattedDate, timeSlotID).Scan(&existingReservationID)
+		if err == nil {
+			// If there's no error, it means that the reservation already exists
+			r.log.Debugf("Table %d is already reserved for the date %s and the time %s", tableNumber, formattedDate, date.Format("15:04"))
+			return fmt.Errorf("table %d is already reserved for the date %s and the time %s", tableNumber, formattedDate, date.Format("15:04"))
+		} else if err != pgx.ErrNoRows {
+			r.log.Errorf("Failed to execute select reservation (by table number, date and time slot id): %v", err)
+			return fmt.Errorf("error checking existing reservations: %w", err)
+		}
+
+		_, err = tx.Exec(ctx, qryInsertReservation, userID, tableNumber, formattedDate, timeSlotID)
 		if err != nil {
 			r.log.Errorf("Failed to execute insert reservation query: %v", err)
 			return err
@@ -81,18 +102,26 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 
 func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error {
 	operation := func(tx pgx.Tx) error {
-		result, err := tx.Exec(ctx, qryRemoveReservation, reservationID)
+		// lock reservation row in the table
+		var id int64
+		err := tx.QueryRow(ctx, qryGetReservationForUpdateByID, reservationID).Scan(&id)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				r.log.Errorf("No rows were found by get reservation by ID query: %v", err)
+				return ErrReservationNotFound
+			}
+
+			r.log.Errorf("Failed to execute select reservation (by ID): %v", err)
+			return err
+		}
+
+		_, err = tx.Exec(ctx, qryRemoveReservation, reservationID)
 		if err != nil {
 			r.log.Errorf("Failed to execute delete reservation query: %v", err)
 			return err
 		}
 
-		if result.RowsAffected() == 0 {
-			r.log.Errorf("No rows were affected by the delete query: %v", ErrReservationNotFound)
-			return ErrReservationNotFound // Custom error if no rows were deleted (maybe it could be "reservation doesn't exist")
-		}
-
-		r.log.Infof("Reservation (%d) removed successfully.", reservationID)
+		r.log.Infof("Reservation (ID: %d) removed successfully.", reservationID)
 		return nil
 	}
 
@@ -140,35 +169,17 @@ func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*en
 	return &rsv, nil
 }
 
-func (r *repo) GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) {
-	time_slot_id, err := r.getTimeSlotID(ctx, date)
-	if err != nil {
-		return nil, err
-	}
-
-	formattedDate := date.Format("2006-01-02")
-	rsv := entity.Reservation{}
-	err = r.db.QueryRow(ctx, qryGetReservationByTableNumberAndDate, tableNumber, formattedDate, time_slot_id).Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.Time)
-	if err != nil {
-		r.log.Errorf("Failed to execute select reservation (by table number, date and time slot id): %v", err)
-		return nil, err
-	}
-
-	r.log.Debugf("Reservation retrieved successfully for table number %d on date %s and time %s.", tableNumber, formattedDate, date.Format("15:04"))
-	return &rsv, nil
-}
-
-func (r *repo) getTimeSlotID(ctx context.Context, date time.Time) (int64, error) {
-	var time_slot_id int64
+func (r *repo) getTimeSlotIDInTx(ctx context.Context, tx pgx.Tx, date time.Time) (int64, error) {
+	var timeSlotID int64
 	formattedTime := date.Format("15:04")
-	err := r.db.QueryRow(ctx, qryGetTimeSlotID, formattedTime).Scan(&time_slot_id)
+	err := tx.QueryRow(ctx, qryGetTimeSlotID, formattedTime).Scan(&timeSlotID)
 	if err != nil {
-		r.log.Errorf("Failed to execute select time slot id: %v", err)
+		r.log.Errorf("Failed to execute select time slot ID: %v", err)
 		return invalidTimeSlotID, err
 	}
 
-	r.log.Debugf("Time slot ID (%d) retrieved successfully for time %s.", time_slot_id, formattedTime)
-	return time_slot_id, nil
+	r.log.Debugf("Time slot ID (%d) retrieved successfully for time %s.", timeSlotID, formattedTime)
+	return timeSlotID, nil
 }
 
 func (r *repo) GetTimeSlots(ctx context.Context) (*[]entity.TimeSlot, error) {

@@ -6,6 +6,7 @@ import (
 	time "time"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
+	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 )
 
 var (
@@ -16,12 +17,12 @@ var (
 )
 
 func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
-	rsv, _ := s.repo.GetReservationByTableNumberAndDate(ctx, tableNumber, date)
-	if rsv != nil {
+	err := s.repo.SaveReservation(ctx, userID, tableNumber, date)
+	if err == repository.ErrTableNotAvailable {
 		return ErrTableNotAvailable
 	}
 
-	return s.repo.SaveReservation(ctx, userID, tableNumber, date)
+	return err
 }
 
 func (s *serv) CancelReservation(ctx context.Context, reservationID int64) error {
@@ -94,29 +95,26 @@ func (s *serv) GetReservationByID(ctx context.Context, reservationID int64) (*mo
 }
 
 func (s *serv) GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error) {
-    entityTimeSlots, err := s.repo.GetTimeSlots(ctx)
-    if err != nil {
-        s.log.Errorf("Failed to get time slots: %v", err)
-        return nil, err
-    }
+	entityTimeSlots, err := s.repo.GetTimeSlots(ctx)
+	if err != nil {
+		s.log.Errorf("Failed to get time slots: %v", err)
+		return nil, err
+	}
 
-    if entityTimeSlots == nil {
-        return &[]models.TimeSlot{}, nil
-    }
+	if entityTimeSlots == nil {
+		return &[]models.TimeSlot{}, nil
+	}
 
-    modelTimeSlots := make([]models.TimeSlot, len(*entityTimeSlots))
-    for i, entityTimeSlot := range *entityTimeSlots {
-        modelTimeSlots[i] = models.TimeSlot{
-            ID:   entityTimeSlot.ID,
-            Time: entityTimeSlot.Time.Format("15:04:05"), // Formateo directamente aquí
-        }
-    }
+	modelTimeSlots := make([]models.TimeSlot, len(*entityTimeSlots))
+	for i, entityTimeSlot := range *entityTimeSlots {
+		modelTimeSlots[i] = models.TimeSlot{
+			ID:   entityTimeSlot.ID,
+			Time: entityTimeSlot.Time.Format("15:04:05"), // Formateo directamente aquí
+		}
+	}
 
-    return &modelTimeSlots, nil
+	return &modelTimeSlots, nil
 }
-
-
-
 
 // Combine date (format YYYY-MM-DD) and _time (format HH:mm) in a single string that comply ISO 8601
 // func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {

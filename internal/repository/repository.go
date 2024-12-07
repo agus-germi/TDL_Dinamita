@@ -36,9 +36,6 @@ type Repository interface {
 	RemoveReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]entity.Reservation, error)
 	GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error)
-	GetReservationByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*entity.Reservation, error) // Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
-	//GetReservationsByTableNumberAndDate(ctx context.Context, tableNumber int64, date time.Time) (*[]entity.Reservation, error) // Este metodo deberia devolver todas las reservas hechas de una mesa en el dia determinado (deberia llamarse GetReservationsByTableNumberAndDate)
-	//CheckTableAvailability(ctx context.Context, tableNumber int64, reservationDate time.Time) (bool, error)
 
 	//Menu
 	SaveDish(ctx context.Context, name string, price int64, description string) error
