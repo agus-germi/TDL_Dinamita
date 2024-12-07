@@ -7,6 +7,7 @@ import (
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 	"github.com/agus-germi/TDL_Dinamita/logger"
+	"github.com/agus-germi/TDL_Dinamita/utils"
 )
 
 // Service is the bussiness logic of the application
@@ -34,6 +35,8 @@ type Service interface {
 	UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error
 }
 
+var maxDBOperationsDuration time.Duration
+
 type serv struct {
 	repo repository.Repository
 	log  logger.Logger
@@ -45,4 +48,22 @@ func New(repo repository.Repository, log logger.Logger) Service {
 		repo: repo,
 		log:  log,
 	}
+}
+
+func init() {
+	logger.Log.Info("Initializing reservation service")
+	logger.Log.Debug("Executing init() function of 'service' package: Loading MAX_DB_OPERATIONS_DURATION from '.env' file")
+
+	maxDBOperationsDurationStr, err := utils.GetEnv("MAX_DB_OPERATIONS_DURATION")
+	if err != nil || maxDBOperationsDurationStr == "" {
+		logger.Log.Fatalf("MAX_DB_OPERATIONS_DURATION is not set or invalid: %v", err)
+	}
+	logger.Log.Debugf("Value read from MAX_DB_OPERATIONS_DURATION: %s", maxDBOperationsDurationStr)
+
+	maxDBOperationsDuration, err = time.ParseDuration(maxDBOperationsDurationStr)
+	if err != nil {
+		logger.Log.Fatalf("Error trying to parse duration of JWT_EXPIRATION_TIME environment variable: %v", err)
+	}
+
+	logger.Log.Infof("Maximun DB operations duration loaded successfully from '.env' file.")
 }
