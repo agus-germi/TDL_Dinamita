@@ -305,9 +305,9 @@ func (a *API) DeleteReservation(c echo.Context) error {
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
-	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -340,9 +340,9 @@ func (a *API) CreateTable(c echo.Context) error {
 
 func (a *API) DeleteTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64) // Type assertion
-	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -373,9 +373,9 @@ func (a *API) DeleteTable(c echo.Context) error {
 // Menu endpoints
 func (a *API) AddDishToMenu(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64)
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Add Dish] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Add Dish] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -641,4 +641,43 @@ func (a *API) GetOpinions(c echo.Context) error {
 
     return c.JSON(http.StatusOK, opinions)
 }
+
+//Promotions endpoint
+// func (a *API) CreatePromotion(c echo.Context) error {
+//     clientRoleID, ok := c.Get("role").(float64)
+// 	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleID)
+// 	clientRoleIDInt := int64(clientRoleID)
+// 	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleIDInt)
+
+// 	if !ok {
+// 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+// 	}
+
+// 	if clientRoleID != adminRoleID {
+// 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
+// 	}
+
+//     params := dtos.CreatePromotionDTO{}
+//     err := c.Bind(&params)
+//     if err != nil {
+//         a.log.Errorf("[Create Opinion] Error parsing request body: %v", err)
+//         return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+//     }
+
+//     err = a.dataValidator.Struct(params)
+//     if err != nil {
+//         a.log.Errorf("[Create Opinion] Validation error: %v", err)
+//         return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+//     }
+
+//     ctx := c.Request().Context()
+//     err = a.serv.CreateOpinion(ctx, clientUserIDInt, params.Opinion, params.Rating)
+//     if err != nil {
+//         a.log.Errorf("[Create Opinion] Error while creating opinion: %v", err)
+//         return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
+//     }
+
+//     // Responder al cliente
+//     return c.JSON(http.StatusCreated, responseMessage{Message: "Opinion created successfully"})
+// }
 

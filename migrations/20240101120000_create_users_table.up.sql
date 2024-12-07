@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     table_number INT NOT NULL,
     date DATE NOT NULL, -- Reservation date
     time_slot_id INT NOT NULL,
+    promotion_id INT NOT NULL,
     FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE,
     FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE CASCADE
@@ -50,6 +51,14 @@ CREATE TABLE IF NOT EXISTS opinions (
     user_id INT NOT null,
     opinion TEXT,
     rating INT NOT null
+);
+
+CREATE TABLE IF NOT EXISTS promotions (
+    id SERIAL PRIMARY KEY,
+    description VARCHAR(255),
+    start_date DATE, 
+    due_date DATE,
+    discount INTEGER CHECK (discount >= 1 AND discount <= 100) NOT null
 );
 
 -- Agregamos horarios fijos de manera dinamica 
