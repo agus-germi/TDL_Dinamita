@@ -17,7 +17,7 @@ var (
 	ErrReservationNotFound  = errors.New("reservation was not found")
 )
 
-func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time,  promotionID int) error {
+func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error {
 	ctxTimeOut, cancel := context.WithTimeout(ctx, maxDBOperationsDuration)
 	defer cancel()
 
@@ -133,60 +133,6 @@ func (s *serv) GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error) {
 }
 
 // Combine date (format YYYY-MM-DD) and _time (format HH:mm) in a single string that comply ISO 8601
-// func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {
-// 	combinedDateTime := fmt.Sprintf("%sT%s:00Z", date.Format("2006-01-02"), _time)
-// 	s.log.Debugf("This is the combined date and time to parse into format ISO 8601: %s", combinedDateTime)
-
-// 	reservationDateTime, err := time.Parse("2006-01-02T15:04:05Z", combinedDateTime)
-// 	if err != nil {
-// 		s.log.Errorf("Failed to parse date and time: %v", err)
-// 		return time.Time{}, err
-// 	}
-
-// 	s.log.Debugf("Date and time parsed successfully: %v", reservationDateTime)
-// 	return reservationDateTime, nil
-// }
-
-// Combine date (format YYYY-MM-DD) and _time (format HH:mm) in a single string that comply ISO 8601
-// func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {
-// 	parsedTime, err := time.Parse("15:04", _time)
-// 	if err != nil {
-// 		s.log.Errorf("Failed to parse time: %v", err)
-// 		return time.Time{}, err
-// 	}
-
-// 	combinedDateTime := time.Date(
-// 		date.Year(), date.Month(), date.Day(),
-// 		parsedTime.Hour(), parsedTime.Minute(), 0, 0, time.UTC,
-// 	)
-// 	s.log.Debugf("This is the combined date and time to parse into format ISO 8601: %s", combinedDateTime)
-
-// 	return combinedDateTime, nil
-// }
-
-// Combine date (format YYYY-MM-DD) and _time (format HH:mm) in a single string that comply ISO 8601
-// func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {
-// 	// Parse _time para asegurarnos de que está en formato "15:04"
-// 	parsedTime, err := time.Parse("15:04", _time)
-// 	if err != nil {
-// 		s.log.Errorf("Failed to parse time: %v", err)
-// 		return time.Time{}, err
-// 	}
-
-// 	// Combina la fecha con el tiempo truncado
-// 	combinedDateTime := fmt.Sprintf("%sT%sZ", date.Format("2006-01-02"), parsedTime.Format("15:04:05"))
-// 	s.log.Debugf("This is the combined date and time to parse into format ISO 8601: %s", combinedDateTime)
-
-// 	reservationDateTime, err := time.Parse("2006-01-02T15:04:05Z", combinedDateTime)
-// 	if err != nil {
-// 		s.log.Errorf("Failed to parse date and time: %v", err)
-// 		return time.Time{}, err
-// 	}
-
-// 	s.log.Debugf("Date and time parsed successfully: %v", reservationDateTime)
-// 	return reservationDateTime, nil
-// }
-
 func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {
 	// Determinar el formato de _time
 	var timeLayout string

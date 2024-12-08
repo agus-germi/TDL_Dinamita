@@ -56,11 +56,6 @@ const (
 					  ORDER BY time`
 )
 
-// TODO: Investigate how to use SELECT ... FOR UPDATE (to lock the row in the table) and UPDATE ... SET ... WHERE ... (to update the row in the table)
-// Maybe we can levarage the pgxpool.Tx to do this kind of operations, and we can use the pgxpool.Tx.ExecContext to execute the queries.
-// Moreover, we can use SELECT ... FOR UPDATE to lock the corresponding row in the availability table (that we disscussed to create)
-// Same observation applies to all repository method that needs this kind of control.
-
 // When we show the reservation date to the user we have to convert
 // the date according to the local time zone.
 // Keep in mind that the date saved in the DB is according to UTC location.
