@@ -18,14 +18,17 @@ var (
 
 const (
 	invalidTimeSlotID    = -1
-	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, date, time_slot_id) 
-							VALUES ($1, $2, $3, $4)`
+	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, date, time_slot_id, promotion_id) 
+							VALUES ($1, $2, $3, $4, $5)`
 
-	qryGetReservationsByUserID = `SELECT r.id, r.reserved_by, r.table_number, r.date, ts.time
-								FROM reservations r
-								INNER JOIN time_slots ts ON r.time_slot_id = ts.id
-								WHERE r.reserved_by=$1
-								ORDER BY r.date, ts.time`
+	qryGetReservationsByUserID = `SELECT r.id, r.reserved_by, r.table_number, r.date, ts.time, (case when p.id = 1 then p.description
+																								else p.description || '-' || p.discount || '%'
+																								end) promotion
+									FROM reservations r
+									INNER JOIN time_slots ts ON r.time_slot_id = ts.id
+									inner join promotions p on r.promotion_id = p.id
+									WHERE r.reserved_by=$1
+									ORDER BY r.date, ts.time`
 
 	qryGetReservationByID = `SELECT id
 							FROM reservations
@@ -61,7 +64,7 @@ const (
 // When we show the reservation date to the user we have to convert
 // the date according to the local time zone.
 // Keep in mind that the date saved in the DB is according to UTC location.
-func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
+func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error {
 	// El formato RFC3339 es una forma estándar de representar
 	// fechas y horas, que es casi equivalente al formato ISO 8601.
 	// El estándar RFC 3339 es compatible con ISO 8601, y se utiliza
@@ -87,7 +90,7 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 			return fmt.Errorf("error checking existing reservations: %w", err)
 		}
 
-		_, err = tx.Exec(ctx, qryInsertReservation, userID, tableNumber, formattedDate, timeSlotID)
+		_, err = tx.Exec(ctx, qryInsertReservation, userID, tableNumber, formattedDate, timeSlotID, promotionID)
 		if err != nil {
 			r.log.Errorf("Failed to execute insert reservation query: %v", err)
 			return err
@@ -139,7 +142,7 @@ func (r *repo) GetReservationsByUserID(ctx context.Context, userID int64) (*[]en
 	reservations := []entity.Reservation{}
 	for rows.Next() {
 		var rsv entity.Reservation
-		if err := rows.Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.Time); err != nil {
+		if err := rows.Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.Time, &rsv.Promotion); err != nil {
 			r.log.Errorf("Failed to scan row: %v", err)
 			return nil, err
 		}

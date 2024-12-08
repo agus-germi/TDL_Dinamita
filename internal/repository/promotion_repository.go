@@ -15,6 +15,8 @@ const (
     qryInsertPromotion    = `INSERT INTO promotions (description, start_date, due_date, discount) VALUES ($1, $2, $3, $4)`
     qryGetPromotionByID   = `SELECT id, description, start_date, due_date, discount FROM promotions WHERE id = $1`
     qryDeletePromotionByID = `DELETE FROM promotions WHERE id = $1`
+    qryGetPromotions = `SELECT id, description, start_date, due_date, discount FROM promotions
+                        ORDER BY id`;
 )
 
 func (r *repo) SavePromotion(ctx context.Context, description string, startDate string, dueDate string, discount int) error {
@@ -69,3 +71,33 @@ func (r *repo) DeletePromotion(ctx context.Context, promotionID int64) error {
 
     return r.executeInTransaction(ctx, operation)
 }
+
+func (r *repo) GetAllPromotionsAvailable(ctx context.Context) (*[]entity.Promotion, error) {
+    rows, err := r.db.Query(ctx, qryGetPromotions)
+    if err != nil {
+        log.Printf("Failed to execute select promotions query: %v", err)
+        return nil, err
+    }
+    defer rows.Close()
+
+    promotions := []entity.Promotion{}
+    for rows.Next() {
+        var promotion entity.Promotion
+        // Corregir la línea donde se escanean las fechas
+        if err := rows.Scan(&promotion.ID, &promotion.Description, &promotion.StartDate, &promotion.DueDate, &promotion.Discount); err != nil {
+            log.Printf("Failed to scan row: %v", err)
+            return nil, err
+        }
+
+        promotions = append(promotions, promotion)
+    }
+
+    if rows.Err() != nil {
+        log.Printf("Error occurred during row iteration: %v", rows.Err())
+        return nil, rows.Err()
+    }
+
+    log.Printf("Promotions retrieved successfully.")
+    return &promotions, nil
+}
+

@@ -5,7 +5,7 @@ import (
     "errors"
     "log"
     
-    // "github.com/agus-germi/TDL_Dinamita/internal/models"
+    "github.com/agus-germi/TDL_Dinamita/internal/models"
 )
 
 var (
@@ -49,5 +49,26 @@ func (s *serv) DeletePromotion(ctx context.Context, promotionID int64) error {
     }
 
     return nil
+}
+
+func (s *serv) GetPromotions(ctx context.Context) (*[]models.Promotion, error) {
+    promotions, err := s.repo.GetAllPromotionsAvailable(ctx)
+    if err != nil {
+        return nil, err
+    }
+
+    log.Printf("Retrieved promotions: %+v", promotions)
+    modelPromotions := make([]models.Promotion, len(*promotions))
+    for i, promotion := range *promotions {
+        modelPromotions[i] = models.Promotion{
+            ID:          promotion.ID,           
+            Description: promotion.Description,
+            StartDate:   promotion.StartDate,    
+            DueDate:     promotion.DueDate,      
+            Discount:    promotion.Discount,    
+        }
+    }
+
+    return &modelPromotions, nil
 }
 

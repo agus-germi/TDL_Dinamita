@@ -241,12 +241,12 @@ func (a *API) CreateReservation(c echo.Context) error {
 	}
 
 	reservationDate, _ := time.Parse(time.RFC3339, params.ReservationDate) // Think if we need to specify the time zone (-03:00 for Buenos Aires)
-
 	a.log.Debugf("[Create Reservation] Reservation Date:", reservationDate)
 
 	ctx := c.Request().Context()
 	start := time.Now()
-	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate)
+	promotionID := int(params.PromotionID)
+	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate, promotionID)
 	if err != nil {
 		return a.handleErrorFromService(c, err, "Error during reservation registration: %v")
 	}
@@ -533,6 +533,7 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 			ID:              reservation.ID,
 			TableNumber:     reservation.TableNumber,
 			ReservationDate: reservation.ReservationDate,
+			Promotion:       reservation.Promotion,
 		}
 	}
 	return &dtoReservations
@@ -717,5 +718,16 @@ func(a *API) DeletePromotion(c echo.Context) error{
 	}
 
 	return c.JSON(http.StatusOK, responseMessage{Message: "Promotion Deleted successfully"})
+}
+
+func (a *API) GetPromotions(c echo.Context) error {
+    ctx := c.Request().Context()
+
+    opinions, err := a.serv.GetPromotions(ctx)
+    if err != nil {
+        return a.handleErrorFromService(c, err, "Error while fetching promotions: %v")
+    }
+
+    return c.JSON(http.StatusOK, opinions)
 }
 

@@ -78,7 +78,7 @@ INSERT INTO roles (id, name) VALUES (1, 'Admin');
 INSERT INTO roles (id, name) VALUES (2, 'User');
 
 INSERT INTO promotions (description,start_date,due_date,discount)
-VALUES ('No Promotion','2000-01-01','9999-12-31',0);
+VALUES ('No Promotion','2000-01-01','2100-12-31',1);
 
 INSERT INTO users (name, password, email, role_id)
 VALUES('agus', '$2a$14$qYw4gqHgSAObMdAraUZZ5.IVduI/6JJUze.WGYvs7fdViMyiOUBCG', 'agerminario@fi.uba.ar', 1);

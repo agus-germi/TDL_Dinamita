@@ -51,7 +51,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 
 	//Group routes for /promotions under /api/v1
 	promotions := api.Group("/promotions")
-	//promotions.GET("", a.GetPromotions)
+	promotions.GET("", a.GetPromotions)
 	promotions.POST("", a.CreatePromotion)
 	promotions.DELETE("/:id", a.DeletePromotion)
 }
