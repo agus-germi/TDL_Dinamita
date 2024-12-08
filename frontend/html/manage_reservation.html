@@ -394,15 +394,50 @@
             });
         }
 
+        // function populatePromotionSelect(promotions) {
+        //     const promotionSelect = document.getElementById('promotion');
+        //     promotionSelect.innerHTML = ''; 
+
+        //     promotions.forEach(promotion => {
+        //         const option = document.createElement('option');
+        //         option.value = promotion.id;  
+        //         option.textContent = promotion.description;
+
+        //         if (promotion.id === 1) {
+        //             option.textContent = promotion.description;
+        //             option.setAttribute('data-start-date', promotion.start_date); 
+        //             option.setAttribute('data-end-date', promotion.due_date);
+        //         }else{
+        //             option.setAttribute('data-start-date', promotion.start_date); 
+        //             option.setAttribute('data-end-date', promotion.due_date);
+        //             var startDate = new Date(promotion.start_date).toLocaleDateString('en-GB'); 
+        //             var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB'); 
+        //             alert('hola ', startDate)
+        //             option.textContent = `${promotion.description} - From ${startDate} to ${dueDate} with a ${promotion.discount}% off`;
+        //         }
+
+        //         promotionSelect.appendChild(option);
+        //     });
+
+        //     promotionSelect.addEventListener('change', function() {
+        //         const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+        //         promoStartDate = new Date(selectedOption.getAttribute('data-start-date'));
+        //         promoEndDate = new Date(selectedOption.getAttribute('data-end-date'));
+
+
+        //         console.log(promoStartDate, promoEndDate);
+        //     });
+        // }
+        
         function populatePromotionSelect(promotions) {
             const promotionSelect = document.getElementById('promotion');
-            promotionSelect.innerHTML = ''; 
+            promotionSelect.innerHTML = '';  // Clear existing options
 
             promotions.forEach(promotion => {
                 const option = document.createElement('option');
-                option.value = promotion.id;  
-                option.textContent = promotion.description;
+                option.value = promotion.id;
 
+                // Store the start and end dates for promotions
                 if (promotion.id === 1) {
                     option.textContent = promotion.description;
                     option.setAttribute('data-start-date', promotion.start_date); 
@@ -410,22 +445,23 @@
                 }else{
                     option.setAttribute('data-start-date', promotion.start_date); 
                     option.setAttribute('data-end-date', promotion.due_date);
-                    var startDate = new Date(promotion.start_date).toLocaleDateString('en-GB'); 
-                    var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB'); 
+                    var startDate = new Date(promotion.start_date).toLocaleDateString('en-GB',{ timeZone: 'UTC' }); 
+                    var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB',{ timeZone: 'UTC' }); 
                     option.textContent = `${promotion.description} - From ${startDate} to ${dueDate} with a ${promotion.discount}% off`;
                 }
 
                 promotionSelect.appendChild(option);
             });
 
-            promotionSelect.addEventListener('change', function() {
-                const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
-                promoStartDate = new Date(selectedOption.getAttribute('data-start-date'));
-                promoEndDate = new Date(selectedOption.getAttribute('data-end-date'));
-
-                console.log(promoStartDate, promoEndDate);
-            });
+            // Set global promo start and end date if promotion id is 1
+            promoStartDate = new Date(document.querySelector('#promotion option[data-start-date]').getAttribute('data-start-date'));
+            promoEndDate = new Date(document.querySelector('#promotion option[data-end-date]').getAttribute('data-end-date'));
         }
+        document.getElementById('promotion').addEventListener('change', function(event) {
+            const selectedOption = event.target.selectedOptions[0];
+            promoStartDate = new Date(selectedOption.getAttribute('data-start-date'));
+            promoEndDate = new Date(selectedOption.getAttribute('data-end-date'));
+        });
     </script>
 </body>
 </html>
