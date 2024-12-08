@@ -49,11 +49,11 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	opinions.GET("", a.GetOpinions)
 	opinions.POST("", a.CreateOpinion)
 
-	// Group routes for /promotions under /api/v1
-	// promotions := api.Group("/promotions")
-	// promotions.GET("", a.GetPromotions)
-	// promotions.POST("", a.CreatePromotion)
-	// promotions.DEL("", a.RemovePromotion)
+	//Group routes for /promotions under /api/v1
+	promotions := api.Group("/promotions")
+	//promotions.GET("", a.GetPromotions)
+	promotions.POST("", a.CreatePromotion)
+	promotions.DELETE("/:id", a.DeletePromotion)
 }
 
 // Aca hay que definir bien como estructuramos el directorio "static".

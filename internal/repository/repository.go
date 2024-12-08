@@ -51,6 +51,11 @@ type Repository interface {
 	// Opinion
 	SaveOpinion(ctx context.Context, userID int64, opinion string, rating int) error
 	GetAllOpinions(ctx context.Context) (*[]entity.Opinion, error)
+
+	//Promotion
+	SavePromotion(ctx context.Context, description string, startDate string, dueDate string, discount int) error
+	GetPromotionbyID(ctx context.Context, promotionID int64) (*entity.Promotion, error)
+	DeletePromotion(ctx context.Context, promotionID int64) error
 }
 
 type repo struct {

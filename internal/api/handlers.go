@@ -428,7 +428,7 @@ func (a *API) RemoveDishFromMenu(c echo.Context) error {
 	bitSize := 64
 
 	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Table] Table ID sent in the URI:", dishID)
+	a.log.Debugf("[Delete Dish] Table ID sent in the URI:", dishID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
 	}
@@ -646,41 +646,76 @@ func (a *API) GetOpinions(c echo.Context) error {
 }
 
 //Promotions endpoint
-// func (a *API) CreatePromotion(c echo.Context) error {
-//     clientRoleID, ok := c.Get("role").(float64)
-// 	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleID)
-// 	clientRoleIDInt := int64(clientRoleID)
-// 	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleIDInt)
+func (a *API) CreatePromotion(c echo.Context) error {
+    clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleIDInt)
 
-// 	if !ok {
-// 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
-// 	}
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
 
-// 	if clientRoleID != adminRoleID {
-// 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
-// 	}
+	if clientRoleID != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new promotion"})
+	}
 
-//     params := dtos.CreatePromotionDTO{}
-//     err := c.Bind(&params)
-//     if err != nil {
-//         a.log.Errorf("[Create Opinion] Error parsing request body: %v", err)
-//         return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
-//     }
+    params := dtos.CreatePromotionDTO{}
+    err := c.Bind(&params)
+    if err != nil {
+        a.log.Errorf("[Create Promotion] Error parsing request body: %v", err)
+        return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+    }
 
-//     err = a.dataValidator.Struct(params)
-//     if err != nil {
-//         a.log.Errorf("[Create Opinion] Validation error: %v", err)
-//         return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
-//     }
+    err = a.dataValidator.Struct(params)
+    if err != nil {
+        a.log.Errorf("[Create Promotion] Validation error: %v", err)
+        return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+    }
 
-//     ctx := c.Request().Context()
-//     err = a.serv.CreateOpinion(ctx, clientUserIDInt, params.Opinion, params.Rating)
-//     if err != nil {
-//         a.log.Errorf("[Create Opinion] Error while creating opinion: %v", err)
-//         return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
-//     }
+    ctx := c.Request().Context()
+	err = a.serv.CreatePromotion(ctx, params.Description, params.StartDate, params.DueDate, params.Discount)
+    if err != nil {
+        a.log.Errorf("[Create Promotion] Error while creating promotion: %v", err)
+        return a.handleErrorFromService(c, err, "Error while creating promotion: %v")
+    }
 
-//     // Responder al cliente
-//     return c.JSON(http.StatusCreated, responseMessage{Message: "Opinion created successfully"})
-// }
+    // Responder al cliente
+    return c.JSON(http.StatusCreated, responseMessage{Message: "Promotion created successfully"})
+}
+
+func(a *API) DeletePromotion(c echo.Context) error{
+	clientUserID, ok := c.Get("user_id").(float64) 
+	a.log.Debugf("[Delete Promotion] Client User ID:", clientUserID)
+	clientUserIDInt := int64(clientUserID)
+	a.log.Debugf("[Delete Promotion] Client User ID:", clientUserIDInt)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+	}
+
+	clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Delete Promotion] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Delete Promotion] Client Role ID:", clientRoleIDInt)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	base := 10
+	bitSize := 64
+
+	promotionID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Promotion] Promotion ID sent in the URI:", promotionID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid Promotion ID"})
+	}
+
+	ctx := c.Request().Context()
+	err = a.serv.DeletePromotion(ctx, promotionID)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while deleting Promotion: %v")
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Promotion Deleted successfully"})
+}
 

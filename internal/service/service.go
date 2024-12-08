@@ -35,6 +35,8 @@ type Service interface {
 	RemoveDish(ctx context.Context, dishID int64) error
 	AddDishToMenu(ctx context.Context, name string, price int64, description string) error
 	UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error
+	CreatePromotion(ctx context.Context, description string, startDate string, dueDate string, discount int) error
+	DeletePromotion(ctx context.Context, promotionID int64) error
 }
 
 var maxDBOperationsDuration time.Duration

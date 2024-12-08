@@ -12,7 +12,8 @@ const (
     qryInsertOpinion   = `INSERT INTO opinions (user_id, opinion, rating) VALUES ($1, $2, $3)`
     qryGetOpinions     = `SELECT o.id, o.user_id, u.name, o.opinion, o.rating
                             FROM opinions o, users u 
-                            WHERE o.user_id = u.id`
+                            WHERE o.user_id = u.id
+                            ORDER BY o.id desc`
 )
 
 func (r *repo) SaveOpinion(ctx context.Context, userID int64, opinion string, rating int) error {
