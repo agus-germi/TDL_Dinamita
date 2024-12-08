@@ -45,6 +45,11 @@
                 <select id="table" name="table" required>
                 </select>
             </div>
+            <div>
+                <label for="promotion">Promotion:</label>
+                <select id="promotion" name="promotion" required>
+                </select>
+            </div>
             <button type="submit" class="logout-button">Reserve</button>
         </form>
   
@@ -59,6 +64,7 @@
                     <th>Date</th>
                     <th>Hour</th>
                     <th>Table</th>
+                    <th>Promotion</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -75,6 +81,7 @@
     </div>
 
     <script>
+        let promoStartDate, promoEndDate; 
         function toggleReservationForm() {
             const form = document.getElementById('reservation-form');
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
@@ -89,7 +96,7 @@
 
             fetchAvailableTimes();
             fetchAvailableTables();
-
+            fetchAvailablePromotions();
         });
 
         document.getElementById('reservation-form').addEventListener('submit', function(event) {
@@ -105,6 +112,8 @@
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value;
             const tableNumber = document.getElementById('table').value;
+            const promoId = document.getElementById('promotion').value;
+
 
             const now = new Date(); 
             const today = new Date();
@@ -123,11 +132,17 @@
                 return;
             }
 
-            const reservationData = {
-                reservation_date: `${date}T${time}Z`,
-                table_number: parseInt(tableNumber, 10),
-            };
+            if (promoId !== 1 && (selectedDate <= promoStartDate || selectedDate >= promoEndDate)) {
+                showModal("The selected date is not within the promotion period.");
+                return;
+            }
 
+            const reservationData = {
+                table_number: parseInt(tableNumber, 10),
+                reservation_date: `${date}T${time}Z`,
+                promotion_id: parseInt(promoId,10)
+            };
+            
             fetch('http://localhost:8080/api/v1/reservations', {
                 method: 'POST',
                 headers: {
@@ -213,6 +228,7 @@
                     <td>${date}</td> 
                     <td>${time.split("Z")[0]}</td> 
                     <td>${reservation.table_number}</td>
+                    <td>${reservation.promotion}</td>
                     <td>
                         <button onclick="cancelReservation(${reservation.id})">Cancel</button>
                     </td>
@@ -347,6 +363,67 @@
                 option.value = table.number
                 option.textContent = `Table ${table.number} - ${table.seats} seats - ${table.location}`;
                 tableSelect.appendChild(option);
+            });
+        }
+    
+        function fetchAvailablePromotions() {
+            const token = localStorage.getItem('token'); 
+            if (!token) {
+                console.error("JWT token not found");
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/v1/promotions`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Request error: ${response.statusText}`);
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                populatePromotionSelect(data);
+            })
+            .catch(error => {
+                console.error('Error getting promotions:', error);
+            });
+        }
+
+        function populatePromotionSelect(promotions) {
+            const promotionSelect = document.getElementById('promotion');
+            promotionSelect.innerHTML = ''; 
+
+            promotions.forEach(promotion => {
+                const option = document.createElement('option');
+                option.value = promotion.id;  
+                option.textContent = promotion.description;
+
+                if (promotion.id === 1) {
+                    option.textContent = promotion.description;
+                    option.setAttribute('data-start-date', promotion.start_date); 
+                    option.setAttribute('data-end-date', promotion.due_date);
+                }else{
+                    option.setAttribute('data-start-date', promotion.start_date); 
+                    option.setAttribute('data-end-date', promotion.due_date);
+                    var startDate = new Date(promotion.start_date).toLocaleDateString('en-GB'); 
+                    var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB'); 
+                    option.textContent = `${promotion.description} - From ${startDate} to ${dueDate} with a ${promotion.discount}% off`;
+                }
+
+                promotionSelect.appendChild(option);
+            });
+
+            promotionSelect.addEventListener('change', function() {
+                const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+                promoStartDate = new Date(selectedOption.getAttribute('data-start-date'));
+                promoEndDate = new Date(selectedOption.getAttribute('data-end-date'));
+
+                console.log(promoStartDate, promoEndDate);
             });
         }
     </script>

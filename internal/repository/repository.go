@@ -32,7 +32,7 @@ type Repository interface {
 	GetAvailableTables(ctx context.Context) (*[]entity.Table, error)
 
 	// Reservation
-	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
+	SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error
 	RemoveReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]entity.Reservation, error)
 	GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error)
@@ -51,6 +51,12 @@ type Repository interface {
 	// Opinion
 	SaveOpinion(ctx context.Context, userID int64, opinion string, rating int) error
 	GetAllOpinions(ctx context.Context) (*[]entity.Opinion, error)
+
+	//Promotion
+	SavePromotion(ctx context.Context, description string, startDate string, dueDate string, discount int) error
+	GetPromotionbyID(ctx context.Context, promotionID int64) (*entity.Promotion, error)
+	DeletePromotion(ctx context.Context, promotionID int64) error
+	GetAllPromotionsAvailable(ctx context.Context) (*[]entity.Promotion, error)
 }
 
 type repo struct {

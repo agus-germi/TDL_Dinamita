@@ -8,4 +8,5 @@ type Reservation struct {
 	TableNumber int64     `db:"table_number"`
 	Date        time.Time `db:"date"`
 	Time        string    `db:"time"`
+	Promotion   string 	  `db:"promotion"`
 }

@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     table_number INT NOT NULL,
     date DATE NOT NULL, -- Reservation date
     time_slot_id INT NOT NULL,
+    promotion_id INT NOT NULL,
     FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (table_number) REFERENCES tables(number) ON DELETE CASCADE,
     FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE CASCADE
@@ -52,6 +53,14 @@ CREATE TABLE IF NOT EXISTS opinions (
     rating INT NOT null
 );
 
+CREATE TABLE IF NOT EXISTS promotions (
+    id SERIAL PRIMARY KEY,
+    description VARCHAR(255),
+    start_date DATE, 
+    due_date DATE,
+    discount INTEGER CHECK (discount >= 1 AND discount <= 100) NOT null
+);
+
 -- Agregamos horarios fijos de manera dinamica 
 -- Turnos desde las 12:00 hasta las 22:00 - considerando que cada turno es de 2hs
 DO $$
@@ -67,6 +76,9 @@ END $$;
 
 INSERT INTO roles (id, name) VALUES (1, 'Admin');
 INSERT INTO roles (id, name) VALUES (2, 'User');
+
+INSERT INTO promotions (description,start_date,due_date,discount)
+VALUES ('No Promotion','2000-01-01','2100-12-31',1);
 
 INSERT INTO users (name, password, email, role_id)
 VALUES('agus', '$2a$14$qYw4gqHgSAObMdAraUZZ5.IVduI/6JJUze.WGYvs7fdViMyiOUBCG', 'agerminario@fi.uba.ar', 1);

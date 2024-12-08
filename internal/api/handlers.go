@@ -241,12 +241,12 @@ func (a *API) CreateReservation(c echo.Context) error {
 	}
 
 	reservationDate, _ := time.Parse(time.RFC3339, params.ReservationDate) // Think if we need to specify the time zone (-03:00 for Buenos Aires)
-
 	a.log.Debugf("[Create Reservation] Reservation Date:", reservationDate)
 
 	ctx := c.Request().Context()
 	start := time.Now()
-	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate)
+	promotionID := int(params.PromotionID)
+	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate, promotionID)
 	if err != nil {
 		return a.handleErrorFromService(c, err, "Error during reservation registration: %v")
 	}
@@ -308,9 +308,9 @@ func (a *API) DeleteReservation(c echo.Context) error {
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64) // Aserción de tipo
-	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -343,9 +343,9 @@ func (a *API) CreateTable(c echo.Context) error {
 
 func (a *API) DeleteTable(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64) // Type assertion
-	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Delete Dish] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Delete Table] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -376,9 +376,9 @@ func (a *API) DeleteTable(c echo.Context) error {
 // Menu endpoints
 func (a *API) AddDishToMenu(c echo.Context) error {
 	clientRoleID, ok := c.Get("role").(float64)
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleID)
+	a.log.Debugf("[Add Dish] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Create Table] Client Role ID:", clientRoleIDInt)
+	a.log.Debugf("[Add Dish] Client Role ID:", clientRoleIDInt)
 
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
@@ -428,7 +428,7 @@ func (a *API) RemoveDishFromMenu(c echo.Context) error {
 	bitSize := 64
 
 	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Table] Table ID sent in the URI:", dishID)
+	a.log.Debugf("[Delete Dish] Table ID sent in the URI:", dishID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
 	}
@@ -533,6 +533,7 @@ func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.Reserv
 			ID:              reservation.ID,
 			TableNumber:     reservation.TableNumber,
 			ReservationDate: reservation.ReservationDate,
+			Promotion:       reservation.Promotion,
 		}
 	}
 	return &dtoReservations
@@ -640,6 +641,91 @@ func (a *API) GetOpinions(c echo.Context) error {
     opinions, err := a.serv.GetOpinions(ctx)
     if err != nil {
         return a.handleErrorFromService(c, err, "Error while fetching opinions: %v")
+    }
+
+    return c.JSON(http.StatusOK, opinions)
+}
+
+//Promotions endpoint
+func (a *API) CreatePromotion(c echo.Context) error {
+    clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleIDInt)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	if clientRoleID != adminRoleID {
+		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new promotion"})
+	}
+
+    params := dtos.CreatePromotionDTO{}
+    err := c.Bind(&params)
+    if err != nil {
+        a.log.Errorf("[Create Promotion] Error parsing request body: %v", err)
+        return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+    }
+
+    err = a.dataValidator.Struct(params)
+    if err != nil {
+        a.log.Errorf("[Create Promotion] Validation error: %v", err)
+        return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+    }
+
+    ctx := c.Request().Context()
+	err = a.serv.CreatePromotion(ctx, params.Description, params.StartDate, params.DueDate, params.Discount)
+    if err != nil {
+        a.log.Errorf("[Create Promotion] Error while creating promotion: %v", err)
+        return a.handleErrorFromService(c, err, "Error while creating promotion: %v")
+    }
+
+    // Responder al cliente
+    return c.JSON(http.StatusCreated, responseMessage{Message: "Promotion created successfully"})
+}
+
+func(a *API) DeletePromotion(c echo.Context) error{
+	clientUserID, ok := c.Get("user_id").(float64) 
+	a.log.Debugf("[Delete Promotion] Client User ID:", clientUserID)
+	clientUserIDInt := int64(clientUserID)
+	a.log.Debugf("[Delete Promotion] Client User ID:", clientUserIDInt)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+	}
+
+	clientRoleID, ok := c.Get("role").(float64)
+	a.log.Debugf("[Delete Promotion] Client Role ID:", clientRoleID)
+	clientRoleIDInt := int64(clientRoleID)
+	a.log.Debugf("[Delete Promotion] Client Role ID:", clientRoleIDInt)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	}
+
+	base := 10
+	bitSize := 64
+
+	promotionID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
+	a.log.Debugf("[Delete Promotion] Promotion ID sent in the URI:", promotionID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid Promotion ID"})
+	}
+
+	ctx := c.Request().Context()
+	err = a.serv.DeletePromotion(ctx, promotionID)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while deleting Promotion: %v")
+	}
+
+	return c.JSON(http.StatusOK, responseMessage{Message: "Promotion Deleted successfully"})
+}
+
+func (a *API) GetPromotions(c echo.Context) error {
+    ctx := c.Request().Context()
+
+    opinions, err := a.serv.GetPromotions(ctx)
+    if err != nil {
+        return a.handleErrorFromService(c, err, "Error while fetching promotions: %v")
     }
 
     return c.JSON(http.StatusOK, opinions)

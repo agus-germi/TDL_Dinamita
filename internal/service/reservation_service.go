@@ -17,14 +17,14 @@ var (
 	ErrReservationNotFound  = errors.New("reservation was not found")
 )
 
-func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error {
+func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time,  promotionID int) error {
 	ctxTimeOut, cancel := context.WithTimeout(ctx, maxDBOperationsDuration)
 	defer cancel()
 
 	respChan := make(chan error, 1)
 
 	go func() {
-		respChan <- s.repo.SaveReservation(ctxTimeOut, userID, tableNumber, date)
+		respChan <- s.repo.SaveReservation(ctxTimeOut, userID, tableNumber, date, promotionID)
 	}()
 
 	for {
@@ -78,6 +78,7 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 			UserID:          entityReservation.UserID,
 			TableNumber:     entityReservation.TableNumber,
 			ReservationDate: reservationDateTime,
+			Promotion:       entityReservation.Promotion,
 		}
 	}
 

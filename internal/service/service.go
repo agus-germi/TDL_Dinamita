@@ -18,7 +18,7 @@ type Service interface {
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
 	RemoveUser(ctx context.Context, userIDToDelete int64) error
-	MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time) error
+	MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time,  promotionID int) error
 	CancelReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 	GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error)
@@ -27,6 +27,7 @@ type Service interface {
 	GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error)
 	CreateOpinion(ctx context.Context, userID int64, opinionText string, opinionRating int) error
 	GetOpinions(ctx context.Context) (*[]models.Opinion, error)
+	GetPromotions(ctx context.Context) (*[]models.Promotion, error)
 
 	// Admin features
 	UpdateUserRole(ctx context.Context, userID, newRoleID int64) error
@@ -35,6 +36,8 @@ type Service interface {
 	RemoveDish(ctx context.Context, dishID int64) error
 	AddDishToMenu(ctx context.Context, name string, price int64, description string) error
 	UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error
+	CreatePromotion(ctx context.Context, description string, startDate string, dueDate string, discount int) error
+	DeletePromotion(ctx context.Context, promotionID int64) error
 }
 
 var maxDBOperationsDuration time.Duration
