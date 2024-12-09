@@ -32,10 +32,6 @@ const (
 	qryUpdateUserRole = `UPDATE users 
 						SET role_id=$1
 						WHERE id=$2`
-
-	qryGetUserRoleByUserID = `SELECT role_id
-							 FROM users
-							 WHERE id=$1`
 )
 
 func (r *repo) SaveUser(ctx context.Context, name, password, email string, roleID int64) error {
@@ -150,16 +146,4 @@ func (r *repo) SaveUpdateUserRole(ctx context.Context, userID, roleID int64) err
 	}
 
 	return r.executeInTransaction(ctx, operation)
-}
-
-// Esta funcion no se invoca en ningun lado. Quizas la podemos borrar.
-func (r *repo) GetUserRole(ctx context.Context, userID int64) (int64, error) {
-	usr := entity.User{}
-
-	err := r.db.QueryRow(ctx, qryGetUserRoleByUserID, userID).Scan(&usr.RoleID)
-	if err != nil {
-		return invalidRole, err
-	}
-
-	return usr.RoleID, nil
 }

@@ -22,7 +22,6 @@ type Repository interface {
 
 	// UserRole
 	SaveUpdateUserRole(ctx context.Context, userID, roleID int64) error
-	GetUserRole(ctx context.Context, userID int64) (int64, error)
 
 	// Table
 	SaveTable(ctx context.Context, tableNumber, seats int64, description string) error
