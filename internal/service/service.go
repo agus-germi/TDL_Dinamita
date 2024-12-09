@@ -12,8 +12,6 @@ import (
 )
 
 // Service is the bussiness logic of the application
-//
-//go:generate mockery --name=Service --output=service --inpackage
 type Service interface {
 	// Customer features
 	RegisterUser(ctx context.Context, name, password, email string) error
@@ -55,7 +53,7 @@ type serv struct {
 var config Config
 
 func New(repo repository.Repository, log logger.Logger) Service {
-	log.Debugf("Logger has been injected into API")
+	log.Debugf("Logger has been injected into Service")
 
 	return &serv{
 		repo:   repo,

@@ -55,7 +55,7 @@ func (r *repo) SaveDish(ctx context.Context, name string, price int64, descripti
 func (r *repo) RemoveDish(ctx context.Context, dishID int64) error {
 	operation := func(tx pgx.Tx) error {
 		dish, err := r.getDishByID(ctx, tx, dishID)
-		if dish != nil {
+		if dish == nil {
 			r.log.Errorf("Dish with ID %d not found", dishID)
 			return ErrDishNotFound
 		}
@@ -83,7 +83,7 @@ func (r *repo) RemoveDish(ctx context.Context, dishID int64) error {
 func (r *repo) UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error {
 	operation := func(tx pgx.Tx) error {
 		dish, err := r.getDishByID(ctx, tx, dishID)
-		if dish != nil {
+		if dish == nil {
 			r.log.Errorf("Dish with ID %d not found", dishID)
 			return ErrDishNotFound
 		}

@@ -1,8 +1,6 @@
 package api
 
 import (
-	//"path/filepath"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -18,7 +16,7 @@ func (a *API) SetRoutes(e *echo.Echo) {
 
 	// Group routes for /users under /api/v1
 	users := api.Group("/users")
-	users.DELETE("/:id", a.DeleteUser, a.ValidateAdminRole)
+	users.DELETE("/:id", a.DeleteUser)
 	users.PATCH("/:id", a.UpdateUserRole, a.ValidateAdminRole)
 	users.GET("/:id/reservations", a.GetReservationsOfUser)
 
@@ -56,10 +54,6 @@ func (a *API) SetRoutes(e *echo.Echo) {
 	promotions.DELETE("/:id", a.DeletePromotion, a.ValidateAdminRole)
 }
 
-// Aca hay que definir bien como estructuramos el directorio "static".
-// Podemos crear una carpeta por recurso y hacer la jerarquia de carpetas de forma
-// que con setear los StaticFiles como 'e.Static("/users", "static/users")'
-// la busqueda se haga automatica.
 func (a *API) SetStaticFiles(e *echo.Echo) {
 	// Sirve todos los archivos estáticos desde el prefijo /static
 	e.Static("/static", "frontend")

@@ -90,12 +90,12 @@ func (a *API) LoginUser(c echo.Context) error {
 
 func (a *API) DeleteUser(c echo.Context) error {
 
-	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	clientUserID, err := a.getContextValueAsInt64(c, "user_id")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
-	clientRoleID, err := getContextValueAsInt64(c, "role", c.Logger())
+	clientRoleID, err := a.getContextValueAsInt64(c, "role")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
@@ -150,12 +150,12 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 
 func (a *API) GetReservationsOfUser(c echo.Context) error {
 
-	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	clientUserID, err := a.getContextValueAsInt64(c, "user_id")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
-	clientRoleID, err := getContextValueAsInt64(c, "role", c.Logger())
+	clientRoleID, err := a.getContextValueAsInt64(c, "role")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
@@ -184,7 +184,7 @@ func (a *API) GetReservationsOfUser(c echo.Context) error {
 // Reservation endpoints
 func (a *API) CreateReservation(c echo.Context) error {
 
-	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	clientUserID, err := a.getContextValueAsInt64(c, "user_id")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
@@ -207,7 +207,7 @@ func (a *API) CreateReservation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
 	}
 
-	reservationDate, _ := time.Parse(time.RFC3339, params.ReservationDate) // Think if we need to specify the time zone (-03:00 for Buenos Aires)
+	reservationDate, _ := time.Parse(time.RFC3339, params.ReservationDate)
 	a.log.Debugf("[Create Reservation] Reservation Date:", reservationDate)
 
 	ctx := c.Request().Context()
@@ -234,12 +234,12 @@ func (a *API) CreateReservation(c echo.Context) error {
 
 func (a *API) DeleteReservation(c echo.Context) error {
 
-	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	clientUserID, err := a.getContextValueAsInt64(c, "user_id")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
-	clientRoleID, err := getContextValueAsInt64(c, "role", c.Logger())
+	clientRoleID, err := a.getContextValueAsInt64(c, "role")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
@@ -415,7 +415,7 @@ func (a *API) GetTimeSlots(c echo.Context) error {
 // Opinions endpoints
 func (a *API) CreateOpinion(c echo.Context) error {
 
-	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	clientUserID, err := a.getContextValueAsInt64(c, "user_id")
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
@@ -584,8 +584,8 @@ func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID
 	return nil
 }
 
+// Parses the ID from the URI and returns it as an int64
 func parseID(c echo.Context, paramName string) (int64, error) {
-	// Parses the ID from the URI and returns it as an int64
 	base := 10
 	bitSize := 64
 	idStr := c.Param(paramName)
@@ -596,15 +596,15 @@ func parseID(c echo.Context, paramName string) (int64, error) {
 	return id, nil
 }
 
-func getContextValueAsInt64(c echo.Context, key string, log echo.Logger) (int64, error) {
+func (a *API) getContextValueAsInt64(c echo.Context, key string) (int64, error) {
 	value, ok := c.Get(key).(float64) //Asercion de tipo
-	log.Debugf("[%s] Retrieved value: %v", key, value)
+	a.log.Debugf("[%s] Retrieved value: %v", key, value)
 
 	if !ok {
 		return 0, fmt.Errorf("invalid %s in context", key)
 	}
 
 	valueInt64 := int64(value)
-	log.Debugf("[%s] Converted value: %d", key, valueInt64)
+	a.log.Debugf("[%s] Converted value: %d", key, valueInt64)
 	return valueInt64, nil
 }

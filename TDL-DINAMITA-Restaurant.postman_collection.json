@@ -1,0 +1,810 @@
+{
+	"info": {
+		"_postman_id": "458a70b8-5c5e-452e-b7bd-8b257ac816f6",
+		"name": "TDL-DINAMITA-Restaurant",
+		"description": "This is the collection of the basic endpoints of our API REST for a restaurant reservation service.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39272161",
+		"_collection_link": "https://dinamita-7563.postman.co/workspace/Dinamita-TDL~d60fcd24-0a1f-4fd1-882d-e4563d21d8a3/collection/39272161-458a70b8-5c5e-452e-b7bd-8b257ac816f6?action=share&source=collection_link&creator=39272161"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "register_user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"santiago\",\r\n    \"password\":\"12345678\",\r\n    \"email\":\"santi@example.com\" // Poner un mail real para que se envie una notificacion luego de realizar una reserva.\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNrcmFnbGlldmljaEBmaS51YmEuYXIiLCJleHAiOjE3MzM0OTQ3NTQsIm5hbWUiOiJTZWJhIiwicm9sZV9pZCI6MSwidXNlcl9pZCI6M30.l9AoocjgXc9zWhdLBgWIGYG0Ma_LB9eWWyPNu7mVvD4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"santi@example.com\",\r\n    \"password\":\"12345678\"\r\n    // \"email\":\"skraglievich@fi.uba.ar\",\r\n    // \"password\":\"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "delete_user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/6",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_user_role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"new_role_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reservation",
+			"item": [
+				{
+					"name": "register_reservation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"table_number\": 6,\r\n  \"reservation_date\": \"2024-12-06T22:00:00Z\",\r\n  \"promotion_id\": 1 // no promotion\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/reservations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_reservation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/reservations/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reservations",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_reservations_of_user",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/4/reservations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"4",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Table",
+			"item": [
+				{
+					"name": "register_table",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"number\": 9,\r\n  \"seats\": 5,\r\n  \"description\": \"park\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tables",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tables"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_table",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tables/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tables",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-Tables",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tables",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tables"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Menu",
+			"item": [
+				{
+					"name": "add_dish",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"pescado\",\n    \"price\": 500,\n    \"description\": \"chalmonchito\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/menu",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"menu"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove_dish",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/menu/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"menu",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_all_dishes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/menu",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"menu"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_dish",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"salsa\",\n    \"price\": 7500,\n    \"description\": \"de carne obvio\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/menu/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"menu",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Time Slots",
+			"item": [
+				{
+					"name": "Get-Timeslots",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/time_slots",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"time_slots"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Opinions",
+			"item": [
+				{
+					"name": "Get-Opinions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/opinions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"opinions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add-Opinion",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"opinion\": \"Esta es mi opinión sobre el servicio.\",\r\n    \"rating\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/opinions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"opinions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Promotions",
+			"item": [
+				{
+					"name": "Add-Promotion",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\": \"Hamburguesa Doble\",\r\n    \"start_date\": \"2024-12-07T22:00:00Z\",\r\n    \"due_date\": \"2024-12-10T22:00:00Z\",\r\n    \"discount\": 25\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/promotions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"promotions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete-Promotion",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/promotions/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"promotions",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-Promotions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/promotions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"promotions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkJlYXJlciJ9.eyJlbWFpbCI6Im1hbnVAZXhhbXBsZS5jb20iLCJleHAiOjE3MzMyNjM0MzUsIm5hbWUiOiJtYW51ZWwiLCJyb2xlX2lkIjoyLCJ1c2VyX2lkIjo1fQ.UPZBiuDMrIkgmLjwxlrxy-9yQqoNNQhOtKLDBjWvZWs"
+		}
+	]
+}

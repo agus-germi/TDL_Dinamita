@@ -153,7 +153,6 @@ func (s *serv) GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error) {
 	return &modelTimeSlots, nil
 }
 
-// Combine date (format YYYY-MM-DD) and _time (format HH:mm) in a single string that comply ISO 8601
 func (s *serv) combineDateTime(date time.Time, _time string) (time.Time, error) {
 	// Determinar el formato de _time
 	var timeLayout string

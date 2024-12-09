@@ -25,11 +25,6 @@ var (
 	expirationTime int64
 )
 
-// In Go, the init() function is a special feature designed to perform initial
-// configurations of the package, such as initializing variables, validations,
-// or necessary connections before using the rest of the code in the package.
-// The init() function is called automatically when the package is imported
-// into another package.
 func init() {
 	logger.Log.Debug("Executing init() function of 'jwtuilts' package: Loading JWT Secret Key and Expiration Time from '.env' file")
 
