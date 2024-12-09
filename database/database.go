@@ -12,8 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// This function creates a new connection to the database
-// CreatePoolConnection
+// CreatePoolConnection creates a new connection to the database
 func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
 	dbHost, err := utils.GetEnv("DB_HOST")
 	if err != nil {
@@ -96,8 +95,6 @@ func CreateConnection(ctx context.Context) (*pgxpool.Pool, error) {
 	config.MaxConns = int32(maxConns)
 	config.MinConns = int32(minConns)
 	config.MaxConnIdleTime = idleTime // Tiempo máximo que una conexión puede estar inactiva antes de ser cerrada
-	//config.MaxConnLifetime = 30 * time.Minute // Tiempo máximo de vida de una conexión (sin importar si está en uso o inactiva)
-	//config.HealthCheckPeriod = 1 * time.Minute // Frecuencia de las verificaciones de salud
 
 	dbPool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {

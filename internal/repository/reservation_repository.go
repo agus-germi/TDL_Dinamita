@@ -18,7 +18,7 @@ var (
 
 const (
 	invalidTimeSlotID    = -1
-	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, date, time_slot_id, promotion_id) 
+	qryInsertReservation = `INSERT INTO reservations (reserved_by, table_number, date, time_slot_id, promotion_id)
 							VALUES ($1, $2, $3, $4, $5)`
 
 	qryGetReservationsByUserID = `SELECT r.id, r.reserved_by, r.table_number, r.date, ts.time, (case when p.id = 1 then p.description
@@ -26,13 +26,18 @@ const (
 																								end) promotion
 									FROM reservations r
 									INNER JOIN time_slots ts ON r.time_slot_id = ts.id
-									inner join promotions p on r.promotion_id = p.id
+									INNER JOIN promotions p ON r.promotion_id = p.id
 									WHERE r.reserved_by=$1
 									ORDER BY r.date, ts.time`
 
-	qryGetReservationByID = `SELECT id
-							FROM reservations
-							WHERE id=$1`
+	qryGetReservationByID = `SELECT r.id, r.reserved_by, r.table_number, r.date, ts.time, (case when p.id = 1 then p.description
+									else p.description || '-' || p.discount || '%'
+									end) promotion
+								FROM reservations r
+								INNER JOIN time_slots ts ON r.time_slot_id = ts.id
+								INNER JOIN promotions p ON r.promotion_id = p.id
+								WHERE r.id=$1
+								ORDER BY r.date, ts.time`
 
 	qryGetReservationForUpdateByID = `SELECT id
 							FROM reservations
@@ -51,14 +56,11 @@ const (
 						FROM time_slots
 						WHERE time=$1`
 
-	qryGetTimeSlots = `SELECT id, time 
-					  FROM time_slots 
+	qryGetTimeSlots = `SELECT id, time
+					  FROM time_slots
 					  ORDER BY time`
 )
 
-// When we show the reservation date to the user we have to convert
-// the date according to the local time zone.
-// Keep in mind that the date saved in the DB is according to UTC location.
 func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error {
 	// El formato RFC3339 es una forma estándar de representar
 	// fechas y horas, que es casi equivalente al formato ISO 8601.
@@ -101,10 +103,10 @@ func (r *repo) SaveReservation(ctx context.Context, userID, tableNumber int64, d
 func (r *repo) RemoveReservation(ctx context.Context, reservationID int64) error {
 	operation := func(tx pgx.Tx) error {
 		// lock reservation row in the table
-		var id int64
-		err := tx.QueryRow(ctx, qryGetReservationForUpdateByID, reservationID).Scan(&id)
+		var existingReservationID int64
+		err := tx.QueryRow(ctx, qryGetReservationForUpdateByID, reservationID).Scan(&existingReservationID)
 		if err != nil {
-			if err == pgx.ErrNoRows {
+			if errors.Is(err, pgx.ErrNoRows) {
 				r.log.Errorf("No rows were found by get reservation by ID query: %v", err)
 				return ErrReservationNotFound
 			}
@@ -157,8 +159,13 @@ func (r *repo) GetReservationsByUserID(ctx context.Context, userID int64) (*[]en
 func (r *repo) GetReservationByID(ctx context.Context, reservationID int64) (*entity.Reservation, error) {
 	rsv := entity.Reservation{}
 
-	err := r.db.QueryRow(ctx, qryGetReservationByID, reservationID).Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date)
+	err := r.db.QueryRow(ctx, qryGetReservationByID, reservationID).Scan(&rsv.ID, &rsv.UserID, &rsv.TableNumber, &rsv.Date, &rsv.Time, &rsv.Promotion)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			r.log.Errorf("No rows were found by get reservation by ID query: %v", err)
+			return nil, ErrReservationNotFound
+		}
+
 		r.log.Errorf("Failed to execute select reservation (by ID) query: %v", err)
 		return nil, err
 	}

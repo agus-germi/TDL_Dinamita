@@ -27,8 +27,6 @@ func main() {
 			api.NewValidator,
 			echo.New,
 			logger.New,
-			// logger.InitAppLoggerAdapter,
-			// logger.InitEchoLoggerAdapter,
 		),
 		fx.Invoke(
 			configureLifeCycleHooks,
@@ -48,15 +46,12 @@ func configureLifeCycleHooks(lc fx.Lifecycle, api *api.API, e *echo.Echo, dbPool
 				}
 				log.Info("'.env' file loaded successfully.")
 
-				// El valor de "address" podemos leerlo de la variable de entorno API_PORT (o APP_PORT)
-
-				// Echo middleware logger configuration --> transfering echo http logs management to logrus
 				e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 					Output: log.Writer(),
 				}))
 
 				go func() {
-					e.Logger.Fatal(api.Start(e, ":8080")) // api.Start(e, address)
+					e.Logger.Fatal(api.Start(e, ":8080"))
 				}()
 
 				return nil

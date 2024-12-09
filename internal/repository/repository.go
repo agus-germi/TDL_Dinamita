@@ -11,8 +11,6 @@ import (
 )
 
 // Repository is the interface that wraps the basic CRUD operations.
-//
-//go:generate mockery --name=Repository --output=repository --inpackage
 type Repository interface {
 	// User
 	SaveUser(ctx context.Context, name, passwd, email string, roleID int64) error
@@ -59,7 +57,7 @@ type repo struct {
 }
 
 func New(db *pgxpool.Pool, log logger.Logger) Repository {
-	log.Debugf("Logger has been injected into API")
+	log.Debugf("Logger has been injected into Repository")
 	return &repo{
 		db:  db,
 		log: log,
