@@ -112,7 +112,8 @@
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value;
             const tableNumber = document.getElementById('table').value;
-            const promoId = document.getElementById('promotion').value;
+            const promoSelect = document.getElementById('promotion');
+            const promoId = promoSelect.value;
 
 
             const now = new Date(); 
@@ -132,7 +133,13 @@
                 return;
             }
 
-            if (promoId !== 1 && (selectedDate <= promoStartDate || selectedDate >= promoEndDate)) {
+            const selectedOption = promoSelect.options[promoSelect.selectedIndex];
+            const promoStartDate = selectedOption.startDate;
+            const promoEndDate = selectedOption.endDate;
+
+            const userDate = new Date(selectedDate).toLocaleDateString('en-GB',{ timeZone: 'UTC' });
+
+            if (promoId !== "1" && (userDate < promoStartDate || userDate > promoEndDate)) {
                 showModal("The selected date is not within the promotion period.");
                 return;
             }
@@ -393,41 +400,6 @@
                 console.error('Error getting promotions:', error);
             });
         }
-
-        // function populatePromotionSelect(promotions) {
-        //     const promotionSelect = document.getElementById('promotion');
-        //     promotionSelect.innerHTML = ''; 
-
-        //     promotions.forEach(promotion => {
-        //         const option = document.createElement('option');
-        //         option.value = promotion.id;  
-        //         option.textContent = promotion.description;
-
-        //         if (promotion.id === 1) {
-        //             option.textContent = promotion.description;
-        //             option.setAttribute('data-start-date', promotion.start_date); 
-        //             option.setAttribute('data-end-date', promotion.due_date);
-        //         }else{
-        //             option.setAttribute('data-start-date', promotion.start_date); 
-        //             option.setAttribute('data-end-date', promotion.due_date);
-        //             var startDate = new Date(promotion.start_date).toLocaleDateString('en-GB'); 
-        //             var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB'); 
-        //             alert('hola ', startDate)
-        //             option.textContent = `${promotion.description} - From ${startDate} to ${dueDate} with a ${promotion.discount}% off`;
-        //         }
-
-        //         promotionSelect.appendChild(option);
-        //     });
-
-        //     promotionSelect.addEventListener('change', function() {
-        //         const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
-        //         promoStartDate = new Date(selectedOption.getAttribute('data-start-date'));
-        //         promoEndDate = new Date(selectedOption.getAttribute('data-end-date'));
-
-
-        //         console.log(promoStartDate, promoEndDate);
-        //     });
-        // }
         
         function populatePromotionSelect(promotions) {
             const promotionSelect = document.getElementById('promotion');
@@ -445,14 +417,17 @@
                 }else{
                     option.setAttribute('data-start-date', promotion.start_date); 
                     option.setAttribute('data-end-date', promotion.due_date);
+                    
                     var startDate = new Date(promotion.start_date).toLocaleDateString('en-GB',{ timeZone: 'UTC' }); 
-                    var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB',{ timeZone: 'UTC' }); 
+                    var dueDate = new Date(promotion.due_date).toLocaleDateString('en-GB',{ timeZone: 'UTC' });
+                    option.startDate = startDate;
+                    option.endDate = dueDate;
                     option.textContent = `${promotion.description} - From ${startDate} to ${dueDate} with a ${promotion.discount}% off`;
                 }
 
                 promotionSelect.appendChild(option);
             });
-
+            
             // Set global promo start and end date if promotion id is 1
             promoStartDate = new Date(document.querySelector('#promotion option[data-start-date]').getAttribute('data-start-date'));
             promoEndDate = new Date(document.querySelector('#promotion option[data-end-date]').getAttribute('data-end-date'));
