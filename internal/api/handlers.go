@@ -121,11 +121,6 @@ func (a *API) DeleteUser(c echo.Context) error {
 
 func (a *API) UpdateUserRole(c echo.Context) error {
 
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
-
 	userIDToUpdate, err := parseID(c, "id")
 	if err != nil {
 		a.log.Errorf("[Update User] Failed to parse user ID: %v", err)
@@ -272,14 +267,9 @@ func (a *API) DeleteReservation(c echo.Context) error {
 // Table endpoints
 func (a *API) CreateTable(c echo.Context) error {
 
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
-
 	params := dtos.CreateTableDTO{}
 
-	err = c.Bind(&params)
+	err := c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -300,11 +290,6 @@ func (a *API) CreateTable(c echo.Context) error {
 
 func (a *API) DeleteTable(c echo.Context) error {
 
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
-
 	tableID, err := parseID(c, "id")
 	if err != nil {
 		a.log.Errorf("[Delete Table] Failed to parse table ID: %v", err)
@@ -323,14 +308,9 @@ func (a *API) DeleteTable(c echo.Context) error {
 // Menu endpoints
 func (a *API) AddDishToMenu(c echo.Context) error {
 
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
-
 	params := dtos.DishDTO{}
 
-	err = c.Bind(&params)
+	err := c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -352,11 +332,6 @@ func (a *API) AddDishToMenu(c echo.Context) error {
 
 func (a *API) RemoveDishFromMenu(c echo.Context) error {
 
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
-
 	dishID, err := parseID(c, "id")
 	if err != nil {
 		a.log.Errorf("[Delete Dish] Failed to parse dish ID: %v", err)
@@ -373,11 +348,6 @@ func (a *API) RemoveDishFromMenu(c echo.Context) error {
 }
 
 func (a *API) UpdateDishInMenu(c echo.Context) error {
-
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
 
 	dishID, err := parseID(c, "id")
 	if err != nil {
@@ -489,13 +459,8 @@ func (a *API) GetOpinions(c echo.Context) error {
 // Promotions endpoint
 func (a *API) CreatePromotion(c echo.Context) error {
 
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
-
 	params := dtos.CreatePromotionDTO{}
-	err = c.Bind(&params)
+	err := c.Bind(&params)
 	if err != nil {
 		a.log.Errorf("[Create Promotion] Error parsing request body: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
@@ -518,11 +483,6 @@ func (a *API) CreatePromotion(c echo.Context) error {
 }
 
 func (a *API) DeletePromotion(c echo.Context) error {
-
-	_, err := a.validateAdminRole(c)
-	if err != nil {
-		return err
-	}
 
 	promotionID, err := parseID(c, "id")
 	if err != nil {

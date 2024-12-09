@@ -35,14 +35,25 @@ func (a *API) JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (a *API) validateAdminRole(c echo.Context) (int64, error) {
-	clientRoleID, ok := c.Get("role").(float64)
-	if !ok {
-		return 0, echo.NewHTTPError(http.StatusUnauthorized, "[Middleware] Invalid client role ID in context")
+func (a *API) ValidateAdminRole(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		a.log.Debugf("[Middleware] called")
+
+		clientRoleID, ok := c.Get("role").(float64)
+		if !ok {
+			a.log.Errorf("[Middleware] Invalid client role ID in context")
+			return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+		}
+
+		clientRoleIDInt := int64(clientRoleID)
+		a.log.Debugf("[Middleware] Role ID:", clientRoleIDInt)
+
+		if clientRoleIDInt != adminRoleID {
+			a.log.Errorf("[Middleware] Permission denied: admin role required")
+			return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: admin role required"})
+		}
+
+		a.log.Debugf("[Middleware] Role validated successfully")
+		return next(c)
 	}
-	clientRoleIDInt := int64(clientRoleID)
-	if clientRoleIDInt != adminRoleID {
-		return 0, echo.NewHTTPError(http.StatusForbidden, "[Middleware] Permission denied: admin role required")
-	}
-	return clientRoleIDInt, nil
 }
