@@ -36,8 +36,6 @@ type Repository interface {
 
 	//Menu
 	SaveDish(ctx context.Context, name string, price int64, description string) error
-	GetDishByName(ctx context.Context, name string) (*entity.Dish, error)
-	GetDishByID(ctx context.Context, dishID int64) (*entity.Dish, error)
 	UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error
 	RemoveDish(ctx context.Context, dishID int64) error
 	GetAllDishes(ctx context.Context) (*[]entity.Dish, error)

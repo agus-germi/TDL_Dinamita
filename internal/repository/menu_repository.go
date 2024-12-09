@@ -2,10 +2,15 @@ package repository
 
 import (
 	context "context"
-	"log"
+	"errors"
 
 	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 	"github.com/jackc/pgx/v5"
+)
+
+var (
+	ErrDishAlreadyExists = errors.New("dish already exists")
+	ErrDishNotFound      = errors.New("dish not found")
 )
 
 const (
@@ -24,54 +29,23 @@ const (
 
 func (r *repo) SaveDish(ctx context.Context, name string, price int64, description string) error {
 	operation := func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx, qryInsertDish, name, price, description)
-		if err != nil {
-			log.Printf("Failed to insert dish: %v", err)
+		dish, err := r.getDishByName(ctx, tx, name)
+		if dish != nil {
+			r.log.Errorf("Dish with name %s already exists", name)
+			return ErrDishAlreadyExists
+		}
+		if err != nil && err != pgx.ErrNoRows {
+			r.log.Errorf("Failed to execute select dish query: %v", err)
 			return err
 		}
 
-		log.Printf("Dish with name %s saved successfully", name)
-		return nil
-	}
-
-	return r.executeInTransaction(ctx, operation)
-}
-
-func (r *repo) GetDishByName(ctx context.Context, name string) (*entity.Dish, error) {
-	dish := entity.Dish{}
-
-	err := r.db.QueryRow(ctx, qryGetDish, name).Scan(&dish.Name, &dish.Price, &dish.Description)
-	if err != nil {
-		log.Printf("Failed to execute select query: %v", err)
-		return nil, err
-	}
-
-	log.Printf("Dish retrieved successfully by name: %s", name)
-	return &dish, nil
-}
-
-func (r *repo) GetDishByID(ctx context.Context, dishID int64) (*entity.Dish, error) {
-	dish := entity.Dish{}
-
-	err := r.db.QueryRow(ctx, qryGetDishByID, dishID).Scan(&dish.Name, &dish.Price, &dish.Description)
-	if err != nil {
-		log.Printf("Failed to execute select query: %v", err)
-		return nil, err
-	}
-
-	log.Printf("Dish retrieved successfully by ID: %d", dishID)
-	return &dish, nil
-}
-
-func (r *repo) UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error {
-	operation := func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx, qryUpdateDish, name, price, description, dishID)
+		_, err = tx.Exec(ctx, qryInsertDish, name, price, description)
 		if err != nil {
-			r.log.Errorf("Failed to execute update user role query: %v", err)
+			r.log.Errorf("Failed to insert dish: %v", err)
 			return err
 		}
 
-		r.log.Infof("Dish (id=%d) updated successfully.", dishID)
+		r.log.Debugf("Dish with name %s saved successfully", name)
 		return nil
 	}
 
@@ -80,17 +54,50 @@ func (r *repo) UpdateDish(ctx context.Context, dishID int64, name string, price 
 
 func (r *repo) RemoveDish(ctx context.Context, dishID int64) error {
 	operation := func(tx pgx.Tx) error {
-		result, err := r.db.Exec(ctx, qryDeleteDish, dishID)
+		dish, err := r.getDishByID(ctx, tx, dishID)
+		if dish != nil {
+			r.log.Errorf("Dish with ID %d not found", dishID)
+			return ErrDishNotFound
+		}
+		if err != nil {
+			return err
+		}
+
+		result, err := tx.Exec(ctx, qryDeleteDish, dishID)
 		if err != nil {
 			return err
 		}
 
 		if result.RowsAffected() == 0 {
-			log.Println("Rows affected = 0")
-			return ErrTableNotFound
+			r.log.Errorf("Rows affected = 0")
+			return ErrDishNotFound
 		}
 
-		log.Println("Table removed successfully.")
+		r.log.Infof("Dish (ID=%d) removed successfully.", dishID)
+		return nil
+	}
+
+	return r.executeInTransaction(ctx, operation)
+}
+
+func (r *repo) UpdateDish(ctx context.Context, dishID int64, name string, price int64, description string) error {
+	operation := func(tx pgx.Tx) error {
+		dish, err := r.getDishByID(ctx, tx, dishID)
+		if dish != nil {
+			r.log.Errorf("Dish with ID %d not found", dishID)
+			return ErrDishNotFound
+		}
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.Exec(ctx, qryUpdateDish, name, price, description, dishID)
+		if err != nil {
+			r.log.Errorf("Failed to execute update user role query: %v", err)
+			return err
+		}
+
+		r.log.Infof("Dish (id=%d) updated successfully.", dishID)
 		return nil
 	}
 
@@ -123,4 +130,31 @@ func (r *repo) GetAllDishes(ctx context.Context) (*[]entity.Dish, error) {
 
 	r.log.Debugf("Dishes retrieved successfully.")
 	return &dishes, nil
+}
+
+// Private funcions
+func (r *repo) getDishByID(ctx context.Context, tx pgx.Tx, dishID int64) (*entity.Dish, error) {
+	dish := entity.Dish{}
+
+	err := tx.QueryRow(ctx, qryGetDishByID, dishID).Scan(&dish.Name, &dish.Price, &dish.Description)
+	if err != nil {
+		r.log.Errorf("Failed to execute select query: %v", err)
+		return nil, err
+	}
+
+	r.log.Debugf("Dish retrieved successfully by ID: %d", dishID)
+	return &dish, nil
+}
+
+func (r *repo) getDishByName(ctx context.Context, tx pgx.Tx, name string) (*entity.Dish, error) {
+	dish := entity.Dish{}
+
+	err := tx.QueryRow(ctx, qryGetDish, name).Scan(&dish.Name, &dish.Price, &dish.Description)
+	if err != nil {
+		r.log.Errorf("Failed to execute select dish (by name) query: %v", err)
+		return nil, err
+	}
+
+	r.log.Debugf("Dish retrieved successfully by name: %s", name)
+	return &dish, nil
 }
