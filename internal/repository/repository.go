@@ -18,7 +18,7 @@ type Repository interface {
 	SaveUser(ctx context.Context, name, passwd, email string, roleID int64) error
 	RemoveUser(ctx context.Context, userID int64) error
 	GetUserByEmail(ctx context.Context, tx pgx.Tx, email string) (*entity.User, error)
-	GetUserByID(ctx context.Context, userID int64) (*entity.User, error)
+	GetUserByID(ctx context.Context, tx pgx.Tx, userID int64) (*entity.User, error)
 
 	// UserRole
 	SaveUpdateUserRole(ctx context.Context, userID, roleID int64) error

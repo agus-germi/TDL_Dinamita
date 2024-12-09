@@ -64,6 +64,16 @@ func (r *repo) SaveUser(ctx context.Context, name, password, email string, roleI
 
 func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
 	operation := func(tx pgx.Tx) error {
+		usr, err := r.GetUserByID(ctx, tx, userID)
+		if usr == nil {
+			r.log.Errorf("User (id=%d) not found.", userID)
+			return ErrUserNotFound
+		}
+		if err != nil {
+			r.log.Errorf("Failed to get user by ID: %v", err)
+			return err
+		}
+
 		result, err := tx.Exec(ctx, qryRemoveUser, userID)
 		if err != nil {
 			r.log.Errorf("Failed to execute delete user query: %v", err)
@@ -99,10 +109,15 @@ func (r *repo) GetUserByEmail(ctx context.Context, tx pgx.Tx, email string) (*en
 	return &usr, nil
 }
 
-func (r *repo) GetUserByID(ctx context.Context, userID int64) (*entity.User, error) {
+func (r *repo) GetUserByID(ctx context.Context, tx pgx.Tx, userID int64) (*entity.User, error) {
 	usr := entity.User{}
 
-	err := r.db.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
+	var err error
+	if tx != nil {
+		err = tx.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
+	} else {
+		err = r.db.QueryRow(ctx, qryGetUserByID, userID).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
+	}
 	if err != nil {
 		r.log.Errorf("Failed to execute get user by ID query: %v", err)
 		return nil, err

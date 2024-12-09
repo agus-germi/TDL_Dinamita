@@ -84,16 +84,19 @@ func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.U
 }
 
 func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
-	usr, _ := s.repo.GetUserByID(ctx, userID)
-	if usr == nil {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		return s.repo.RemoveUser(ctx, userID)
+	})
+
+	if errors.Is(err, repository.ErrUserNotFound) {
 		return ErrUserNotFound
 	}
 
-	return s.repo.RemoveUser(ctx, userID)
+	return err
 }
 
 func (s *serv) UpdateUserRole(ctx context.Context, userID, newRoleID int64) error {
-	usr, _ := s.repo.GetUserByID(ctx, userID)
+	usr, _ := s.repo.GetUserByID(ctx, nil, userID)
 	if usr == nil {
 		return ErrUserNotFound
 	}

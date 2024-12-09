@@ -45,7 +45,7 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 	var usr *entity.User
 	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
 		var err error
-		usr, err = s.repo.GetUserByID(ctx, userID)
+		usr, err = s.repo.GetUserByID(ctx, nil, userID)
 		return err
 	})
 
