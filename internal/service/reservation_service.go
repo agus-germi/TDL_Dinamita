@@ -5,6 +5,7 @@ import (
 	"errors"
 	time "time"
 
+	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 )
@@ -17,7 +18,7 @@ var (
 )
 
 func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error {
-	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
 		return s.repo.SaveReservation(ctx, userID, tableNumber, date, promotionID)
 	})
 
@@ -29,7 +30,7 @@ func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, d
 }
 
 func (s *serv) CancelReservation(ctx context.Context, reservationID int64) error {
-	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
 		return s.repo.RemoveReservation(ctx, reservationID)
 	})
 
@@ -41,7 +42,13 @@ func (s *serv) CancelReservation(ctx context.Context, reservationID int64) error
 }
 
 func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error) {
-	usr, err := s.repo.GetUserByID(ctx, userID)
+	var usr *entity.User
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		var err error
+		usr, err = s.repo.GetUserByID(ctx, userID)
+		return err
+	})
+
 	if usr == nil {
 		s.log.Errorf("Failed to search a user:", ErrUserNotFound)
 		return nil, ErrUserNotFound
@@ -51,7 +58,13 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 		return nil, err
 	}
 
-	entityReservations, err := s.repo.GetReservationsByUserID(ctx, userID)
+	var entityReservations *[]entity.Reservation
+	err = s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		var err error
+		entityReservations, err = s.repo.GetReservationsByUserID(ctx, userID)
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +95,13 @@ func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]mo
 }
 
 func (s *serv) GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error) {
-	entityReservation, err := s.repo.GetReservationByID(ctx, reservationID)
+	var entityReservation *entity.Reservation
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		var err error
+		entityReservation, err = s.repo.GetReservationByID(ctx, reservationID)
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +126,13 @@ func (s *serv) GetReservationByID(ctx context.Context, reservationID int64) (*mo
 }
 
 func (s *serv) GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error) {
-	entityTimeSlots, err := s.repo.GetTimeSlots(ctx)
+	var entityTimeSlots *[]entity.TimeSlot
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		var err error
+		entityTimeSlots, err = s.repo.GetTimeSlots(ctx)
+		return err
+	})
+
 	if err != nil {
 		s.log.Errorf("Failed to get time slots: %v", err)
 		return nil, err
@@ -121,7 +146,7 @@ func (s *serv) GetTimeSlots(ctx context.Context) (*[]models.TimeSlot, error) {
 	for i, entityTimeSlot := range *entityTimeSlots {
 		modelTimeSlots[i] = models.TimeSlot{
 			ID:   entityTimeSlot.ID,
-			Time: entityTimeSlot.Time.Format("15:04:05"), // Formateo directamente aquí
+			Time: entityTimeSlot.Time.Format("15:04:05"),
 		}
 	}
 

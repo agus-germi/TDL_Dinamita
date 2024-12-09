@@ -8,10 +8,13 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-var ErrUserNotFound = errors.New("user not found")
+var (
+	ErrUserNotFound      = errors.New("user not found")
+	ErrUserAlreadyExists = errors.New("user already exists")
+)
 
 const (
-	invalidRole   = 0 // 0 is an invalid role
+	invalidRole   = 0
 	qryInsertUser = `INSERT INTO users (name, password, email, role_id)
 					 VALUES ($1, $2, $3, $4)`
 
@@ -37,7 +40,16 @@ const (
 
 func (r *repo) SaveUser(ctx context.Context, name, password, email string, roleID int64) error {
 	operation := func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx, qryInsertUser, name, password, email, roleID)
+		usr, err := r.GetUserByEmail(ctx, tx, email)
+		if usr != nil {
+			r.log.Errorf("User (email=%s) already exists.", email)
+			return ErrUserAlreadyExists
+		}
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+
+		_, err = tx.Exec(ctx, qryInsertUser, name, password, email, roleID)
 		if err != nil {
 			r.log.Errorf("Failed to execute insert user query: %v", err)
 			return err
@@ -70,11 +82,17 @@ func (r *repo) RemoveUser(ctx context.Context, userID int64) error {
 	return r.executeInTransaction(ctx, operation)
 }
 
-func (r *repo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *repo) GetUserByEmail(ctx context.Context, tx pgx.Tx, email string) (*entity.User, error) {
 	usr := entity.User{}
 
-	err := r.db.QueryRow(ctx, qryGetUserByEmail, email).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
+	var err error
+	if tx != nil {
+		err = tx.QueryRow(ctx, qryGetUserByEmail, email).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
+	} else {
+		err = r.db.QueryRow(ctx, qryGetUserByEmail, email).Scan(&usr.ID, &usr.Name, &usr.Password, &usr.Email, &usr.RoleID)
+	}
 	if err != nil {
+		r.log.Debugf("Failed to execute get user by email query: %v", err)
 		return nil, err
 	}
 

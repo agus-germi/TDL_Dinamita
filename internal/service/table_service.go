@@ -17,7 +17,7 @@ var (
 )
 
 func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, description string) error {
-	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
 		return s.repo.SaveTable(ctx, tableNumber, seats, description)
 	})
 
@@ -29,7 +29,7 @@ func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, descripti
 }
 
 func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
-	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
 		return s.repo.RemoveTable(ctx, tableID)
 	})
 
@@ -46,25 +46,25 @@ func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
 
 func (s *serv) GetAvailableTables(ctx context.Context) (*[]models.Table, error) {
 	var tables *[]entity.Table
-	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
 		var err error
 		tables, err = s.repo.GetAvailableTables(ctx)
 		return err
 	})
 
 	if err != nil {
-        return nil, err
-    }
+		return nil, err
+	}
 
-    var modelTables []models.Table
-    for _, t := range *tables {
-        modelTable := models.Table{
-            Number:    t.Number,
-            Seats:     t.Seats,
-            Description:  t.Description,
-        }
-        modelTables = append(modelTables, modelTable)
-    }
+	var modelTables []models.Table
+	for _, t := range *tables {
+		modelTable := models.Table{
+			Number:      t.Number,
+			Seats:       t.Seats,
+			Description: t.Description,
+		}
+		modelTables = append(modelTables, modelTable)
+	}
 
-    return &modelTables, nil
+	return &modelTables, nil
 }

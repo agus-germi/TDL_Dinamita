@@ -41,41 +41,63 @@ type Service interface {
 	DeletePromotion(ctx context.Context, promotionID int64) error
 }
 
-var maxDBOperationsDuration time.Duration
+type Config struct {
+	MaxDBOperationDuration   time.Duration
+	MaxHashOperationDuration time.Duration
+}
 
 type serv struct {
-	repo repository.Repository
-	log  logger.Logger
+	repo   repository.Repository
+	log    logger.Logger
+	config Config
 }
+
+var config Config
 
 func New(repo repository.Repository, log logger.Logger) Service {
 	log.Debugf("Logger has been injected into API")
+
 	return &serv{
-		repo: repo,
-		log:  log,
+		repo:   repo,
+		log:    log,
+		config: config,
 	}
 }
 
 func init() {
 	logger.Log.Info("Initializing reservation service")
-	logger.Log.Debug("Executing init() function of 'service' package: Loading MAX_DB_OPERATIONS_DURATION from '.env' file")
+	logger.Log.Debug("Executing init() function of 'service' package: Loading MAX_DB_OPERATION_DURATION from '.env' file")
 
-	maxDBOperationsDurationStr, err := utils.GetEnv("MAX_DB_OPERATIONS_DURATION")
-	if err != nil || maxDBOperationsDurationStr == "" {
-		logger.Log.Fatalf("MAX_DB_OPERATIONS_DURATION is not set or invalid: %v", err)
+	maxDBOperationDurationStr, err := utils.GetEnv("MAX_DB_OPERATION_DURATION")
+	if err != nil || maxDBOperationDurationStr == "" {
+		logger.Log.Fatalf("MAX_DB_OPERATION_DURATION is not set or invalid: %v", err)
 	}
-	logger.Log.Debugf("Value read from MAX_DB_OPERATIONS_DURATION: %s", maxDBOperationsDurationStr)
+	logger.Log.Debugf("Value read from MAX_DB_OPERATION_DURATION: %s", maxDBOperationDurationStr)
 
-	maxDBOperationsDuration, err = time.ParseDuration(maxDBOperationsDurationStr)
+	maxDBOperationDuration, err := time.ParseDuration(maxDBOperationDurationStr)
 	if err != nil {
-		logger.Log.Fatalf("Error trying to parse duration of JWT_EXPIRATION_TIME environment variable: %v", err)
+		logger.Log.Fatalf("Error trying to parse duration of MAX_DB_OPERATION_DURATION environment variable: %v", err)
 	}
+
+	maxHashOperationDurationStr, err := utils.GetEnv("MAX_HASH_OPERATION_DURATION")
+	if err != nil || maxHashOperationDurationStr == "" {
+		logger.Log.Fatalf("MAX_HASH_OPERATION_DURATION is not set or invalid: %v", err)
+	}
+	logger.Log.Debugf("Value read from MAX_HASH_OPERATION_DURATION: %s", maxHashOperationDurationStr)
+
+	maxHashOperationDuration, err := time.ParseDuration(maxHashOperationDurationStr)
+	if err != nil {
+		logger.Log.Fatalf("Error trying to parse duration of MAX_HASH_OPERATION_DURATION environment variable: %v", err)
+	}
+
+	config.MaxDBOperationDuration = maxDBOperationDuration
+	config.MaxHashOperationDuration = maxHashOperationDuration
 
 	logger.Log.Infof("Maximun DB operations duration loaded successfully from '.env' file.")
 }
 
-func (s *serv) executeWithTimeout(ctx context.Context, operation func(ctx context.Context) error) error {
-	ctxTimeOut, cancel := context.WithTimeout(ctx, maxDBOperationsDuration)
+func (s *serv) executeWithTimeout(ctx context.Context, timeout time.Duration, operation func(ctx context.Context) error) error {
+	ctxTimeOut, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	respChan := make(chan error, 1)

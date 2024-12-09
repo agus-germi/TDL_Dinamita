@@ -600,55 +600,55 @@ func (a *API) GetTimeSlots(c echo.Context) error {
 	return c.JSON(http.StatusOK, dtoTimeSlots)
 }
 
-//Opinions endpoints
+// Opinions endpoints
 func (a *API) CreateOpinion(c echo.Context) error {
-    clientUserID, ok := c.Get("user_id").(float64)
-    if !ok {
-        a.log.Errorf("[Create Opinion] Invalid client user ID in context")
-        return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
-    }
-    clientUserIDInt := int64(clientUserID)
-    a.log.Debugf("[Create Opinion] Client User ID: %d", clientUserIDInt)
+	clientUserID, ok := c.Get("user_id").(float64)
+	if !ok {
+		a.log.Errorf("[Create Opinion] Invalid client user ID in context")
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+	}
+	clientUserIDInt := int64(clientUserID)
+	a.log.Debugf("[Create Opinion] Client User ID: %d", clientUserIDInt)
 
-    params := dtos.CreateOpinionDTO{}
-    err := c.Bind(&params)
-    if err != nil {
-        a.log.Errorf("[Create Opinion] Error parsing request body: %v", err)
-        return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
-    }
+	params := dtos.CreateOpinionDTO{}
+	err := c.Bind(&params)
+	if err != nil {
+		a.log.Errorf("[Create Opinion] Error parsing request body: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
 
-    err = a.dataValidator.Struct(params)
-    if err != nil {
-        a.log.Errorf("[Create Opinion] Validation error: %v", err)
-        return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
-    }
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		a.log.Errorf("[Create Opinion] Validation error: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
 
-    ctx := c.Request().Context()
-    err = a.serv.CreateOpinion(ctx, clientUserIDInt, params.Opinion, params.Rating)
-    if err != nil {
-        a.log.Errorf("[Create Opinion] Error while creating opinion: %v", err)
-        return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
-    }
+	ctx := c.Request().Context()
+	err = a.serv.CreateOpinion(ctx, clientUserIDInt, params.Opinion, params.Rating)
+	if err != nil {
+		a.log.Errorf("[Create Opinion] Error while creating opinion: %v", err)
+		return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
+	}
 
-    // Responder al cliente
-    return c.JSON(http.StatusCreated, responseMessage{Message: "Opinion created successfully"})
+	// Responder al cliente
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Opinion created successfully"})
 }
 
 func (a *API) GetOpinions(c echo.Context) error {
-    ctx := c.Request().Context()
+	ctx := c.Request().Context()
 
-    // Fetch all opinions (you could add filters here if needed)
-    opinions, err := a.serv.GetOpinions(ctx)
-    if err != nil {
-        return a.handleErrorFromService(c, err, "Error while fetching opinions: %v")
-    }
+	// Fetch all opinions (you could add filters here if needed)
+	opinions, err := a.serv.GetOpinions(ctx)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while fetching opinions: %v")
+	}
 
-    return c.JSON(http.StatusOK, opinions)
+	return c.JSON(http.StatusOK, opinions)
 }
 
-//Promotions endpoint
+// Promotions endpoint
 func (a *API) CreatePromotion(c echo.Context) error {
-    clientRoleID, ok := c.Get("role").(float64)
+	clientRoleID, ok := c.Get("role").(float64)
 	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleID)
 	clientRoleIDInt := int64(clientRoleID)
 	a.log.Debugf("[Create Promotion] Client Role ID:", clientRoleIDInt)
@@ -661,32 +661,32 @@ func (a *API) CreatePromotion(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new promotion"})
 	}
 
-    params := dtos.CreatePromotionDTO{}
-    err := c.Bind(&params)
-    if err != nil {
-        a.log.Errorf("[Create Promotion] Error parsing request body: %v", err)
-        return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
-    }
+	params := dtos.CreatePromotionDTO{}
+	err := c.Bind(&params)
+	if err != nil {
+		a.log.Errorf("[Create Promotion] Error parsing request body: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
+	}
 
-    err = a.dataValidator.Struct(params)
-    if err != nil {
-        a.log.Errorf("[Create Promotion] Validation error: %v", err)
-        return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
-    }
+	err = a.dataValidator.Struct(params)
+	if err != nil {
+		a.log.Errorf("[Create Promotion] Validation error: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: err.Error()})
+	}
 
-    ctx := c.Request().Context()
+	ctx := c.Request().Context()
 	err = a.serv.CreatePromotion(ctx, params.Description, params.StartDate, params.DueDate, params.Discount)
-    if err != nil {
-        a.log.Errorf("[Create Promotion] Error while creating promotion: %v", err)
-        return a.handleErrorFromService(c, err, "Error while creating promotion: %v")
-    }
+	if err != nil {
+		a.log.Errorf("[Create Promotion] Error while creating promotion: %v", err)
+		return a.handleErrorFromService(c, err, "Error while creating promotion: %v")
+	}
 
-    // Responder al cliente
-    return c.JSON(http.StatusCreated, responseMessage{Message: "Promotion created successfully"})
+	// Responder al cliente
+	return c.JSON(http.StatusCreated, responseMessage{Message: "Promotion created successfully"})
 }
 
-func(a *API) DeletePromotion(c echo.Context) error{
-	clientUserID, ok := c.Get("user_id").(float64) 
+func (a *API) DeletePromotion(c echo.Context) error {
+	clientUserID, ok := c.Get("user_id").(float64)
 	a.log.Debugf("[Delete Promotion] Client User ID:", clientUserID)
 	clientUserIDInt := int64(clientUserID)
 	a.log.Debugf("[Delete Promotion] Client User ID:", clientUserIDInt)
@@ -721,13 +721,12 @@ func(a *API) DeletePromotion(c echo.Context) error{
 }
 
 func (a *API) GetPromotions(c echo.Context) error {
-    ctx := c.Request().Context()
+	ctx := c.Request().Context()
 
-    opinions, err := a.serv.GetPromotions(ctx)
-    if err != nil {
-        return a.handleErrorFromService(c, err, "Error while fetching promotions: %v")
-    }
+	opinions, err := a.serv.GetPromotions(ctx)
+	if err != nil {
+		return a.handleErrorFromService(c, err, "Error while fetching promotions: %v")
+	}
 
-    return c.JSON(http.StatusOK, opinions)
+	return c.JSON(http.StatusOK, opinions)
 }
-

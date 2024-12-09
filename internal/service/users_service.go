@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"errors"
+	time "time"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
+	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,21 +23,34 @@ var (
 )
 
 func (s *serv) RegisterUser(ctx context.Context, name, password, email string) error {
-	usr, _ := s.repo.GetUserByEmail(ctx, email)
-	if usr != nil {
-		return ErrUserAlreadyExists
-	}
+	start := time.Now()
+	var hashedPassword string
+	err := s.executeWithTimeout(ctx, s.config.MaxHashOperationDuration, func(ctx context.Context) error {
+		var err error
+		hashedPassword, err = hashPassword(password)
+		return err
+	})
+	s.log.Debugf("Time to hash password: %v", time.Since(start))
+	s.log.Debugf("Hashed password: %v", hashedPassword)
 
-	hashedPassword, err := hashPassword(password)
 	if err != nil {
+		s.log.Errorf("Failed to hash password: %v", err)
 		return err
 	}
 
-	return s.repo.SaveUser(ctx, name, hashedPassword, email, 2) // Every user is created with a role 2 (user)
+	err = s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		return s.repo.SaveUser(ctx, name, hashedPassword, email, 2) // Every user is created with a role 2 (user)
+	})
+
+	if errors.Is(err, repository.ErrUserAlreadyExists) {
+		return ErrUserAlreadyExists
+	}
+
+	return err
 }
 
 func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
-	usr, err := s.repo.GetUserByEmail(ctx, email)
+	usr, err := s.repo.GetUserByEmail(ctx, nil, email)
 	if usr == nil {
 		s.log.Debugf("User not found")
 		return nil, ErrUserNotFound
