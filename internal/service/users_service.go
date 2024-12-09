@@ -5,6 +5,7 @@ import (
 	"errors"
 	time "time"
 
+	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -50,16 +51,27 @@ func (s *serv) RegisterUser(ctx context.Context, name, password, email string) e
 }
 
 func (s *serv) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
-	usr, err := s.repo.GetUserByEmail(ctx, nil, email)
+	var usr *entity.User
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		var err error
+		usr, err = s.repo.GetUserByEmail(ctx, nil, email)
+		return err
+	})
+
 	if usr == nil {
-		s.log.Debugf("User not found")
+		s.log.Debugf("User (email:%s) not found", email)
 		return nil, ErrUserNotFound
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
+	start := time.Now()
+	err = s.executeWithTimeout(ctx, s.config.MaxHashOperationDuration, func(ctx context.Context) error {
+		return bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
+	})
+	s.log.Debugf("Time to compare password: %v", time.Since(start))
+
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}
