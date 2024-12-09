@@ -129,7 +129,17 @@ func (r *repo) GetUserByID(ctx context.Context, tx pgx.Tx, userID int64) (*entit
 
 func (r *repo) SaveUpdateUserRole(ctx context.Context, userID, roleID int64) error {
 	operation := func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx, qryUpdateUserRole, roleID, userID)
+		usr, err := r.GetUserByID(ctx, tx, userID)
+		if usr == nil {
+			r.log.Errorf("User (id=%d) not found.", userID)
+			return ErrUserNotFound
+		}
+		if err != nil {
+			r.log.Errorf("Failed to get user by ID: %v", err)
+			return err
+		}
+
+		_, err = tx.Exec(ctx, qryUpdateUserRole, roleID, userID)
 		if err != nil {
 			r.log.Errorf("Failed to execute update user role query: %v", err)
 			return err

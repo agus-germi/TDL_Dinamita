@@ -96,12 +96,15 @@ func (s *serv) RemoveUser(ctx context.Context, userID int64) error {
 }
 
 func (s *serv) UpdateUserRole(ctx context.Context, userID, newRoleID int64) error {
-	usr, _ := s.repo.GetUserByID(ctx, nil, userID)
-	if usr == nil {
+	err := s.executeWithTimeout(ctx, s.config.MaxDBOperationDuration, func(ctx context.Context) error {
+		return s.repo.SaveUpdateUserRole(ctx, userID, newRoleID)
+	})
+
+	if errors.Is(err, repository.ErrUserNotFound) {
 		return ErrUserNotFound
 	}
 
-	return s.repo.SaveUpdateUserRole(ctx, userID, newRoleID)
+	return err
 }
 
 func hashPassword(password string) (string, error) {
