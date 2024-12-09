@@ -544,13 +544,10 @@ func (a *API) DeletePromotion(c echo.Context) error {
 		return err
 	}
 
-	base := 10
-	bitSize := 64
-
-	promotionID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Promotion] Promotion ID sent in the URI:", promotionID)
+	promotionID, err := parseID(c, "id")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid Promotion ID"})
+		a.log.Errorf("[Delete Promotion] Failed to parse dish ID: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
 	}
 
 	ctx := c.Request().Context()
