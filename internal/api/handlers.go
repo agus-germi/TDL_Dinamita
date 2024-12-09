@@ -89,20 +89,15 @@ func (a *API) LoginUser(c echo.Context) error {
 }
 
 func (a *API) DeleteUser(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(float64) // Data type assertion
-	a.log.Debugf("[Delete User] Client User ID:", clientUserID)
-	clientUserIDInt := int64(clientUserID)
-	a.log.Debugf("[Delete User] Client User ID:", clientUserIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+
+	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
-	clientRoleID, ok := c.Get("role").(float64)
-	a.log.Debugf("[Delete User] Client Role ID:", clientRoleID)
-	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Delete User] Client Role ID:", clientRoleIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	clientRoleID, err := getContextValueAsInt64(c, "role", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
 	userIDToDelete, err := parseID(c, "id")
@@ -111,7 +106,7 @@ func (a *API) DeleteUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
 
-	if clientRoleID != adminRoleID && clientUserIDInt != userIDToDelete {
+	if clientRoleID != adminRoleID && clientUserID != userIDToDelete {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can only delete your own account"})
 	}
 
@@ -159,20 +154,15 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 }
 
 func (a *API) GetReservationsOfUser(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(float64) // Data type assertion
-	a.log.Debugf("[Get Reservations of User] Client User ID:", clientUserID)
-	clientUserIDInt := int64(clientUserID)
-	a.log.Debugf("[Get Reservations of User] Client User ID:", clientUserIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+
+	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
-	clientRoleID, ok := c.Get("role").(float64)
-	a.log.Debugf("[Get Reservations of User] Client Role ID:", clientRoleID)
-	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Get Reservations of User] Client Role ID:", clientRoleIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	clientRoleID, err := getContextValueAsInt64(c, "role", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
 	userID, err := parseID(c, "id")
@@ -181,7 +171,7 @@ func (a *API) GetReservationsOfUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
 
-	if clientRoleID != adminRoleID && clientUserIDInt != userID {
+	if clientRoleID != adminRoleID && clientUserID != userID {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can only see your own reservations"})
 	}
 
@@ -198,14 +188,11 @@ func (a *API) GetReservationsOfUser(c echo.Context) error {
 
 // Reservation endpoints
 func (a *API) CreateReservation(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(float64) // Aserción de tipo
-	a.log.Debugf("[Create Reservation] Client User ID:", clientUserID)
-	clientUserIDInt := int64(clientUserID)
-	a.log.Debugf("[Create Reservation] Client User ID:", clientUserIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
-	}
 
+	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
+	}
 	clientEmail, ok := c.Get("email").(string)
 	a.log.Debugf("[Create Reservation] Client Email:", clientEmail)
 	if !ok {
@@ -214,7 +201,7 @@ func (a *API) CreateReservation(c echo.Context) error {
 
 	params := dtos.CreateReservationDTO{}
 
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
 	}
@@ -231,7 +218,7 @@ func (a *API) CreateReservation(c echo.Context) error {
 	ctx := c.Request().Context()
 	start := time.Now()
 	promotionID := int(params.PromotionID)
-	err = a.serv.MakeReservation(ctx, clientUserIDInt, params.TableNumber, reservationDate, promotionID)
+	err = a.serv.MakeReservation(ctx, clientUserID, params.TableNumber, reservationDate, promotionID)
 	if err != nil {
 		return a.handleErrorFromService(c, err, "Error during reservation registration: %v")
 	}
@@ -251,20 +238,15 @@ func (a *API) CreateReservation(c echo.Context) error {
 }
 
 func (a *API) DeleteReservation(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(float64) // Data type assertion
-	a.log.Debugf("[Delete Reservation] Client User ID:", clientUserID)
-	clientUserIDInt := int64(clientUserID)
-	a.log.Debugf("[Delete Reservation] Client User ID:", clientUserIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+
+	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
-	clientRoleID, ok := c.Get("role").(float64)
-	a.log.Debugf("[Delete Reservation] Client Role ID:", clientRoleID)
-	clientRoleIDInt := int64(clientRoleID)
-	a.log.Debugf("[Delete Reservation] Client Role ID:", clientRoleIDInt)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
+	clientRoleID, err := getContextValueAsInt64(c, "role", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
 
 	reservationID, err := parseID(c, "id")
@@ -274,7 +256,7 @@ func (a *API) DeleteReservation(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	err = a.checkUserPermissionToCancelReservation(ctx, clientUserIDInt, clientRoleIDInt, reservationID)
+	err = a.checkUserPermissionToCancelReservation(ctx, clientUserID, clientRoleID, reservationID)
 	if err != nil {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: err.Error()})
 	}
@@ -462,16 +444,14 @@ func (a *API) GetTimeSlots(c echo.Context) error {
 
 // Opinions endpoints
 func (a *API) CreateOpinion(c echo.Context) error {
-	clientUserID, ok := c.Get("user_id").(float64)
-	if !ok {
-		a.log.Errorf("[Create Opinion] Invalid client user ID in context")
-		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client user ID in context"})
+
+	clientUserID, err := getContextValueAsInt64(c, "user_id", c.Logger())
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, responseMessage{Message: err.Error()})
 	}
-	clientUserIDInt := int64(clientUserID)
-	a.log.Debugf("[Create Opinion] Client User ID: %d", clientUserIDInt)
 
 	params := dtos.CreateOpinionDTO{}
-	err := c.Bind(&params)
+	err = c.Bind(&params)
 	if err != nil {
 		a.log.Errorf("[Create Opinion] Error parsing request body: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid request"})
@@ -484,7 +464,7 @@ func (a *API) CreateOpinion(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	err = a.serv.CreateOpinion(ctx, clientUserIDInt, params.Opinion, params.Rating)
+	err = a.serv.CreateOpinion(ctx, clientUserID, params.Opinion, params.Rating)
 	if err != nil {
 		a.log.Errorf("[Create Opinion] Error while creating opinion: %v", err)
 		return a.handleErrorFromService(c, err, "Error while creating opinion: %v")
@@ -654,4 +634,17 @@ func parseID(c echo.Context, paramName string) (int64, error) {
 		return 0, fmt.Errorf("invalid %s: %w", paramName, err)
 	}
 	return id, nil
+}
+
+func getContextValueAsInt64(c echo.Context, key string, log echo.Logger) (int64, error) {
+	value, ok := c.Get(key).(float64) //Asercion de tipo
+	log.Debugf("[%s] Retrieved value: %v", key, value)
+
+	if !ok {
+		return 0, fmt.Errorf("invalid %s in context", key)
+	}
+
+	valueInt64 := int64(value)
+	log.Debugf("[%s] Converted value: %d", key, valueInt64)
+	return valueInt64, nil
 }
