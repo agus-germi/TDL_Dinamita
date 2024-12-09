@@ -105,13 +105,10 @@ func (a *API) DeleteUser(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	userIDToDelete, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete User] User ID sent in the URI:", userIDToDelete)
+	userIDToDelete, err := parseID(c, "id")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID to delete"})
+		a.log.Errorf("[Delete User] Failed to parse user ID: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
 
 	if clientRoleID != adminRoleID && clientUserIDInt != userIDToDelete {
@@ -140,13 +137,10 @@ func (a *API) UpdateUserRole(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't assign a new role to a user"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	userIDToUpdate, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Update User Role] User ID sent in the URI:", userIDToUpdate)
+	userIDToUpdate, err := parseID(c, "id")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID to update"})
+		a.log.Errorf("[Update User] Failed to parse user ID: %v", err)
+		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
 
 	ctx := c.Request().Context()
@@ -187,12 +181,9 @@ func (a *API) GetReservationsOfUser(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	userID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Get Reservations of User] User ID sent in the URI:", userID)
+	userID, err := parseID(c, "id")
 	if err != nil {
+		a.log.Errorf("[Get Reservations of User] Failed to parse user ID: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid user ID"})
 	}
 
@@ -282,12 +273,9 @@ func (a *API) DeleteReservation(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responseMessage{Message: "Invalid client role ID in context"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	reservationID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Reservation] Reservation ID sent in the URI:", reservationID)
+	reservationID, err := parseID(c, "id")
 	if err != nil {
+		a.log.Errorf("[Delete Reservation] Failed to parse reservation ID: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid reservation ID"})
 	}
 
@@ -355,12 +343,9 @@ func (a *API) DeleteTable(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	tableID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Table] Table ID sent in the URI:", tableID)
+	tableID, err := parseID(c, "id")
 	if err != nil {
+		a.log.Errorf("[Delete Table] Failed to parse table ID: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid table ID"})
 	}
 
@@ -424,12 +409,9 @@ func (a *API) RemoveDishFromMenu(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't add a new table"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Delete Dish] Table ID sent in the URI:", dishID)
+	dishID, err := parseID(c, "id")
 	if err != nil {
+		a.log.Errorf("[Delete Dish] Failed to parse dish ID: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
 	}
 
@@ -455,12 +437,9 @@ func (a *API) UpdateDishInMenu(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, responseMessage{Message: "Permission denied: you can't assign a new role to a user"})
 	}
 
-	base := 10
-	bitSize := 64
-
-	dishID, err := strconv.ParseInt(c.Param("id"), base, bitSize)
-	a.log.Debugf("[Update Dish In Menu] Parsed Dish ID:", dishID)
+	dishID, err := parseID(c, "id")
 	if err != nil {
+		a.log.Errorf("[Update Dish In Menu] Failed to parse dish ID: %v", err)
 		return c.JSON(http.StatusBadRequest, responseMessage{Message: "Invalid dish ID"})
 	}
 
@@ -505,80 +484,6 @@ func (a *API) GetTables(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, tables)
-}
-
-// Auxiliary functions
-func (a *API) handleErrorFromService(c echo.Context, err error, debugMsg string) error {
-	if statusCode, ok := errorResponses[err]; ok {
-		return c.JSON(statusCode, responseMessage{Message: err.Error()})
-	}
-
-	a.log.Errorf(debugMsg, err)
-	return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
-}
-
-func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.ReservationDTO {
-	if reservations == nil {
-		return &[]dtos.ReservationDTO{}
-	}
-
-	dtoReservations := make([]dtos.ReservationDTO, len(*reservations))
-	for i, reservation := range *reservations {
-		dtoReservations[i] = dtos.ReservationDTO{
-			ID:              reservation.ID,
-			TableNumber:     reservation.TableNumber,
-			ReservationDate: reservation.ReservationDate,
-			Promotion:       reservation.Promotion,
-		}
-	}
-	return &dtoReservations
-}
-
-func convertDishesToDTO(dishes *[]models.Dish) *[]dtos.DishDTO {
-	if dishes == nil {
-		return &[]dtos.DishDTO{}
-	}
-
-	dtoDishes := make([]dtos.DishDTO, len(*dishes))
-	for i, dish := range *dishes {
-		dtoDishes[i] = dtos.DishDTO{
-			Name:        dish.Name,
-			Price:       dish.Price,
-			Description: dish.Description,
-		}
-	}
-	return &dtoDishes
-}
-
-func convertTimeSlotsToDTO(timeSlots *[]models.TimeSlot) []map[string]interface{} {
-	dto := make([]map[string]interface{}, len(*timeSlots))
-	for i, ts := range *timeSlots {
-		dto[i] = map[string]interface{}{
-			"id":   ts.ID,
-			"time": ts.Time,
-		}
-	}
-	return dto
-}
-
-func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID, roleID, reservationID int64) error {
-	// An admin user can cancel any reservation
-	if roleID == adminRoleID {
-		return nil
-	}
-
-	// A regular user can only cancel their own reservations
-	reservation, err := a.serv.GetReservationByID(ctx, reservationID)
-	if err != nil {
-		return err
-	}
-
-	// Verfify if the user is the owner of the reservation
-	if reservation.UserID != userID {
-		return errors.New("you are not allowed to cancel this reservation")
-	}
-
-	return nil
 }
 
 // Time slots endpoint
@@ -723,4 +628,90 @@ func (a *API) GetPromotions(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, opinions)
+}
+
+// Auxiliary functions
+func (a *API) handleErrorFromService(c echo.Context, err error, debugMsg string) error {
+	if statusCode, ok := errorResponses[err]; ok {
+		return c.JSON(statusCode, responseMessage{Message: err.Error()})
+	}
+
+	a.log.Errorf(debugMsg, err)
+	return c.JSON(http.StatusInternalServerError, responseMessage{Message: "Internal server error"})
+}
+
+func convertReservationsToDTO(reservations *[]models.Reservation) *[]dtos.ReservationDTO {
+	if reservations == nil {
+		return &[]dtos.ReservationDTO{}
+	}
+
+	dtoReservations := make([]dtos.ReservationDTO, len(*reservations))
+	for i, reservation := range *reservations {
+		dtoReservations[i] = dtos.ReservationDTO{
+			ID:              reservation.ID,
+			TableNumber:     reservation.TableNumber,
+			ReservationDate: reservation.ReservationDate,
+			Promotion:       reservation.Promotion,
+		}
+	}
+	return &dtoReservations
+}
+
+func convertDishesToDTO(dishes *[]models.Dish) *[]dtos.DishDTO {
+	if dishes == nil {
+		return &[]dtos.DishDTO{}
+	}
+
+	dtoDishes := make([]dtos.DishDTO, len(*dishes))
+	for i, dish := range *dishes {
+		dtoDishes[i] = dtos.DishDTO{
+			Name:        dish.Name,
+			Price:       dish.Price,
+			Description: dish.Description,
+		}
+	}
+	return &dtoDishes
+}
+
+func convertTimeSlotsToDTO(timeSlots *[]models.TimeSlot) []map[string]interface{} {
+	dto := make([]map[string]interface{}, len(*timeSlots))
+	for i, ts := range *timeSlots {
+		dto[i] = map[string]interface{}{
+			"id":   ts.ID,
+			"time": ts.Time,
+		}
+	}
+	return dto
+}
+
+func (a *API) checkUserPermissionToCancelReservation(ctx context.Context, userID, roleID, reservationID int64) error {
+	// An admin user can cancel any reservation
+	if roleID == adminRoleID {
+		return nil
+	}
+
+	// A regular user can only cancel their own reservations
+	reservation, err := a.serv.GetReservationByID(ctx, reservationID)
+	if err != nil {
+		return err
+	}
+
+	// Verfify if the user is the owner of the reservation
+	if reservation.UserID != userID {
+		return errors.New("you are not allowed to cancel this reservation")
+	}
+
+	return nil
+}
+
+func parseID(c echo.Context, paramName string) (int64, error) {
+	// Parses the ID from the URI and returns it as an int64
+	base := 10
+	bitSize := 64
+	idStr := c.Param(paramName)
+	id, err := strconv.ParseInt(idStr, base, bitSize)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s: %w", paramName, err)
+	}
+	return id, nil
 }
