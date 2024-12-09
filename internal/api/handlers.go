@@ -681,7 +681,6 @@ func (a *API) CreatePromotion(c echo.Context) error {
 		return a.handleErrorFromService(c, err, "Error while creating promotion: %v")
 	}
 
-	// Responder al cliente
 	return c.JSON(http.StatusCreated, responseMessage{Message: "Promotion created successfully"})
 }
 

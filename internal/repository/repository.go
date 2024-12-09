@@ -51,7 +51,6 @@ type Repository interface {
 
 	//Promotion
 	SavePromotion(ctx context.Context, description string, startDate string, dueDate string, discount int) error
-	GetPromotionbyID(ctx context.Context, promotionID int64) (*entity.Promotion, error)
 	DeletePromotion(ctx context.Context, promotionID int64) error
 	GetAllPromotionsAvailable(ctx context.Context) (*[]entity.Promotion, error)
 }
