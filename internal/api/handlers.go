@@ -497,11 +497,6 @@ func (a *API) GetDishesInMenu(c echo.Context) error {
 
 }
 
-func (a *API) UpdateDish(c echo.Context) error {
-	//TODO: update dish
-	return c.JSON(http.StatusNotImplemented, responseMessage{Message: "Not implemented yet"})
-}
-
 func (a *API) GetTables(c echo.Context) error {
 	ctx := c.Request().Context()
 	tables, err := a.serv.GetAvailableTables(ctx)
