@@ -4,6 +4,7 @@ import (
 	context "context"
 	"errors"
 
+	"github.com/agus-germi/TDL_Dinamita/internal/entity"
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
 	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 )
@@ -44,7 +45,13 @@ func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
 }
 
 func (s *serv) GetAvailableTables(ctx context.Context) (*[]models.Table, error) {
-	tables, err := s.repo.GetAvailableTables(ctx)
+	var tables *[]entity.Table
+	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+		var err error
+		tables, err = s.repo.GetAvailableTables(ctx)
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
