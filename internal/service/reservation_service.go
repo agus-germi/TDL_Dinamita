@@ -3,7 +3,6 @@ package service
 import (
 	context "context"
 	"errors"
-	"fmt"
 	time "time"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
@@ -18,30 +17,27 @@ var (
 )
 
 func (s *serv) MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error {
-	ctxTimeOut, cancel := context.WithTimeout(ctx, maxDBOperationsDuration)
-	defer cancel()
+	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+		return s.repo.SaveReservation(ctx, userID, tableNumber, date, promotionID)
+	})
 
-	respChan := make(chan error, 1)
-
-	go func() {
-		respChan <- s.repo.SaveReservation(ctxTimeOut, userID, tableNumber, date, promotionID)
-	}()
-
-	for {
-		select {
-		case <-ctxTimeOut.Done():
-			return fmt.Errorf("timeout assigned to 'SaveReservation' operation expired (userID:%d): %v", userID, ctxTimeOut.Err())
-		case err := <-respChan:
-			if errors.Is(err, repository.ErrTableNotAvailable) {
-				return ErrTableNotAvailable
-			}
-			return err
-		}
+	if errors.Is(err, repository.ErrTableNotAvailable) {
+		return ErrTableNotAvailable
 	}
+
+	return err
 }
 
 func (s *serv) CancelReservation(ctx context.Context, reservationID int64) error {
-	return s.repo.RemoveReservation(ctx, reservationID)
+	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+		return s.repo.RemoveReservation(ctx, reservationID)
+	})
+
+	if errors.Is(err, repository.ErrReservationNotFound) {
+		return ErrReservationNotFound
+	}
+
+	return err
 }
 
 func (s *serv) GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error) {

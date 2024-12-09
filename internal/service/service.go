@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	time "time"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
@@ -18,7 +19,7 @@ type Service interface {
 	RegisterUser(ctx context.Context, name, password, email string) error
 	LoginUser(ctx context.Context, email, password string) (*models.User, error)
 	RemoveUser(ctx context.Context, userIDToDelete int64) error
-	MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time,  promotionID int) error
+	MakeReservation(ctx context.Context, userID, tableNumber int64, date time.Time, promotionID int) error
 	CancelReservation(ctx context.Context, reservationID int64) error
 	GetReservationsByUserID(ctx context.Context, userID int64) (*[]models.Reservation, error)
 	GetReservationByID(ctx context.Context, reservationID int64) (*models.Reservation, error)
@@ -71,4 +72,23 @@ func init() {
 	}
 
 	logger.Log.Infof("Maximun DB operations duration loaded successfully from '.env' file.")
+}
+
+func (s *serv) executeWithTimeout(ctx context.Context, operation func(ctx context.Context) error) error {
+	ctxTimeOut, cancel := context.WithTimeout(ctx, maxDBOperationsDuration)
+	defer cancel()
+
+	respChan := make(chan error, 1)
+
+	go func() {
+		defer close(respChan)
+		respChan <- operation(ctxTimeOut)
+	}()
+
+	select {
+	case <-ctxTimeOut.Done():
+		return fmt.Errorf("operation timeout expired: %v", ctxTimeOut.Err())
+	case err := <-respChan:
+		return err
+	}
 }
