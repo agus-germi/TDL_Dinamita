@@ -58,7 +58,16 @@ func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location
 
 func (r *repo) RemoveTable(ctx context.Context, tableID int64) error {
 	operation := func(tx pgx.Tx) error {
-		result, err := r.db.Exec(ctx, qryDeleteTable, tableID)
+		table, err := r.getTableByID(ctx, tx, tableID)
+		if table == nil {
+			r.log.Debugf("Table not found by ID (id=%d)", tableID)
+			return ErrTableNotFound
+		}
+		if err != nil {
+			return err
+		}
+
+		result, err := tx.Exec(ctx, qryDeleteTable, tableID)
 		if err != nil {
 			return err
 		}
@@ -73,19 +82,6 @@ func (r *repo) RemoveTable(ctx context.Context, tableID int64) error {
 	}
 
 	return r.executeInTransaction(ctx, operation)
-}
-
-func (r *repo) GetTableByID(ctx context.Context, tableID int64) (*entity.Table, error) {
-	table := entity.Table{}
-
-	err := r.db.QueryRow(ctx, qryGetTableByID, tableID).Scan(&table.ID, &table.Number, &table.Seats, &table.Location, &table.IsAvailable)
-	if err != nil {
-		r.log.Debugf("Failed to execute select table (by id) query: %v", err)
-		return nil, err
-	}
-
-	r.log.Debugf("Table retrieved successfully by ID: %d", tableID)
-	return &table, nil
 }
 
 func (r *repo) GetAvailableTables(ctx context.Context) (*[]entity.Table, error) {
@@ -127,5 +123,18 @@ func (r *repo) getTableByNumber(ctx context.Context, tx pgx.Tx, tableNumber int6
 	}
 
 	r.log.Debugf("Table retrieved successfully by number: %d", tableNumber)
+	return &table, nil
+}
+
+func (r *repo) getTableByID(ctx context.Context, tx pgx.Tx, tableID int64) (*entity.Table, error) {
+	table := entity.Table{}
+
+	err := tx.QueryRow(ctx, qryGetTableByID, tableID).Scan(&table.ID, &table.Number, &table.Seats, &table.Location, &table.IsAvailable)
+	if err != nil {
+		r.log.Debugf("Failed to execute select table (by id) query: %v", err)
+		return nil, err
+	}
+
+	r.log.Debugf("Table retrieved successfully by ID: %d", tableID)
 	return &table, nil
 }

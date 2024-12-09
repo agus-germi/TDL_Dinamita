@@ -16,7 +16,10 @@ var (
 )
 
 func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string) error {
-	err := s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
+	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+		return s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
+	})
+
 	if errors.Is(err, repository.ErrTableAlreadyExists) {
 		return ErrTableAlreadyExists
 	}
@@ -25,13 +28,15 @@ func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location 
 }
 
 func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
-	table, _ := s.repo.GetTableByID(ctx, tableID)
-	if table == nil {
-		return ErrTableNotFound
-	}
+	err := s.executeWithTimeout(ctx, func(ctx context.Context) error {
+		return s.repo.RemoveTable(ctx, tableID)
+	})
 
-	err := s.repo.RemoveTable(ctx, tableID)
 	if err != nil {
+		if errors.Is(err, repository.ErrTableNotFound) {
+			return ErrTableNotFound
+		}
+
 		return ErrRemovingTable
 	}
 
