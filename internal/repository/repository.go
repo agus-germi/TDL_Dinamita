@@ -27,7 +27,6 @@ type Repository interface {
 	// Table
 	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error
 	RemoveTable(ctx context.Context, tableID int64) error
-	GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error)
 	GetTableByID(ctx context.Context, tableID int64) (*entity.Table, error)
 	GetAvailableTables(ctx context.Context) (*[]entity.Table, error)
 
@@ -47,7 +46,7 @@ type Repository interface {
 
 	//Time slots
 	GetTimeSlots(ctx context.Context) (*[]entity.TimeSlot, error)
-	
+
 	// Opinion
 	SaveOpinion(ctx context.Context, userID int64, opinion string, rating int) error
 	GetAllOpinions(ctx context.Context) (*[]entity.Opinion, error)
@@ -86,8 +85,8 @@ func (r *repo) executeInTransaction(ctx context.Context, operation func(tx pgx.T
 			tx.Rollback(ctx)
 			r.log.Panicf("Transaction rollback due to panic: %v", p)
 		} else if err != nil {
-			tx.Rollback(ctx)
 			r.log.Errorf("Transaction rollback due to error: %v", err)
+			tx.Rollback(ctx)
 		} else {
 			err = tx.Commit(ctx)
 			if err != nil {

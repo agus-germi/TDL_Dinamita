@@ -8,7 +8,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-var ErrTableNotFound = errors.New("table not found")
+var (
+	ErrTableNotFound      = errors.New("table not found")
+	ErrTableAlreadyExists = errors.New("table already exists")
+)
 
 const (
 	qryInsertTable = `INSERT INTO tables (number, seats, location, is_available)
@@ -32,7 +35,15 @@ const (
 
 func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
 	operation := func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)
+		table, err := r.getTableByNumber(ctx, tx, tableNumber)
+		if table != nil {
+			return ErrTableAlreadyExists
+		}
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+
+		_, err = tx.Exec(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)
 		if err != nil {
 			r.log.Debugf("Failed to insert table: %v", err)
 			return err
@@ -62,19 +73,6 @@ func (r *repo) RemoveTable(ctx context.Context, tableID int64) error {
 	}
 
 	return r.executeInTransaction(ctx, operation)
-}
-
-func (r *repo) GetTableByNumber(ctx context.Context, tableNumber int64) (*entity.Table, error) {
-	table := entity.Table{}
-
-	err := r.db.QueryRow(ctx, qryGetTableByNumber, tableNumber).Scan(&table.Number, &table.Seats, &table.Location, &table.IsAvailable)
-	if err != nil {
-		r.log.Debugf("Failed to execute select table (by number) query: %v", err)
-		return nil, err
-	}
-
-	r.log.Debugf("Table retrieved successfully by number: %d", tableNumber)
-	return &table, nil
 }
 
 func (r *repo) GetTableByID(ctx context.Context, tableID int64) (*entity.Table, error) {
@@ -116,4 +114,18 @@ func (r *repo) GetAvailableTables(ctx context.Context) (*[]entity.Table, error) 
 
 	r.log.Infof("Successfully fetched available tables")
 	return &tables, nil
+}
+
+// Private functions
+func (r *repo) getTableByNumber(ctx context.Context, tx pgx.Tx, tableNumber int64) (*entity.Table, error) {
+	table := entity.Table{}
+
+	err := tx.QueryRow(ctx, qryGetTableByNumber, tableNumber).Scan(&table.Number, &table.Seats, &table.Location, &table.IsAvailable)
+	if err != nil {
+		r.log.Debugf("Failed to execute select table (by number) query: %v", err)
+		return nil, err
+	}
+
+	r.log.Debugf("Table retrieved successfully by number: %d", tableNumber)
+	return &table, nil
 }

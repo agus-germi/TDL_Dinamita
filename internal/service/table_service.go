@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	models "github.com/agus-germi/TDL_Dinamita/internal/models"
+	"github.com/agus-germi/TDL_Dinamita/internal/repository"
 )
 
 var (
@@ -15,12 +16,12 @@ var (
 )
 
 func (s *serv) AddTable(ctx context.Context, tableNumber, seats int64, location string) error {
-	table, _ := s.repo.GetTableByNumber(ctx, tableNumber)
-	if table != nil {
+	err := s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
+	if errors.Is(err, repository.ErrTableAlreadyExists) {
 		return ErrTableAlreadyExists
 	}
 
-	return s.repo.SaveTable(ctx, tableNumber, seats, location, true) // All tables are added being available
+	return err
 }
 
 func (s *serv) RemoveTable(ctx context.Context, tableID int64) error {
