@@ -1,6 +1,13 @@
-# TDL_Dinamita
+# TP Teoria del Lenguaje (TDL)
+Trabajo Práctico  de la materia Teoria del Lenguaje de FIUBA
 
-## Built information
+## Grupo {Dinamita}
+
+- **Integrante 1** - [Valentina Moreno](https://github.com/valenmdr)
+- **Integrante 2** - [Sebastián Kraglievich](https://github.com/Sebakrag)
+- **Integrante 3** - [Agustina Germinario](https://github.com/agus-germi)
+  
+## Build information
 
 - Run the following command to execute the application (including PostgreSQL DB):
     ```sh
@@ -24,22 +31,6 @@
         docker run restaurant-system:1.0.0
         ```
     > **Aclaracion**: Esto es por el momento. A medida que vamos completando versiones del server, nos conviene contruir una imagen para cada version e ir subiendolas a un repositorio en docker hub. De esta forma cualquier persona puede hacer `docker pull <namespace:tag>` y se descarga localmente la imagen, para luego correrla en un contenedor. De esa forma nos aseguramos de que este usando una version valida del server.
-
-
-### TODO
-
-- Validar que el ingreso de la password no sea mayor a 72 bytes (ya que el hasheo con bycrypt solo acepta strings menores o iguales a 72 bytes).
-    > GenerateFromPassword does not accept passwords longer than 72 bytes.
-
-- Create UserSession inside `entity` module. This struct will replace `models.User struct`.
-
-- Migrate from sqlx to pgxpool
-
-- **Reestructuracion**: No seria mala idea tener un servicio y un repositorio para cada entidad que forma parte de nuestro modelo de negocios. --> Consultar con el profe.
-    > De esta forma encapsulariamos responsabilidades y cambios de requirimientos frente a cada entidad en particular.
-    La desventaja es que aumenta bastante la complejidad de nuestro proyecto.
-    > Hasta ahora lo que plantie quizas que es trampa pq simplemente cree archivos diferentes para las funciones que estan
-    dirijidas a cada entidad en particular pero dichas funciones las implementa la misma estructura (repo struct)
 
 
 ## Useful *Go commands*:
