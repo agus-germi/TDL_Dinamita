@@ -333,7 +333,7 @@ func (a *API) CreateTable(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Location)
+	err = a.serv.AddTable(ctx, params.Number, params.Seats, params.Description)
 	if err != nil {
 		return a.handleErrorFromService(c, err, "Error while adding a table: %v")
 	}

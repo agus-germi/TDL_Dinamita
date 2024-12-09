@@ -326,17 +326,17 @@ func (_m *MockRepository) SaveReservation(ctx context.Context, userID int64, tab
 	return r0
 }
 
-// SaveTable provides a mock function with given fields: ctx, tableNumber, seats, location, isAvailable
-func (_m *MockRepository) SaveTable(ctx context.Context, tableNumber int64, seats int64, location string, isAvailable bool) error {
-	ret := _m.Called(ctx, tableNumber, seats, location, isAvailable)
+// SaveTable provides a mock function with given fields: ctx, tableNumber, seats, description
+func (_m *MockRepository) SaveTable(ctx context.Context, tableNumber int64, seats int64, description string) error {
+	ret := _m.Called(ctx, tableNumber, seats, description)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveTable")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, string, bool) error); ok {
-		r0 = rf(ctx, tableNumber, seats, location, isAvailable)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, string) error); ok {
+		r0 = rf(ctx, tableNumber, seats, description)
 	} else {
 		r0 = ret.Error(0)
 	}

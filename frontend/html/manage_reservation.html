@@ -361,7 +361,7 @@
             tables.forEach(table => {
                 const option = document.createElement('option');
                 option.value = table.number
-                option.textContent = `Table ${table.number} - ${table.seats} seats - ${table.location}`;
+                option.textContent = `Table ${table.number} - ${table.seats} seats - ${table.description}`;
                 tableSelect.appendChild(option);
             });
         }

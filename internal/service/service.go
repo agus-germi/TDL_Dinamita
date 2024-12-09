@@ -32,7 +32,7 @@ type Service interface {
 
 	// Admin features
 	UpdateUserRole(ctx context.Context, userID, newRoleID int64) error
-	AddTable(ctx context.Context, tableNumber, seats int64, location string) error
+	AddTable(ctx context.Context, tableNumber, seats int64, description string) error
 	RemoveTable(ctx context.Context, tableID int64) error
 	RemoveDish(ctx context.Context, dishID int64) error
 	AddDishToMenu(ctx context.Context, name string, price int64, description string) error

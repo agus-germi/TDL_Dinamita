@@ -14,26 +14,25 @@ var (
 )
 
 const (
-	qryInsertTable = `INSERT INTO tables (number, seats, location, is_available)
-					VALUES ($1, $2, $3, $4)`
+	qryInsertTable = `INSERT INTO tables (number, seats, description)
+					VALUES ($1, $2, $3)`
 
 	qryDeleteTable = `DELETE FROM tables
 					WHERE id=$1`
 
-	qryGetTableByNumber = `SELECT number, seats, location, is_available
+	qryGetTableByNumber = `SELECT number, seats, description
 				   FROM tables
 				   WHERE number=$1`
 
-	qryGetTableByID = `SELECT id, number, seats, location, is_available
+	qryGetTableByID = `SELECT id, number, seats, description
 				   FROM tables
 				   WHERE id=$1`
 
-	qryGetAvailableTables = `SELECT id, number, seats, location, is_available
-				   FROM tables
-				   WHERE is_available = TRUE`
+	qryGetAvailableTables = `SELECT id, number, seats, description
+				   FROM tables`
 )
 
-func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error {
+func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, description string) error {
 	operation := func(tx pgx.Tx) error {
 		table, err := r.getTableByNumber(ctx, tx, tableNumber)
 		if table != nil {
@@ -43,7 +42,7 @@ func (r *repo) SaveTable(ctx context.Context, tableNumber, seats int64, location
 			return err
 		}
 
-		_, err = tx.Exec(ctx, qryInsertTable, tableNumber, seats, location, isAvailable)
+		_, err = tx.Exec(ctx, qryInsertTable, tableNumber, seats, description)
 		if err != nil {
 			r.log.Debugf("Failed to insert table: %v", err)
 			return err
@@ -96,7 +95,7 @@ func (r *repo) GetAvailableTables(ctx context.Context) (*[]entity.Table, error) 
 
 	for rows.Next() {
 		var table entity.Table
-		if err := rows.Scan(&table.ID, &table.Number, &table.Seats, &table.Location, &table.IsAvailable); err != nil {
+		if err := rows.Scan(&table.ID, &table.Number, &table.Seats, &table.Description); err != nil {
 			r.log.Debugf("Failed to scan table: %v", err)
 			return nil, err
 		}

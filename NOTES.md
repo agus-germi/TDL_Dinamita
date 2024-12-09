@@ -49,13 +49,12 @@ DELETE > localhost:8080/reservations/remove
 }
 ```
 ## Endpoint add_table
-Simpre que se agrega una mesa se deja como "available"
 POST > localhost:8080/tables/register
 ```
 {
   "number": 9,
   "seats": 4,
-  "location": "eg de location"
+  "description": "eg de description"
 }
 ```
 ## Endpoint remove_user
@@ -68,7 +67,6 @@ DELETE > localhost:8080/users/remove
 }
 ```
 ## Endpoint remove_table
-Simpre que se agrega una mesa se deja como "available"
 DELETE > localhost:8080/tables/remove
 Se elimina una mesa solo mediante el numero de mesa, porque asumimos que este numero es unico para cada mesa. No puede estar repetido
 ```

@@ -25,7 +25,7 @@ type Repository interface {
 	GetUserRole(ctx context.Context, userID int64) (int64, error)
 
 	// Table
-	SaveTable(ctx context.Context, tableNumber, seats int64, location string, isAvailable bool) error
+	SaveTable(ctx context.Context, tableNumber, seats int64, description string) error
 	RemoveTable(ctx context.Context, tableID int64) error
 	GetAvailableTables(ctx context.Context) (*[]entity.Table, error)
 

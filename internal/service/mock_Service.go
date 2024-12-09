@@ -16,9 +16,9 @@ type MockService struct {
 	mock.Mock
 }
 
-// AddTable provides a mock function with given fields: ctx, tableNumber, seats, location
-func (_m *MockService) AddTable(ctx context.Context, tableNumber int64, seats int64, location string) error {
-	ret := _m.Called(ctx, tableNumber, seats, location)
+// AddTable provides a mock function with given fields: ctx, tableNumber, seats, description
+func (_m *MockService) AddTable(ctx context.Context, tableNumber int64, seats int64, description string) error {
+	ret := _m.Called(ctx, tableNumber, seats, description)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddTable")
@@ -26,7 +26,7 @@ func (_m *MockService) AddTable(ctx context.Context, tableNumber int64, seats in
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, string) error); ok {
-		r0 = rf(ctx, tableNumber, seats, location)
+		r0 = rf(ctx, tableNumber, seats, description)
 	} else {
 		r0 = ret.Error(0)
 	}

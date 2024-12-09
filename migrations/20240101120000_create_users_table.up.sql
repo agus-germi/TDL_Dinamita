@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS tables (
     number INT NOT NULL UNIQUE,
     seats INT NOT NULL,
     location VARCHAR(255),    
-    is_available BOOLEAN DEFAULT TRUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS time_slots (
