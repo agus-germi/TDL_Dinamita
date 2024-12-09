@@ -34,3 +34,15 @@ func (a *API) JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		return next(c)
 	}
 }
+
+func (a *API) validateAdminRole(c echo.Context) (int64, error) {
+	clientRoleID, ok := c.Get("role").(float64)
+	if !ok {
+		return 0, echo.NewHTTPError(http.StatusUnauthorized, "[Middleware] Invalid client role ID in context")
+	}
+	clientRoleIDInt := int64(clientRoleID)
+	if clientRoleIDInt != adminRoleID {
+		return 0, echo.NewHTTPError(http.StatusForbidden, "[Middleware] Permission denied: admin role required")
+	}
+	return clientRoleIDInt, nil
+}
