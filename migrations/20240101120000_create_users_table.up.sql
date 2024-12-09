@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS tables (
     id SERIAL PRIMARY KEY,
     number INT NOT NULL UNIQUE,
     seats INT NOT NULL,
-    location VARCHAR(255),    
+    description VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS time_slots (

@@ -115,7 +115,7 @@ func (r *repo) GetAvailableTables(ctx context.Context) (*[]entity.Table, error) 
 func (r *repo) getTableByNumber(ctx context.Context, tx pgx.Tx, tableNumber int64) (*entity.Table, error) {
 	table := entity.Table{}
 
-	err := tx.QueryRow(ctx, qryGetTableByNumber, tableNumber).Scan(&table.Number, &table.Seats, &table.Location, &table.IsAvailable)
+	err := tx.QueryRow(ctx, qryGetTableByNumber, tableNumber).Scan(&table.Number, &table.Seats, &table.Description)
 	if err != nil {
 		r.log.Debugf("Failed to execute select table (by number) query: %v", err)
 		return nil, err
@@ -128,7 +128,7 @@ func (r *repo) getTableByNumber(ctx context.Context, tx pgx.Tx, tableNumber int6
 func (r *repo) getTableByID(ctx context.Context, tx pgx.Tx, tableID int64) (*entity.Table, error) {
 	table := entity.Table{}
 
-	err := tx.QueryRow(ctx, qryGetTableByID, tableID).Scan(&table.ID, &table.Number, &table.Seats, &table.Location, &table.IsAvailable)
+	err := tx.QueryRow(ctx, qryGetTableByID, tableID).Scan(&table.ID, &table.Number, &table.Seats, &table.Description)
 	if err != nil {
 		r.log.Debugf("Failed to execute select table (by id) query: %v", err)
 		return nil, err
